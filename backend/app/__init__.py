@@ -1,0 +1,2 @@
+"""Khalas backend application package."""
+

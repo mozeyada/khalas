@@ -1,0 +1,34 @@
+{
+  "HomePage": {
+    "brand": "Khalas | خلاص",
+    "eyebrow": "A scalable appointment platform for Egypt",
+    "headline": "The initial scaffold is ready to grow from clinics into any service category later.",
+    "body": "This first interface connects the homepage to the API health check and establishes the base for localization, documentation, and a mobile-first experience.",
+    "statusEyebrow": "Platform status",
+    "statusTitle": "Core connectivity monitor",
+    "statusBody": "The frontend is checking the backend health endpoint to confirm the initial application wiring is working.",
+    "cards": {
+      "backendTitle": "API layer",
+      "backendBody": "FastAPI with Motor and a MongoDB startup ping when connection details are configured.",
+      "frontendTitle": "Web client",
+      "frontendBody": "Next.js 14 with Tailwind, next-intl, and a mobile-first shell.",
+      "docsTitle": "Project continuity",
+      "docsBody": "Decisions, tasks, and forward plans are stored in the repository so work does not depend on chat history."
+    },
+    "language": {
+      "label": "Language",
+      "arabic": "العربية",
+      "english": "English"
+    },
+    "health": {
+      "loading": "Checking",
+      "online": "Online",
+      "offline": "Offline",
+      "service": "Service",
+      "status": "Status",
+      "checkedAt": "Last checked",
+      "unavailable": "Unavailable"
+    }
+  }
+}
+
