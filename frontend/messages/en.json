@@ -1,19 +1,31 @@
 {
+  "Navigation": {
+    "brand": "Khalas | خلاص",
+    "home": "Home",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "My Appointments",
+    "provider": "Provider Appointments",
+    "logout": "Logout"
+  },
   "HomePage": {
     "brand": "Khalas | خلاص",
     "eyebrow": "A scalable appointment platform for Egypt",
-    "headline": "The initial scaffold is ready to grow from clinics into any service category later.",
-    "body": "This first interface connects the homepage to the API health check and establishes the base for localization, documentation, and a mobile-first experience.",
+    "headline": "Start booking clinics and managing appointments from the web.",
+    "body": "This slice now connects OTP auth, venue pages, booking, and the patient/provider dashboards in one web flow.",
+    "ctaPrimary": "Create patient account",
+    "ctaSecondary": "Log in",
+    "ctaDemo": "Open demo clinic",
     "statusEyebrow": "Platform status",
     "statusTitle": "Core connectivity monitor",
     "statusBody": "The frontend is checking the backend health endpoint to confirm the initial application wiring is working.",
     "cards": {
       "backendTitle": "API layer",
-      "backendBody": "FastAPI with Motor and a MongoDB startup ping when connection details are configured.",
+      "backendBody": "OTP auth, provider management, booking, and slot generation now run on FastAPI and MongoDB Atlas.",
       "frontendTitle": "Web client",
-      "frontendBody": "Next.js 14 with Tailwind, next-intl, and a mobile-first shell.",
+      "frontendBody": "An Arabic-first Next.js 14 interface now covers auth, booking, and dashboard flows.",
       "docsTitle": "Project continuity",
-      "docsBody": "Decisions, tasks, and forward plans are stored in the repository so work does not depend on chat history."
+      "docsBody": "The current structure is ready to expand into search, notifications, and fuller dashboards."
     },
     "language": {
       "label": "Language",
@@ -29,6 +41,122 @@
       "checkedAt": "Last checked",
       "unavailable": "Unavailable"
     }
+  },
+  "RegisterPage": {
+    "pageTitle": "Create patient account",
+    "pageSubtitle": "Enter your basic details, then use the OTP shown in the backend console to finish signing in.",
+    "title": "Patient details",
+    "subtitle": "This account will let you book appointments, review them, and cancel them from one dashboard.",
+    "noteEyebrow": "Note",
+    "noteTitle": "OTP is mock-only at this stage",
+    "noteBody": "No SMS is sent yet. Open the backend console, copy the four-digit code, and enter it here.",
+    "fields": {
+      "nameAr": "Arabic name",
+      "nameEn": "English name",
+      "phone": "Phone number",
+      "email": "Email",
+      "otp": "OTP code"
+    },
+    "placeholders": {
+      "nameAr": "Example: Mohamed Ahmed",
+      "nameEn": "Example: Mohamed Ahmed",
+      "phone": "+201000000000",
+      "email": "name@example.com",
+      "otp": "1234"
+    },
+    "actions": {
+      "submit": "Send OTP",
+      "verify": "Verify code"
+    },
+    "otpSent": "Account created. Check the backend console for the code for {phone}.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "LoginPage": {
+    "pageTitle": "Log in",
+    "pageSubtitle": "Request an OTP and enter it to continue booking or managing appointments.",
+    "eyebrow": "Phone + OTP sign in",
+    "title": "Sign in to an existing account",
+    "subtitle": "Patients and providers use the same login flow. You will be redirected to the matching dashboard after verification.",
+    "fields": {
+      "phone": "Phone number",
+      "otp": "OTP code"
+    },
+    "placeholders": {
+      "phone": "+201000000000",
+      "otp": "1234"
+    },
+    "actions": {
+      "request": "Request code",
+      "verify": "Verify code"
+    },
+    "otpSent": "The mock code for {phone} is now in the backend console.",
+    "genericError": "Something went wrong. Please try again."
+  },
+  "VenuePage": {
+    "venueEyebrow": "Venue details",
+    "locationLabel": "Address",
+    "phoneLabel": "Phone",
+    "staffEyebrow": "Available professionals",
+    "emptyDescription": "No description is available yet.",
+    "emptySpecialty": "Specialty has not been set yet.",
+    "emptyStaff": "No bookable staff are available right now."
+  },
+  "StaffPage": {
+    "overviewEyebrow": "Provider profile",
+    "bookingEyebrow": "Booking step",
+    "bookingTitle": "Choose a service and a slot",
+    "bookingBody": "Pick a service first, then load the next seven days of available appointments.",
+    "clinicLabel": "Venue",
+    "servicesTitle": "Services",
+    "emptyBio": "No biography is available yet.",
+    "emptyDescription": "No extra description is available for this service.",
+    "emptySpecialty": "Specialty has not been set yet.",
+    "serviceMeta": "{duration} min + {buffer} min buffer",
+    "selectServiceFirst": "Select a service to load available slots.",
+    "loadingSlots": "Loading slots",
+    "loadSlots": "Load available slots",
+    "slotMeta": "{duration} min + {buffer} min buffer",
+    "noSlots": "No available slots were found in the current window.",
+    "notesLabel": "Notes for the provider",
+    "notesPlaceholder": "Add any booking note you want to include",
+    "cashNote": "Pay cash at the clinic",
+    "loginToBook": "Log in as a patient to complete booking",
+    "bookingNow": "Booking now",
+    "confirmBooking": "Confirm booking",
+    "genericError": "The action could not be completed right now."
+  },
+  "ConfirmationPage": {
+    "pageTitle": "Booking saved",
+    "pageSubtitle": "You can return to the patient dashboard to track the status or cancel before the appointment.",
+    "eyebrow": "Final confirmation",
+    "title": "Your appointment was created successfully",
+    "fields": {
+      "appointmentId": "Appointment ID",
+      "venue": "Venue",
+      "staff": "Provider",
+      "service": "Service",
+      "slot": "Appointment time"
+    }
+  },
+  "DashboardPage": {
+    "pageTitle": "My upcoming appointments",
+    "pageSubtitle": "Review current bookings and cancel quickly from the same screen.",
+    "loading": "Loading appointments...",
+    "empty": "There are no upcoming appointments right now.",
+    "priceLine": "Booked price: {price}",
+    "cancel": "Cancel appointment",
+    "cancelReasonDefault": "Plans changed",
+    "genericError": "Appointments could not be loaded right now."
+  },
+  "ProviderAppointmentsPage": {
+    "pageTitle": "Provider appointments",
+    "pageSubtitle": "Review incoming requests and confirm or cancel them from the same screen.",
+    "loading": "Loading appointments...",
+    "empty": "There are no appointments across this provider account yet.",
+    "priceLine": "Service price: {price}",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "providerCancelledReason": "Cancelled by provider",
+    "genericError": "Appointments could not be updated right now."
   }
 }
-
