@@ -1,34 +1,122 @@
 # Khalas
 
-Khalas (خلاص) is a web-based appointment booking platform for Egypt. The product starts with medical clinics and is designed to expand to any service vertical without changing the core architecture.
+Khalas (خلاص) is a web-based appointment booking platform for Egypt. The product starts with medical clinics and is designed to expand to other service verticals without changing the core architecture.
 
-This repository is intentionally documentation-first so the project can be resumed from any conversation or device without relying on chat history.
+## Stack
 
-## Monorepo
+- `backend/` Python 3.11+, FastAPI, Motor, MongoDB Atlas
+- `frontend/` Next.js 14, TypeScript, Tailwind CSS, `next-intl`
 
-- `backend/` FastAPI + Motor + MongoDB Atlas
-- `frontend/` Next.js 14 + TypeScript + Tailwind CSS + next-intl
+## Current App State
 
-## Current Scope
-
-This initial scaffold includes:
-
-- Monorepo folder structure
-- FastAPI app with `GET /api/v1/health`
-- MongoDB connection wiring with a startup ping when `MONGODB_URI` is configured
-- Next.js home page that calls the health endpoint and renders a responsive status card
-- PWA manifest and service worker scaffold
-- Project documentation for tasks, decisions, notifications, payments, billing, and the working brief
-
-## Local Setup
+The repository is no longer scaffold-only. The current local and pushed app includes:
 
 ### Backend
 
-1. Copy `backend/.env.example` to `backend/.env`
-2. Set a valid Atlas connection string in `MONGODB_URI`
-3. Create a Python 3.11 virtual environment
-4. Install dependencies
-5. Run the API server
+- Health endpoint at `GET /api/v1/health`
+- MongoDB Atlas connection with startup ping
+- Phone + OTP mock authentication
+- JWT access and refresh token flow
+- Role-aware auth for `patient`, `provider`, and `admin`
+- Provider APIs for:
+  - venue creation and update
+  - staff creation and update
+  - service creation and update
+  - staff availability read and replace
+- Public APIs for:
+  - venue page
+  - venue staff list
+  - staff profile
+  - staff services
+  - staff slots for the next 7 days
+- Appointment APIs for:
+  - patient booking
+  - patient upcoming appointments
+  - patient cancellation
+  - provider appointment listing
+  - provider appointment status updates
+
+### Frontend
+
+- Arabic-first Next.js app with English toggle
+- OTP registration and login pages
+- Public venue page
+- Public staff booking page
+- Booking confirmation screen
+- Patient dashboard
+- Provider appointments dashboard
+- PWA manifest and service worker scaffold
+
+## Current Routes
+
+### Frontend
+
+- `/`
+- `/auth/login`
+- `/auth/register`
+- `/[slug]`
+- `/[slug]/[staffId]`
+- `/book/confirm`
+- `/dashboard`
+- `/provider/appointments`
+
+With locale routing enabled, the app serves these under `/ar/...` and `/en/...`.
+
+### Backend
+
+Base prefix: `/api/v1`
+
+- `GET /health`
+- `POST /auth/register`
+- `POST /auth/login/request-otp`
+- `POST /auth/login/verify-otp`
+- `POST /auth/refresh`
+- `GET /auth/me`
+- `GET /venues/{slug}`
+- `GET /venues/{slug}/staff`
+- `GET /staff/{staff_id}`
+- `GET /staff/{staff_id}/services`
+- `GET /staff/{staff_id}/slots`
+- `POST /appointments`
+- `GET /appointments/mine`
+- `POST /appointments/{id}/cancel`
+- `GET /provider/venues`
+- `POST /provider/venues`
+- `PUT /provider/venues/{id}`
+- `POST /provider/venues/{id}/staff`
+- `PUT /provider/staff/{id}`
+- `POST /provider/staff/{id}/services`
+- `PUT /provider/services/{id}`
+- `GET /provider/staff/{id}/availability`
+- `PUT /provider/staff/{id}/availability`
+- `GET /provider/appointments`
+- `PATCH /provider/appointments/{id}/status`
+
+## Local Setup
+
+### 1. Backend
+
+Create `backend/.env` from the example:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Set the required values in `backend/.env`:
+
+- `MONGODB_URI`
+- `MONGODB_DB_NAME`
+- `JWT_SECRET_KEY`
+- `JWT_REFRESH_SECRET_KEY`
+
+Recommended:
+
+- use 32+ character JWT secrets
+- keep all values in local env files only
+- never commit `.env`
+
+Install and run:
 
 ```bash
 cd backend
@@ -38,14 +126,18 @@ pip install -e .
 uvicorn app.main:app --reload
 ```
 
-The API will be available at `http://localhost:8000`, with the health endpoint at `http://localhost:8000/api/v1/health`.
+The backend will run at `http://localhost:8000`.
 
-### Frontend
+### 2. Frontend
 
-1. Copy `frontend/.env.example` to `frontend/.env.local`
-2. Confirm `NEXT_PUBLIC_API_BASE_URL` points to the backend URL
-3. Install dependencies
-4. Run the Next.js dev server
+Create `frontend/.env.local` from the example:
+
+```bash
+cd frontend
+cp .env.example .env.local
+```
+
+Install and run:
 
 ```bash
 cd frontend
@@ -53,30 +145,75 @@ npm install
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:3000`.
+The frontend will run at `http://localhost:3000`.
 
-## Manual External Setup
+## Environment Variables
 
-Atlas, Railway, Render, and GitHub all require dashboard actions that are easier to do manually:
+### Backend
 
-- Atlas: create the database user, allow network access, and paste the connection string into `backend/.env`
-- Railway: create the backend service and add the backend env vars
-- Render: create the frontend service and add the frontend env vars
-- GitHub: create the repository, then push this monorepo once you are ready
+See [backend/.env.example](backend/.env.example).
+
+Important values:
+
+- `MONGODB_URI`
+- `MONGODB_DB_NAME`
+- `FRONTEND_ORIGIN`
+- `JWT_SECRET_KEY`
+- `JWT_REFRESH_SECRET_KEY`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `REFRESH_TOKEN_EXPIRE_DAYS`
+- `OTP_EXPIRE_MINUTES`
+
+### Frontend
+
+See [frontend/.env.example](frontend/.env.example).
+
+Important values:
+
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_API_BASE_URL`
+
+## OTP Development Flow
+
+OTP is mock-only at the current stage.
+
+- the backend logs the 4-digit OTP to the server console
+- no SMS provider is integrated yet
+- use the logged OTP in the frontend login/register screens
+
+## Payment Status
+
+Payments are still cash-only in the current implementation.
+
+- `payment_method = "cash"`
+- `payment_status = "unpaid"`
+
+No payment gateway is integrated yet.
+
+## Known Gaps
+
+These areas are still pending or intentionally simplified:
+
+- search endpoint and search UI
+- admin panel
+- QR endpoint and QR download flow
+- notifications and Resend email integration
+- real SMS or WhatsApp delivery
+- provider dashboard for venue/staff/service/availability management
+- public filtering for approval status in all public endpoints
+- stronger atomic booking collision control
+- production-grade session handling on the frontend
 
 ## Deployment Notes
 
-- Keep all secrets in local or platform env files only
-- Never commit `.env` files
-- Backend and frontend should both be deployed in EU West regions
-- CORS should only allow the frontend origin in deployed environments
+- MongoDB Atlas is the primary database target
+- Backend target: Railway
+- Frontend target: Render
+- Keep secrets in platform env settings only
+- Restrict CORS to the deployed frontend origin
 
-## Living Docs
+## Repository Notes
 
-- `PROJECT_BRIEF.md`
-- `TASKS.md`
-- `DECISIONS.md`
-- `NOTIFICATIONS.md`
-- `PAYMENTS.md`
-- `BILLING.md`
-
+- `.env` files are intentionally ignored
+- local scratch files and local-only planning notes are not part of the public repo
+- conventional commits are used for project history
