@@ -3,10 +3,20 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 
+from pymongo import ASCENDING, IndexModel
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
+from app.models.collections import (
+    AVAILABILITY_COLLECTION,
+    APPOINTMENTS_COLLECTION,
+    SERVICES_COLLECTION,
+    STAFF_COLLECTION,
+    USERS_COLLECTION,
+    VENUES_COLLECTION,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +35,7 @@ async def connect_to_mongo() -> None:
     client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True)
     await client.admin.command("ping")
     database = client[settings.mongodb_db_name]
+    await create_indexes(database)
     logger.info("MongoDB connection established for database '%s'.", settings.mongodb_db_name)
 
 
@@ -39,3 +50,63 @@ async def disconnect_from_mongo() -> None:
     client = None
     database = None
 
+
+def get_database() -> AsyncIOMotorDatabase:
+    """Return the active MongoDB database handle."""
+    if database is None:
+        raise RuntimeError("MongoDB is not connected.")
+    return database
+
+
+def get_collection(name: str):
+    """Return a typed collection by name."""
+    return get_database()[name]
+
+
+async def create_indexes(db: AsyncIOMotorDatabase) -> None:
+    """Create the indexes required for the current milestone."""
+    index_map: dict[str, Sequence[IndexModel]] = {
+        USERS_COLLECTION: (
+            IndexModel([("phone", ASCENDING)], unique=True),
+            IndexModel(
+                [("email", ASCENDING)],
+                unique=True,
+                partialFilterExpression={"email": {"$type": "string"}},
+            ),
+            IndexModel([("role", ASCENDING)]),
+        ),
+        VENUES_COLLECTION: (
+            IndexModel([("slug", ASCENDING)], unique=True),
+            IndexModel([("owner_id", ASCENDING)]),
+            IndexModel([("category", ASCENDING)]),
+            IndexModel([("governorate", ASCENDING)]),
+        ),
+        STAFF_COLLECTION: (
+            IndexModel([("venue_id", ASCENDING)]),
+            IndexModel([("user_id", ASCENDING)], sparse=True),
+            IndexModel([("is_active", ASCENDING)]),
+        ),
+        SERVICES_COLLECTION: (
+            IndexModel([("staff_id", ASCENDING)]),
+            IndexModel([("venue_id", ASCENDING)]),
+            IndexModel([("category", ASCENDING)]),
+            IndexModel([("is_active", ASCENDING)]),
+        ),
+        AVAILABILITY_COLLECTION: (
+            IndexModel([("staff_id", ASCENDING), ("day_of_week", ASCENDING)]),
+        ),
+        APPOINTMENTS_COLLECTION: (
+            IndexModel([("patient_id", ASCENDING), ("slot_datetime", ASCENDING)]),
+            IndexModel([("staff_id", ASCENDING), ("slot_datetime", ASCENDING)]),
+            IndexModel([("venue_id", ASCENDING), ("slot_datetime", ASCENDING)]),
+            IndexModel([("status", ASCENDING)]),
+        ),
+    }
+
+    for collection_name, indexes in index_map.items():
+        if collection_name == USERS_COLLECTION:
+            existing_indexes = await db[collection_name].index_information()
+            if "email_1" in existing_indexes:
+                await db[collection_name].drop_index("email_1")
+        if indexes:
+            await db[collection_name].create_indexes(list(indexes))

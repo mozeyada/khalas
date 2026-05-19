@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     frontend_origin: str = Field(default="http://localhost:3000")
     mongodb_uri: str | None = Field(default=None)
     mongodb_db_name: str = Field(default="khalas")
+    jwt_secret_key: str = Field(default="change-me-access-secret-at-least-32-chars")
+    jwt_refresh_secret_key: str = Field(default="change-me-refresh-secret-at-least-32-chars")
+    jwt_algorithm: str = Field(default="HS256")
+    access_token_expire_minutes: int = Field(default=15)
+    refresh_token_expire_days: int = Field(default=7)
+    otp_expire_minutes: int = Field(default=10)
 
 
 @lru_cache
@@ -31,4 +37,3 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
-
