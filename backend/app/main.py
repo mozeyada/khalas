@@ -18,10 +18,13 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     """Manage application startup and shutdown resources."""
-    await connect_to_mongo()
+    import asyncio
+    # Start MongoDB connection in the background so it never blocks uvicorn startup
+    db_task = asyncio.create_task(connect_to_mongo())
     try:
         yield
     finally:
+        db_task.cancel()
         await disconnect_from_mongo()
 
 
