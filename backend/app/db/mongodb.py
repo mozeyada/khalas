@@ -32,11 +32,19 @@ async def connect_to_mongo() -> None:
         logger.warning("MONGODB_URI is not set; skipping MongoDB startup ping.")
         return
 
-    client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True)
-    await client.admin.command("ping")
-    database = client[settings.mongodb_db_name]
-    await create_indexes(database)
-    logger.info("MongoDB connection established for database '%s'.", settings.mongodb_db_name)
+    try:
+        client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True)
+        await client.admin.command("ping")
+        database = client[settings.mongodb_db_name]
+        await create_indexes(database)
+        logger.info("MongoDB connection established for database '%s'.", settings.mongodb_db_name)
+    except Exception as exc:  # noqa: BLE001
+        logger.error(
+            "MongoDB startup connection failed — service will start without DB: %s",
+            exc,
+        )
+        client = None
+        database = None
 
 
 async def disconnect_from_mongo() -> None:
