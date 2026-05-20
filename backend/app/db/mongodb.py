@@ -33,7 +33,7 @@ async def connect_to_mongo() -> None:
         return
 
     try:
-        client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True)
+        client = AsyncIOMotorClient(settings.mongodb_uri, tz_aware=True, serverSelectionTimeoutMS=5000)
         await client.admin.command("ping")
         database = client[settings.mongodb_db_name]
         await create_indexes(database)
