@@ -24,6 +24,13 @@ client: AsyncIOMotorClient | None = None
 database: AsyncIOMotorDatabase | None = None
 
 
+def get_client() -> AsyncIOMotorClient:
+    """Return the active MongoDB client (needed for session/transaction support)."""
+    if client is None:
+        raise RuntimeError("MongoDB is not connected.")
+    return client
+
+
 async def connect_to_mongo() -> None:
     """Create the MongoDB client and ping the server when configured."""
     global client, database
@@ -88,6 +95,18 @@ async def create_indexes(db: AsyncIOMotorDatabase) -> None:
             IndexModel([("owner_id", ASCENDING)]),
             IndexModel([("category", ASCENDING)]),
             IndexModel([("governorate", ASCENDING)]),
+            IndexModel([("is_approved", ASCENDING)]),
+            # Full-text search index for the public search endpoint.
+            IndexModel(
+                [
+                    ("name_ar", "text"),
+                    ("name_en", "text"),
+                    ("description_ar", "text"),
+                    ("description_en", "text"),
+                ],
+                default_language="none",
+                name="venue_text_search",
+            ),
         ),
         STAFF_COLLECTION: (
             IndexModel([("venue_id", ASCENDING)]),

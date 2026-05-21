@@ -13,7 +13,7 @@ export function PatientDashboard() {
   const t = useTranslations('DashboardPage');
   const locale = useLocale();
   const router = useRouter();
-  const {accessToken, isAuthenticated, isReady, user} = useSession();
+  const {isAuthenticated, isReady, user} = useSession();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,12 +23,12 @@ export function PatientDashboard() {
       return;
     }
 
-    if (!isAuthenticated || user?.role !== 'patient' || !accessToken) {
+    if (!isAuthenticated || user?.role !== 'patient') {
       router.push(`/${locale}/auth/login`);
       return;
     }
 
-    void getMyAppointments(accessToken)
+    void getMyAppointments()
       .then((response) => {
         setAppointments(response);
         setError(null);
@@ -39,15 +39,11 @@ export function PatientDashboard() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [accessToken, isAuthenticated, isReady, locale, router, t, user?.role]);
+  }, [isAuthenticated, isReady, locale, router, t, user?.role]);
 
   async function handleCancel(appointmentId: string) {
-    if (!accessToken) {
-      return;
-    }
-
     try {
-      const updated = await cancelAppointment(accessToken, appointmentId, t('cancelReasonDefault'));
+      const updated = await cancelAppointment(appointmentId, t('cancelReasonDefault'));
       setAppointments((current) => current.filter((item) => item._id !== updated._id));
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));

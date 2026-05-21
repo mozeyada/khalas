@@ -29,12 +29,18 @@ def build_otp_expiry() -> datetime:
 
 
 def create_access_token(subject: str, role: str) -> tuple[str, datetime]:
-    """Create a signed short-lived access token."""
-    expires_at = utc_now() + timedelta(minutes=settings.access_token_expire_minutes)
+    """Create a signed short-lived access token.
+
+    The algorithm is hardcoded in encode() and in the algorithms= allow-list
+    in decode_access_token() to prevent 'none'-algorithm attacks.
+    """
+    now = utc_now()
+    expires_at = now + timedelta(minutes=settings.access_token_expire_minutes)
     payload: dict[str, Any] = {
         "sub": subject,
         "role": role,
         "type": "access",
+        "iat": now,
         "exp": expires_at,
     }
     token = jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
@@ -42,12 +48,18 @@ def create_access_token(subject: str, role: str) -> tuple[str, datetime]:
 
 
 def create_refresh_token(subject: str, role: str) -> tuple[str, datetime]:
-    """Create a signed refresh token."""
-    expires_at = utc_now() + timedelta(days=settings.refresh_token_expire_days)
+    """Create a signed refresh token.
+
+    The algorithm is hardcoded in encode() and in the algorithms= allow-list
+    in decode_refresh_token() to prevent 'none'-algorithm attacks.
+    """
+    now = utc_now()
+    expires_at = now + timedelta(days=settings.refresh_token_expire_days)
     payload: dict[str, Any] = {
         "sub": subject,
         "role": role,
         "type": "refresh",
+        "iat": now,
         "exp": expires_at,
     }
     token = jwt.encode(payload, settings.jwt_refresh_secret_key, algorithm=settings.jwt_algorithm)

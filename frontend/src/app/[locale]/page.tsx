@@ -20,9 +20,16 @@ export default async function HomePage({params}: HomePageProps) {
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal">{t('eyebrow')}</p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/auth/register"
+              href="/search"
               locale={params.locale}
               className="rounded-full bg-teal px-5 py-3 text-sm font-medium text-white transition hover:bg-teal/90"
+            >
+              {t('ctaSearch')}
+            </Link>
+            <Link
+              href="/auth/register"
+              locale={params.locale}
+              className="rounded-full bg-white px-5 py-3 text-sm font-medium text-ink transition hover:bg-black/5"
             >
               {t('ctaPrimary')}
             </Link>

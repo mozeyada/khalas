@@ -21,7 +21,13 @@ from app.schemas.appointment import (
 )
 from app.schemas.common import ApiResponse
 from app.services.appointments import AppointmentService
+from app.services.notifications import (
+    notify_appointment_booked,
+    notify_appointment_cancelled,
+    notify_appointment_confirmed,
+)
 from app.services.serializers import serialize_appointment
+from app.repositories.users import UserRepository
 
 router = APIRouter(tags=["appointments"])
 
@@ -52,7 +58,11 @@ async def create_appointment(
         patient_id=str(current_user["_id"]),
         payload=payload,
     )
-    return ApiResponse(data=serialize_appointment(appointment))
+    serialized = serialize_appointment(appointment)
+    # Fire-and-forget notification – does not block the response.
+    import asyncio
+    asyncio.create_task(notify_appointment_booked(appointment, current_user))
+    return ApiResponse(data=serialized)
 
 
 @router.get("/appointments/mine", response_model=ApiResponse[list[AppointmentResponse]], status_code=status.HTTP_200_OK)
@@ -89,6 +99,8 @@ async def cancel_my_appointment(
         },
     )
     assert updated is not None
+    import asyncio
+    asyncio.create_task(notify_appointment_cancelled(updated, current_user, "patient"))
     return ApiResponse(data=serialize_appointment(updated))
 
 
@@ -126,4 +138,13 @@ async def update_provider_appointment_status(
         update["cancelled_by"] = "staff"
     updated = await repository.update_by_id(appointment_id, update)
     assert updated is not None
+    import asyncio
+    if payload.status == "confirmed":
+        user = await UserRepository().find_by_id(appointment["patient_id"])
+        if user:
+            asyncio.create_task(notify_appointment_confirmed(updated, user))
+    elif payload.status == "cancelled":
+        user = await UserRepository().find_by_id(appointment["patient_id"])
+        if user:
+            asyncio.create_task(notify_appointment_cancelled(updated, user, "staff"))
     return ApiResponse(data=serialize_appointment(updated))

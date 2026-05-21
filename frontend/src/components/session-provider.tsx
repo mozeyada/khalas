@@ -1,23 +1,24 @@
 'use client';
 
-import {createContext, ReactNode, useContext, useEffect, useState} from 'react';
+/**
+ * Session management using the BFF (Backend-for-Frontend) pattern.
+ *
+ * Tokens (access + refresh) are stored exclusively in HttpOnly cookies set by
+ * the Next.js API routes under /api/auth/. This component never reads, writes,
+ * or stores any token in JavaScript-accessible storage (localStorage,
+ * sessionStorage, or React state).
+ *
+ * The only client-side state is the user profile object which carries no
+ * credentials.
+ */
 
-import {
-  getCurrentUser,
-  refreshSession,
-  registerPatient,
-  requestLoginOtp,
-  verifyOtp
-} from '@/lib/api';
+import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from 'react';
+
 import {OtpChallengeData, Role, UserProfile} from '@/lib/types';
+import {ApiError, registerPatient, requestLoginOtp} from '@/lib/api';
 
-type SessionState = {
-  accessToken: string | null;
-  refreshToken: string | null;
+type SessionContextValue = {
   user: UserProfile | null;
-};
-
-type SessionContextValue = SessionState & {
   isReady: boolean;
   isAuthenticated: boolean;
   register: (input: {
@@ -28,80 +29,48 @@ type SessionContextValue = SessionState & {
   }) => Promise<OtpChallengeData>;
   requestOtp: (phone: string) => Promise<OtpChallengeData>;
   verifyOtpCode: (phone: string, otpCode: string) => Promise<Role>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
 
-const STORAGE_KEY = 'khalas-session';
-
 const SessionContext = createContext<SessionContextValue | null>(null);
 
-function loadStoredSession(): SessionState {
-  if (typeof window === 'undefined') {
-    return {accessToken: null, refreshToken: null, user: null};
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-
-  if (!raw) {
-    return {accessToken: null, refreshToken: null, user: null};
-  }
-
-  try {
-    return JSON.parse(raw) as SessionState;
-  } catch {
-    return {accessToken: null, refreshToken: null, user: null};
-  }
-}
-
-function persistSession(state: SessionState) {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  if (!state.accessToken || !state.refreshToken || !state.user) {
-    window.localStorage.removeItem(STORAGE_KEY);
-    return;
-  }
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
 export function SessionProvider({children}: {children: ReactNode}) {
-  const [session, setSession] = useState<SessionState>({
-    accessToken: null,
-    refreshToken: null,
-    user: null
-  });
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isReady, setIsReady] = useState(false);
 
+  /**
+   * On mount, attempt to fetch the current user via the BFF /me route.
+   * If the HttpOnly cookie is present and valid, the user is restored.
+   * If not (expired or absent), the session is treated as unauthenticated.
+   */
   useEffect(() => {
-    const stored = loadStoredSession();
-    setSession(stored);
-    setIsReady(true);
+    void fetch('/api/auth/me', {cache: 'no-store'})
+      .then(async (res) => {
+        if (!res.ok) {
+          // Cookie absent or expired – try silent refresh
+          const refreshRes = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            cache: 'no-store',
+          });
+          if (!refreshRes.ok) {
+            setUser(null);
+            return;
+          }
+          const refreshData = (await refreshRes.json()) as {data: {user: UserProfile}};
+          setUser(refreshData.data.user);
+          return;
+        }
+        const data = (await res.json()) as {data: UserProfile};
+        setUser(data.data);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setIsReady(true);
+      });
   }, []);
-
-  useEffect(() => {
-    if (!isReady) {
-      return;
-    }
-
-    persistSession(session);
-  }, [isReady, session]);
-
-  async function refresh() {
-    if (!session.refreshToken) {
-      throw new Error('No refresh token');
-    }
-
-    const tokens = await refreshSession(session.refreshToken);
-    const nextSession = {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      user: tokens.user
-    };
-    setSession(nextSession);
-  }
 
   async function register(input: {
     phone: string;
@@ -116,44 +85,47 @@ export function SessionProvider({children}: {children: ReactNode}) {
     return requestLoginOtp(phone);
   }
 
-  async function verifyOtpCode(phone: string, otpCode: string) {
-    const tokens = await verifyOtp(phone, otpCode);
-    const nextSession = {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      user: tokens.user
-    };
-    setSession(nextSession);
-    return tokens.user.role;
-  }
-
-  function logout() {
-    setSession({accessToken: null, refreshToken: null, user: null});
-  }
-
-  useEffect(() => {
-    if (!isReady || !session.accessToken || session.user) {
-      return;
+  async function verifyOtpCode(phone: string, otpCode: string): Promise<Role> {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({phone, otp_code: otpCode}),
+    });
+    if (!res.ok) {
+      const body = (await res.json()) as {error?: string};
+      throw new ApiError(body.error ?? 'Login failed.', res.status);
     }
+    const data = (await res.json()) as {data: {user: UserProfile}};
+    setUser(data.data.user);
+    return data.data.user.role;
+  }
 
-    void getCurrentUser(session.accessToken)
-      .then((user) => {
-        setSession((current) => ({...current, user}));
-      })
-      .catch(() => {
-        setSession({accessToken: null, refreshToken: null, user: null});
-      });
-  }, [isReady, session.accessToken, session.user]);
+  const logout = useCallback(async () => {
+    await fetch('/api/auth/logout', {method: 'POST'});
+    // Clear client state and force a full page reload to flush any cached
+    // sensitive views per session lifecycle requirements.
+    setUser(null);
+    window.location.href = '/';
+  }, []);
+
+  const refresh = useCallback(async () => {
+    const res = await fetch('/api/auth/refresh', {method: 'POST', cache: 'no-store'});
+    if (!res.ok) {
+      throw new Error('Token refresh failed.');
+    }
+    const data = (await res.json()) as {data: {user: UserProfile}};
+    setUser(data.data.user);
+  }, []);
 
   const value: SessionContextValue = {
-    ...session,
+    user,
     isReady,
-    isAuthenticated: Boolean(session.accessToken && session.user),
+    isAuthenticated: Boolean(user),
     register,
     requestOtp,
     verifyOtpCode,
     logout,
-    refresh
+    refresh,
   };
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
@@ -161,10 +133,8 @@ export function SessionProvider({children}: {children: ReactNode}) {
 
 export function useSession() {
   const context = useContext(SessionContext);
-
   if (!context) {
     throw new Error('useSession must be used within SessionProvider');
   }
-
   return context;
 }

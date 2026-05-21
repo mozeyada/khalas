@@ -22,7 +22,7 @@ export function BookingPanel({
 }) {
   const t = useTranslations('StaffPage');
   const router = useRouter();
-  const {accessToken, user} = useSession();
+  const {user} = useSession();
   const activeLocale = useLocale();
 
   const [selectedServiceId, setSelectedServiceId] = useState<string>(services[0]?._id ?? '');
@@ -55,7 +55,7 @@ export function BookingPanel({
   }
 
   async function handleBook() {
-    if (!selectedServiceId || !selectedSlot || !accessToken) {
+    if (!selectedServiceId || !selectedSlot) {
       return;
     }
 
@@ -63,7 +63,7 @@ export function BookingPanel({
     setIsSubmitting(true);
 
     try {
-      const appointment = await createAppointment(accessToken, {
+      const appointment = await createAppointment({
         service_id: selectedServiceId,
         slot_datetime: selectedSlot,
         notes: notes || undefined

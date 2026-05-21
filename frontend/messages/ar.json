@@ -2,10 +2,13 @@
   "Navigation": {
     "brand": "خلاص | Khalas",
     "home": "الرئيسية",
+    "search": "بحث",
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
     "dashboard": "مواعيدي",
+    "providerDashboard": "لوحة مقدم الخدمة",
     "provider": "مواعيد العيادة",
+    "admin": "لوحة الإدارة",
     "logout": "تسجيل الخروج"
   },
   "HomePage": {
@@ -15,6 +18,7 @@
     "body": "هذا الإصدار يربط التسجيل عبر OTP، صفحات العيادات، الحجز، ولوحة المريض ومقدم الخدمة على نفس واجهة الويب.",
     "ctaPrimary": "إنشاء حساب مريض",
     "ctaSecondary": "تسجيل الدخول",
+    "ctaSearch": "ابحث عن عيادة",
     "ctaDemo": "فتح العيادة التجريبية",
     "statusEyebrow": "حالة المنصة",
     "statusTitle": "مراقبة الاتصال الأساسي",
@@ -158,5 +162,52 @@
     "cancel": "إلغاء",
     "providerCancelledReason": "تم الإلغاء من مقدم الخدمة",
     "genericError": "تعذر تحديث المواعيد حالياً."
+  },
+  "SearchPage": {
+    "pageTitle": "ابحث عن عيادة",
+    "pageSubtitle": "ابحث بالتخصص أو اسم الطبيب أو الموقع.",
+    "placeholder": "ابحث عن عيادة أو طبيب...",
+    "filterGovernorate": "المحافظة",
+    "filterCategory": "الفئة",
+    "allGovernorates": "جميع المحافظات",
+    "allCategories": "جميع الفئات",
+    "searchButton": "بحث",
+    "noResults": "لا توجد نتائج مطابقة لبحثك.",
+    "loading": "جارٍ البحث...",
+    "viewVenue": "احجز الآن"
+  },
+  "ProviderDashboardPage": {
+    "pageTitle": "لوحة مقدم الخدمة",
+    "pageSubtitle": "أدر عياداتك وأطقمك وخدماتك وجداول المواعيد.",
+    "tabVenues": "العيادات",
+    "tabStaff": "الفريق",
+    "tabServices": "الخدمات",
+    "tabAvailability": "الجدول",
+    "loading": "جارٍ التحميل...",
+    "createVenue": "عيادة جديدة",
+    "createStaff": "عضو فريق جديد",
+    "createService": "خدمة جديدة",
+    "noVenues": "لا توجد عيادات بعد. أنشئ واحدة للبدء.",
+    "noStaff": "لا يوجد أعضاء فريق بعد.",
+    "noServices": "لا توجد خدمات بعد.",
+    "genericError": "حدث خطأ ما.",
+    "save": "حفظ",
+    "cancel": "إلغاء"
+  },
+  "AdminPage": {
+    "pageTitle": "لوحة الإدارة",
+    "pageSubtitle": "مراجعة العيادات وإدارة حسابات المستخدمين.",
+    "tabVenues": "العيادات",
+    "tabUsers": "المستخدمون",
+    "loading": "جارٍ التحميل...",
+    "approve": "اعتماد",
+    "unapprove": "إلغاء الاعتماد",
+    "deactivate": "تعطيل",
+    "updateSubscription": "تحديث الاشتراك",
+    "noVenues": "لا توجد عيادات.",
+    "noUsers": "لا يوجد مستخدمون.",
+    "genericError": "فشل الإجراء.",
+    "approved": "معتمدة",
+    "pending": "قيد المراجعة"
   }
 }

@@ -20,7 +20,7 @@ export function SiteShell({
   const t = useTranslations('Navigation');
   const {isAuthenticated, logout, user, isReady} = useSession();
 
-  const dashboardHref = user?.role === 'provider' ? '/provider/appointments' : '/dashboard';
+  const dashboardHref = user?.role === 'provider' ? '/provider/dashboard' : '/dashboard';
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-8">
@@ -45,6 +45,15 @@ export function SiteShell({
             >
               {t('home')}
             </Link>
+            <Link
+              href="/search"
+              locale={locale}
+              className={`rounded-full px-4 py-2 text-sm transition ${
+                pathname === '/search' ? 'bg-ink text-white' : 'bg-white text-ink hover:bg-black/5'
+              }`}
+            >
+              {t('search')}
+            </Link>
             {isReady && isAuthenticated ? (
               <>
                 <Link
@@ -52,8 +61,17 @@ export function SiteShell({
                   locale={locale}
                   className="rounded-full bg-teal px-4 py-2 text-sm font-medium text-white transition hover:bg-teal/90"
                 >
-                  {user?.role === 'provider' ? t('provider') : t('dashboard')}
+                  {user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}
                 </Link>
+                {user?.role === 'admin' ? (
+                  <Link
+                    href="/admin"
+                    locale={locale}
+                    className="rounded-full bg-amber-400 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-amber-300"
+                  >
+                    {t('admin')}
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   onClick={logout}

@@ -61,3 +61,9 @@ class UserRepository:
             },
         )
 
+    async def list_all(self, *, skip: int = 0, limit: int = 50) -> list[dict]:
+        """List all users (admin use)."""
+        cursor = self.collection.find({}).sort("created_at", -1).skip(skip).limit(limit)
+        return await cursor.to_list(length=None)
+
+

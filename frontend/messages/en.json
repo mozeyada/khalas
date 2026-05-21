@@ -2,10 +2,13 @@
   "Navigation": {
     "brand": "Khalas | خلاص",
     "home": "Home",
+    "search": "Search",
     "login": "Login",
     "register": "Register",
     "dashboard": "My Appointments",
+    "providerDashboard": "Provider Dashboard",
     "provider": "Provider Appointments",
+    "admin": "Admin",
     "logout": "Logout"
   },
   "HomePage": {
@@ -15,6 +18,7 @@
     "body": "This slice now connects OTP auth, venue pages, booking, and the patient/provider dashboards in one web flow.",
     "ctaPrimary": "Create patient account",
     "ctaSecondary": "Log in",
+    "ctaSearch": "Find a clinic",
     "ctaDemo": "Open demo clinic",
     "statusEyebrow": "Platform status",
     "statusTitle": "Core connectivity monitor",
@@ -158,5 +162,52 @@
     "cancel": "Cancel",
     "providerCancelledReason": "Cancelled by provider",
     "genericError": "Appointments could not be updated right now."
+  },
+  "SearchPage": {
+    "pageTitle": "Find a clinic",
+    "pageSubtitle": "Search by specialty, doctor name, or location.",
+    "placeholder": "Search clinics or doctors...",
+    "filterGovernorate": "Governorate",
+    "filterCategory": "Category",
+    "allGovernorates": "All governorates",
+    "allCategories": "All categories",
+    "searchButton": "Search",
+    "noResults": "No venues found matching your search.",
+    "loading": "Searching...",
+    "viewVenue": "Book now"
+  },
+  "ProviderDashboardPage": {
+    "pageTitle": "Provider dashboard",
+    "pageSubtitle": "Manage your venues, staff, services, and availability.",
+    "tabVenues": "Venues",
+    "tabStaff": "Staff",
+    "tabServices": "Services",
+    "tabAvailability": "Availability",
+    "loading": "Loading...",
+    "createVenue": "New venue",
+    "createStaff": "New staff member",
+    "createService": "New service",
+    "noVenues": "No venues yet. Create one to get started.",
+    "noStaff": "No staff members yet.",
+    "noServices": "No services yet.",
+    "genericError": "Something went wrong.",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "AdminPage": {
+    "pageTitle": "Admin panel",
+    "pageSubtitle": "Moderate venues and manage user accounts.",
+    "tabVenues": "Venues",
+    "tabUsers": "Users",
+    "loading": "Loading...",
+    "approve": "Approve",
+    "unapprove": "Unapprove",
+    "deactivate": "Deactivate",
+    "updateSubscription": "Update subscription",
+    "noVenues": "No venues found.",
+    "noUsers": "No users found.",
+    "genericError": "Action failed.",
+    "approved": "Approved",
+    "pending": "Pending"
   }
 }

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 
 from app.api.deps import get_current_user
+from app.core.rate_limit import limiter
 from app.repositories.users import UserRepository
 from app.schemas.auth import (
     AuthTokensData,
@@ -30,7 +31,9 @@ def get_auth_service() -> AuthService:
 
 
 @router.post("/register", response_model=ApiResponse[OtpChallengeData], status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def register_user(
+    request: Request,
     payload: RegisterRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[OtpChallengeData]:
@@ -40,7 +43,9 @@ async def register_user(
 
 
 @router.post("/login/request-otp", response_model=ApiResponse[OtpChallengeData], status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
 async def request_login_otp(
+    request: Request,
     payload: LoginOtpRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[OtpChallengeData]:
@@ -50,7 +55,9 @@ async def request_login_otp(
 
 
 @router.post("/login/verify-otp", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
 async def verify_login_otp(
+    request: Request,
     payload: VerifyOtpRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[AuthTokensData]:
@@ -60,7 +67,9 @@ async def verify_login_otp(
 
 
 @router.post("/refresh", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+@limiter.limit("20/minute")
 async def refresh_token_pair(
+    request: Request,
     payload: RefreshTokenRequest,
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[AuthTokensData]:

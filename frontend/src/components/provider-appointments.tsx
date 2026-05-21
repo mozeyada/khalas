@@ -13,7 +13,7 @@ export function ProviderAppointments() {
   const t = useTranslations('ProviderAppointmentsPage');
   const locale = useLocale();
   const router = useRouter();
-  const {accessToken, isAuthenticated, isReady, user} = useSession();
+  const {isAuthenticated, isReady, user} = useSession();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,12 +23,12 @@ export function ProviderAppointments() {
       return;
     }
 
-    if (!isAuthenticated || user?.role !== 'provider' || !accessToken) {
+    if (!isAuthenticated || user?.role !== 'provider') {
       router.push(`/${locale}/auth/login`);
       return;
     }
 
-    void getProviderAppointments(accessToken)
+    void getProviderAppointments()
       .then((response) => {
         setAppointments(response);
         setError(null);
@@ -39,15 +39,11 @@ export function ProviderAppointments() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [accessToken, isAuthenticated, isReady, locale, router, t, user?.role]);
+  }, [isAuthenticated, isReady, locale, router, t, user?.role]);
 
   async function handleStatusChange(appointmentId: string, status: 'confirmed' | 'cancelled') {
-    if (!accessToken) {
-      return;
-    }
-
     try {
-      const updated = await updateProviderAppointmentStatus(accessToken, appointmentId, {
+      const updated = await updateProviderAppointmentStatus(appointmentId, {
         status,
         cancellation_reason: status === 'cancelled' ? t('providerCancelledReason') : undefined
       });

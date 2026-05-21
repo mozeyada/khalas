@@ -26,10 +26,10 @@ class AppointmentRepository:
         except InvalidId:
             return None
 
-    async def create(self, payload: dict) -> dict:
+    async def create(self, payload: dict, *, session=None) -> dict:
         """Insert an appointment and return it."""
-        result = await self.collection.insert_one(payload)
-        return await self.collection.find_one({"_id": result.inserted_id})
+        result = await self.collection.insert_one(payload, session=session)
+        return await self.collection.find_one({"_id": result.inserted_id}, session=session)
 
     async def update_by_id(self, appointment_id: str, update: dict) -> dict | None:
         """Update an appointment and return it."""
@@ -68,6 +68,7 @@ class AppointmentRepository:
         range_start: datetime,
         range_end: datetime,
         statuses: list[str],
+        session=None,
     ) -> list[dict]:
         """List staff appointments within a time range."""
         cursor = self.collection.find(
@@ -76,6 +77,7 @@ class AppointmentRepository:
                 "status": {"$in": statuses},
                 "slot_datetime": {"$lt": range_end},
                 "occupied_until": {"$gt": range_start},
-            }
+            },
+            session=session,
         )
         return await cursor.to_list(length=None)

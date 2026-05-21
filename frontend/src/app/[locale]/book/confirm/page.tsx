@@ -1,6 +1,7 @@
 import {getTranslations} from 'next-intl/server';
 
 import {SiteShell} from '@/components/site-shell';
+import {AppointmentQRCode} from '@/components/appointment-qr-code';
 import {formatDateTime} from '@/lib/format';
 
 type ConfirmationPageProps = {
@@ -48,6 +49,12 @@ export default async function ConfirmationPage({params, searchParams}: Confirmat
             </p>
           </article>
         </div>
+
+        {searchParams.appointmentId ? (
+          <div className="mt-8 flex justify-center border-t border-black/10 pt-8">
+            <AppointmentQRCode appointmentId={searchParams.appointmentId} />
+          </div>
+        ) : null}
       </section>
     </SiteShell>
   );

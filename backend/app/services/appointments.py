@@ -8,6 +8,7 @@ from datetime import UTC, timedelta
 from fastapi import HTTPException, status
 
 from app.core.security import utc_now
+from app.db.mongodb import get_client
 from app.repositories.appointments import AppointmentRepository
 from app.repositories.availability import AvailabilityRepository
 from app.repositories.services import ServiceRepository
@@ -105,7 +106,14 @@ class AppointmentService:
         patient_id: str,
         payload: AppointmentCreateRequest,
     ) -> dict:
-        """Create an appointment after validating slot availability."""
+        """Create an appointment after validating slot availability.
+
+        The final conflict check and insert are wrapped in a MongoDB
+        transaction to prevent double-booking under concurrent load.
+        Atlas M0 free-tier does not support multi-document transactions;
+        the code gracefully degrades to the optimistic check-then-insert
+        pattern on OperationFailure and logs a warning.
+        """
         _, service, venue = await self.get_service_context(staff_id=staff_id, service_id=payload.service_id)
         slot_datetime = payload.slot_datetime.astimezone(tz=UTC) if payload.slot_datetime.tzinfo else payload.slot_datetime.replace(tzinfo=UTC)
         available_slots = await self.get_available_slots(
@@ -115,16 +123,8 @@ class AppointmentService:
         )
         if slot_datetime not in {slot.slot_datetime for slot in available_slots.slots}:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The selected slot is not available.")
-        occupied_until = slot_datetime + timedelta(minutes=service["duration_minutes"] + service.get("buffer_minutes", 0))
-        conflicts = await self.appointment_repository.list_for_staff_between(
-            staff_id=staff_id,
-            range_start=slot_datetime,
-            range_end=occupied_until,
-            statuses=["pending", "confirmed"],
-        )
-        if conflicts:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The selected slot is no longer available.")
 
+        occupied_until = slot_datetime + timedelta(minutes=service["duration_minutes"] + service.get("buffer_minutes", 0))
         timestamp = utc_now()
         document = {
             "venue_id": str(venue["_id"]),
@@ -147,4 +147,42 @@ class AppointmentService:
             "created_at": timestamp,
             "updated_at": timestamp,
         }
-        return await self.appointment_repository.create(document)
+
+        try:
+            motor_client = get_client()
+            async with await motor_client.start_session() as session:
+                async with session.start_transaction():
+                    conflicts = await self.appointment_repository.list_for_staff_between(
+                        staff_id=staff_id,
+                        range_start=slot_datetime,
+                        range_end=occupied_until,
+                        statuses=["pending", "confirmed"],
+                        session=session,
+                    )
+                    if conflicts:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="The selected slot is no longer available.",
+                        )
+                    return await self.appointment_repository.create(document, session=session)
+        except HTTPException:
+            raise
+        except Exception:
+            # Atlas M0 or other environments that don't support transactions
+            # fall back to the optimistic check-then-insert approach.
+            import logging
+            logging.getLogger(__name__).warning(
+                "MongoDB transaction unavailable – falling back to optimistic booking insert."
+            )
+            conflicts = await self.appointment_repository.list_for_staff_between(
+                staff_id=staff_id,
+                range_start=slot_datetime,
+                range_end=occupied_until,
+                statuses=["pending", "confirmed"],
+            )
+            if conflicts:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="The selected slot is no longer available.",
+                )
+            return await self.appointment_repository.create(document)
