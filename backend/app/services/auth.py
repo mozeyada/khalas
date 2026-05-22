@@ -37,7 +37,7 @@ class AuthService:
 
     async def register(self, request: RegisterRequest) -> OtpChallengeData:
         """Create a user and issue an OTP."""
-        existing = await self.user_repository.find_by_phone(request.phone)
+        existing = await self.user_repository.find_by_identifier(request.phone)
         if existing is not None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this phone already exists.")
 
@@ -94,7 +94,7 @@ class AuthService:
 
     async def request_login_otp(self, phone: str) -> OtpChallengeData:
         """Issue a fresh OTP to an existing user."""
-        user = await self.user_repository.find_by_phone(phone)
+        user = await self.user_repository.find_by_identifier(phone)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
         if not user["is_active"]:
@@ -135,7 +135,7 @@ class AuthService:
 
     async def verify_otp(self, *, phone: str, otp_code: str) -> AuthTokensData:
         """Validate an OTP and issue tokens."""
-        user = await self.user_repository.find_by_phone(phone)
+        user = await self.user_repository.find_by_identifier(phone)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
         if user.get("otp_code") != otp_code:
