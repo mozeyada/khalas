@@ -4,7 +4,7 @@ import {FormEvent, useState} from 'react';
 import {Lock, KeyRound, CheckCircle2} from 'lucide-react';
 import {resetPassword} from '@/lib/api';
 import {useRouter} from 'next/navigation';
-import {useLocale} from 'next-intl';
+import {useLocale, useTranslations} from 'next-intl';
 
 export function ResetPasswordForm() {
   const [token, setToken] = useState('');
@@ -13,6 +13,7 @@ export function ResetPasswordForm() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const t = useTranslations('ResetPasswordPage');
   
   const router = useRouter();
   const locale = useLocale();
@@ -46,14 +47,14 @@ export function ResetPasswordForm() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
                 <Lock className="h-6 w-6" />
               </div>
-              <h2 className="text-xl font-semibold text-ink mb-2">Create New Password</h2>
+              <h2 className="text-xl font-semibold text-ink mb-2">{t('title')}</h2>
               <p className="text-sm text-ink/60">
-                Enter your reset token and your new secure password.
+                {t('subtitle')}
               </p>
             </div>
 
             <label className="block group">
-              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Reset Token</span>
+              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.token')}</span>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                   <KeyRound className="h-5 w-5" />
@@ -62,14 +63,14 @@ export function ResetPasswordForm() {
                   value={token}
                   onChange={(event) => setToken(event.target.value)}
                   className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm tracking-widest text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                  placeholder="Paste token here"
+                  placeholder={t('placeholders.token')}
                   required
                 />
               </div>
             </label>
 
             <label className="block group">
-              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">New Password</span>
+              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.newPassword')}</span>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                   <Lock className="h-5 w-5" />
@@ -78,7 +79,7 @@ export function ResetPasswordForm() {
                   value={newPassword}
                   onChange={(event) => setNewPassword(event.target.value)}
                   className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                  placeholder="••••••••"
+                  placeholder={t('placeholders.newPassword')}
                   type="password"
                   minLength={8}
                   required
@@ -94,7 +95,7 @@ export function ResetPasswordForm() {
                 disabled={isSubmitting}
                 className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Update Password
+                {t('actions.submit')}
               </button>
             </div>
           </form>
@@ -103,9 +104,9 @@ export function ResetPasswordForm() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
               <CheckCircle2 className="h-8 w-8" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-ink">Password Updated</h3>
+            <h3 className="mb-2 text-xl font-semibold text-ink">{t('successTitle')}</h3>
             <p className="mb-6 text-sm text-ink/70">
-              {feedback} Redirecting to login...
+              {feedback} {t('redirecting')}
             </p>
           </div>
         )}

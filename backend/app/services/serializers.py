@@ -20,6 +20,7 @@ def serialize_user(document: dict) -> UserProfile:
         "name_en": document["name_en"],
         "role": document["role"],
         "is_active": document["is_active"],
+        "preferred_channel": document.get("preferred_channel", "whatsapp"),
         "created_at": document["created_at"],
         "updated_at": document["updated_at"],
     }

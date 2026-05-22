@@ -92,7 +92,7 @@ export function LoginForm() {
           <form className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handlePasswordLogin}>
             <div className="space-y-4">
               <label className="block group">
-                <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Email or Phone Number</span>
+                <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.identifier')}</span>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                     <Mail className="h-5 w-5" />
@@ -101,7 +101,7 @@ export function LoginForm() {
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
                     className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                    placeholder="e.g. user@example.com or +201000000000"
+                    placeholder={t('placeholders.identifier')}
                     required
                   />
                 </div>
@@ -109,9 +109,9 @@ export function LoginForm() {
 
               <label className="block group">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Password</span>
+                  <span className="block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.password')}</span>
                   <a href={`/${locale}/auth/forgot-password`} className="text-xs font-medium text-teal hover:text-teal/80 transition-colors">
-                    Forgot password?
+                    {t('actions.forgotPassword')}
                   </a>
                 </div>
                 <div className="relative">
@@ -122,7 +122,7 @@ export function LoginForm() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                    placeholder="••••••••"
+                    placeholder={t('placeholders.password')}
                     type="password"
                   />
                 </div>
@@ -138,14 +138,14 @@ export function LoginForm() {
                 className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  Log In with Password
+                  {t('actions.loginPassword')}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>
 
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-ink/10"></div>
-                <span className="flex-shrink-0 mx-4 text-xs font-medium text-ink/40 uppercase tracking-wider">or</span>
+                <span className="flex-shrink-0 mx-4 text-xs font-medium text-ink/40 uppercase tracking-wider">{t('or')}</span>
                 <div className="flex-grow border-t border-ink/10"></div>
               </div>
 
@@ -168,9 +168,9 @@ export function LoginForm() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
                 <KeyRound className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-semibold text-ink mb-1">Verify your code</h3>
+              <h3 className="text-xl font-semibold text-ink mb-1">{t('verifyTitle')}</h3>
               <p className="text-sm text-ink/60">
-                We've sent a 4-digit code to <span className="font-medium text-ink">{identifier}</span>
+                {t('verifyBody', {identifier: identifier})}
               </p>
             </div>
 
@@ -206,7 +206,7 @@ export function LoginForm() {
                 onClick={() => setAuthMode('initial')}
                 className="text-sm text-ink/50 hover:text-ink transition-colors"
               >
-                Back to login options
+                {t('actions.back')}
               </button>
             </div>
           </form>

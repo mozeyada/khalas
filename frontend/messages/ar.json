@@ -59,21 +59,28 @@
       "nameEn": "الاسم بالإنجليزية",
       "phone": "رقم الهاتف",
       "email": "البريد الإلكتروني",
-      "otp": "رمز OTP"
+      "otp": "رمز OTP",
+      "identifier": "البريد الإلكتروني أو رقم الهاتف",
+      "passwordOptional": "كلمة المرور (اختياري)",
+      "preferredChannel": "وسيلة التواصل المفضلة"
     },
     "placeholders": {
       "nameAr": "مثال: محمد أحمد",
       "nameEn": "Example: Mohamed Ahmed",
       "phone": "+201000000000",
       "email": "name@example.com",
-      "otp": "1234"
+      "otp": "1234",
+      "password": "ضع كلمة مرور للدخول مستقبلاً",
+      "identifier": "مثال: user@example.com أو +201000000000"
     },
     "actions": {
       "submit": "إرسال رمز OTP",
       "verify": "تأكيد الرمز"
     },
     "otpSent": "تم إنشاء الحساب. راجع الطرفية للحصول على الرمز الخاص بالرقم {phone}.",
-    "genericError": "حدث خطأ غير متوقع. حاول مرة أخرى."
+    "genericError": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+    "verifyTitle": "تأكيد الحساب",
+    "verifyBody": "أرسلنا رمزاً من 4 أرقام إلى وسيلة التواصل المفضلة لديك."
   },
   "LoginPage": {
     "pageTitle": "تسجيل الدخول",
@@ -83,18 +90,28 @@
     "subtitle": "تستخدم نفس صفحة الدخول للمرضى ومقدمي الخدمة. سيتم توجيهك للوحة المناسبة بعد التحقق.",
     "fields": {
       "phone": "رقم الهاتف",
-      "otp": "رمز OTP"
+      "otp": "رمز OTP",
+      "identifier": "البريد الإلكتروني أو رقم الهاتف",
+      "password": "كلمة المرور"
     },
     "placeholders": {
       "phone": "+201000000000",
-      "otp": "1234"
+      "otp": "1234",
+      "identifier": "مثال: user@example.com أو +201000000000",
+      "password": "••••••••"
     },
     "actions": {
       "request": "طلب الرمز",
-      "verify": "تأكيد الرمز"
+      "verify": "تأكيد الرمز",
+      "forgotPassword": "هل نسيت كلمة المرور؟",
+      "loginPassword": "الدخول بكلمة المرور",
+      "back": "العودة لخيارات الدخول"
     },
-    "otpSent": "تم إرسال الرمز التجريبي إلى سجل الخادم للرقم {phone}.",
-    "genericError": "حدث خطأ غير متوقع. حاول مرة أخرى."
+    "otpSent": "تم إرسال رمز الدخول إلى {phone}",
+    "genericError": "حدث خطأ غير متوقع. حاول مرة أخرى.",
+    "or": "أو",
+    "verifyTitle": "تأكيد الرمز",
+    "verifyBody": "أرسلنا رمزاً من 4 أرقام إلى {identifier}"
   },
   "VenuePage": {
     "venueEyebrow": "معلومات العيادة",
@@ -209,5 +226,31 @@
     "genericError": "فشل الإجراء.",
     "approved": "معتمدة",
     "pending": "قيد المراجعة"
+  },
+  "ForgotPasswordPage": {
+    "title": "استعادة كلمة المرور",
+    "subtitle": "أدخل بريدك الإلكتروني أو رقم الهاتف لاستلام رابط الاستعادة.",
+    "successTitle": "راجع رسائلك",
+    "tryAnother": "جرب بريداً أو رقماً آخر",
+    "actions": {
+      "submit": "إرسال رابط الاستعادة"
+    }
+  },
+  "ResetPasswordPage": {
+    "title": "كلمة مرور جديدة",
+    "subtitle": "أدخل رمز الاستعادة وكلمة المرور الجديدة.",
+    "successTitle": "تم تحديث كلمة المرور",
+    "redirecting": "جاري التوجيه لتسجيل الدخول...",
+    "fields": {
+      "token": "رمز الاستعادة",
+      "newPassword": "كلمة المرور الجديدة"
+    },
+    "placeholders": {
+      "token": "ضع الرمز هنا",
+      "newPassword": "••••••••"
+    },
+    "actions": {
+      "submit": "تحديث كلمة المرور"
+    }
   }
 }

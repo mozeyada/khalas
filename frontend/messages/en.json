@@ -59,21 +59,28 @@
       "nameEn": "English name",
       "phone": "Phone number",
       "email": "Email",
-      "otp": "OTP code"
+      "otp": "OTP code",
+      "identifier": "Email or Phone Number",
+      "passwordOptional": "Password (Optional)",
+      "preferredChannel": "Preferred Notification Channel"
     },
     "placeholders": {
       "nameAr": "Example: Mohamed Ahmed",
       "nameEn": "Example: Mohamed Ahmed",
       "phone": "+201000000000",
       "email": "name@example.com",
-      "otp": "1234"
+      "otp": "1234",
+      "password": "Set a password for future logins",
+      "identifier": "e.g. user@example.com or +201000000000"
     },
     "actions": {
       "submit": "Send OTP",
       "verify": "Verify code"
     },
     "otpSent": "Account created. Check the backend console for the code for {phone}.",
-    "genericError": "Something went wrong. Please try again."
+    "genericError": "Something went wrong. Please try again.",
+    "verifyTitle": "Verify your account",
+    "verifyBody": "We've sent a 4-digit code to your preferred channel."
   },
   "LoginPage": {
     "pageTitle": "Log in",
@@ -83,18 +90,28 @@
     "subtitle": "Patients and providers use the same login flow. You will be redirected to the matching dashboard after verification.",
     "fields": {
       "phone": "Phone number",
-      "otp": "OTP code"
+      "otp": "OTP code",
+      "identifier": "Email or Phone Number",
+      "password": "Password"
     },
     "placeholders": {
       "phone": "+201000000000",
-      "otp": "1234"
+      "otp": "1234",
+      "identifier": "e.g. user@example.com or +201000000000",
+      "password": "••••••••"
     },
     "actions": {
       "request": "Request code",
-      "verify": "Verify code"
+      "verify": "Verify code",
+      "forgotPassword": "Forgot password?",
+      "loginPassword": "Log In with Password",
+      "back": "Back to login options"
     },
-    "otpSent": "The mock code for {phone} is now in the backend console.",
-    "genericError": "Something went wrong. Please try again."
+    "otpSent": "Login code sent to {phone}",
+    "genericError": "Something went wrong. Please try again.",
+    "or": "or",
+    "verifyTitle": "Verify your code",
+    "verifyBody": "We've sent a 4-digit code to {identifier}"
   },
   "VenuePage": {
     "venueEyebrow": "Venue details",
@@ -209,5 +226,31 @@
     "genericError": "Action failed.",
     "approved": "Approved",
     "pending": "Pending"
+  },
+  "ForgotPasswordPage": {
+    "title": "Reset Password",
+    "subtitle": "Enter your email or phone number to receive a reset link.",
+    "successTitle": "Check your messages",
+    "tryAnother": "Try another email or phone number",
+    "actions": {
+      "submit": "Send Reset Link"
+    }
+  },
+  "ResetPasswordPage": {
+    "title": "Create New Password",
+    "subtitle": "Enter your reset token and your new secure password.",
+    "successTitle": "Password Updated",
+    "redirecting": "Redirecting to login...",
+    "fields": {
+      "token": "Reset Token",
+      "newPassword": "New Password"
+    },
+    "placeholders": {
+      "token": "Paste token here",
+      "newPassword": "••••••••"
+    },
+    "actions": {
+      "submit": "Update Password"
+    }
   }
 }

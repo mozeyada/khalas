@@ -146,7 +146,7 @@ export function RegisterForm() {
               </label>
               
               <label className="block group">
-                <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Password (Optional)</span>
+                <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.passwordOptional')}</span>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                     <Lock className="h-4 w-4" />
@@ -155,7 +155,7 @@ export function RegisterForm() {
                     value={formState.password}
                     onChange={(event) => setFormState((current) => ({...current, password: event.target.value}))}
                     className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-11 pr-4 py-3 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                    placeholder="Set a password for future logins"
+                    placeholder={t('placeholders.password')}
                     type="password"
                     minLength={8}
                   />
@@ -164,7 +164,7 @@ export function RegisterForm() {
               
               {formState.phone && formState.email && (
                 <div className="block pt-2 animate-in fade-in zoom-in-95">
-                  <span className="mb-3 block text-sm font-medium text-ink">Preferred Notification Channel</span>
+                  <span className="mb-3 block text-sm font-medium text-ink">{t('fields.preferredChannel')}</span>
                   <div className="flex gap-3">
                     <button
                       type="button"
@@ -200,9 +200,9 @@ export function RegisterForm() {
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
                   <KeyRound className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-semibold text-ink mb-1">Verify your account</h3>
+                <h3 className="text-xl font-semibold text-ink mb-1">{t('verifyTitle')}</h3>
                 <p className="text-sm text-ink/60">
-                  We've sent a 4-digit code to your preferred channel.
+                  {t('verifyBody')}
                 </p>
               </div>
 

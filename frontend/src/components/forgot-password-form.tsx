@@ -1,10 +1,12 @@
 'use client';
 
 import {FormEvent, useState} from 'react';
+import {useTranslations} from 'next-intl';
 import {Mail, ArrowRight, KeyRound} from 'lucide-react';
 import {requestPasswordReset} from '@/lib/api';
 
 export function ForgotPasswordForm() {
+  const t = useTranslations('ForgotPasswordPage');
   const [identifier, setIdentifier] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -38,9 +40,9 @@ export function ForgotPasswordForm() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
                 <KeyRound className="h-6 w-6" />
               </div>
-              <h2 className="text-xl font-semibold text-ink mb-2">Reset Password</h2>
+              <h2 className="text-xl font-semibold text-ink mb-2">{t('title')}</h2>
               <p className="text-sm text-ink/60">
-                Enter your email or phone number to receive a reset link.
+                {t('subtitle')}
               </p>
             </div>
 
@@ -69,7 +71,7 @@ export function ForgotPasswordForm() {
                 className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  Send Reset Link
+                  {t('actions.submit')}
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>
@@ -80,7 +82,7 @@ export function ForgotPasswordForm() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
               <Mail className="h-8 w-8" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-ink">Check your messages</h3>
+            <h3 className="mb-2 text-xl font-semibold text-ink">{t('successTitle')}</h3>
             <p className="mb-6 text-sm text-ink/70">
               {feedback}
             </p>
@@ -88,7 +90,7 @@ export function ForgotPasswordForm() {
               onClick={() => setIsSuccess(false)}
               className="text-sm font-medium text-teal hover:text-teal/80 transition-colors"
             >
-              Try another email or phone number
+              {t('tryAnother')}
             </button>
           </div>
         )}
