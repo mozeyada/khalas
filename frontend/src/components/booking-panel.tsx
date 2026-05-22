@@ -1,13 +1,14 @@
 'use client';
 
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 
 import {useSession} from '@/components/session-provider';
 import {ApiError, createAppointment, getStaffSlots} from '@/lib/api';
-import {formatDateTime, formatPrice} from '@/lib/format';
+import {formatPrice} from '@/lib/format';
 import {PublicService, PublicStaff, PublicVenue, Slot} from '@/lib/types';
+import {SlotPicker} from '@/components/slot-picker';
 
 export function BookingPanel({
   locale,
@@ -32,6 +33,13 @@ export function BookingPanel({
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-load slots when a service is selected
+  useEffect(() => {
+    if (selectedServiceId) {
+      void loadSlots(selectedServiceId);
+    }
+  }, [selectedServiceId, staff._id]);
 
   const selectedService = useMemo(
     () => services.find((service) => service._id === selectedServiceId) ?? null,
@@ -114,7 +122,7 @@ export function BookingPanel({
                   type="button"
                   onClick={() => {
                     setSelectedServiceId(service._id);
-                    void loadSlots(service._id);
+                    // auto-loading handled by useEffect
                   }}
                   className={`rounded-3xl border p-4 text-start transition ${
                     isSelected ? 'border-teal bg-teal/5' : 'border-black/10 bg-white/75 hover:bg-black/5'
@@ -154,71 +162,50 @@ export function BookingPanel({
         ) : null}
 
         {selectedServiceId ? (
-          <div className="mt-6 space-y-4">
-            <button
-              type="button"
-              onClick={() => void loadSlots(selectedServiceId)}
-              className="rounded-full bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/15"
-            >
-              {isLoadingSlots ? t('loadingSlots') : t('loadSlots')}
-            </button>
+          <div className="mt-6 space-y-8">
+            
+            <SlotPicker
+              slots={slots}
+              isLoading={isLoadingSlots}
+              selectedSlot={selectedSlot}
+              onSelectSlot={setSelectedSlot}
+              locale={activeLocale}
+            />
 
-            <div className="grid max-h-[25rem] gap-3 overflow-y-auto pr-1">
-              {slots.map((slot) => (
-                <button
-                  key={slot.slot_datetime}
-                  type="button"
-                  onClick={() => setSelectedSlot(slot.slot_datetime)}
-                  className={`rounded-2xl border px-4 py-3 text-start transition ${
-                    selectedSlot === slot.slot_datetime
-                      ? 'border-emerald-300 bg-emerald-300/10'
-                      : 'border-white/10 bg-white/5 hover:bg-white/10'
-                  }`}
-                >
-                  <p className="font-medium">{formatDateTime(slot.slot_datetime, activeLocale)}</p>
-                  <p className="mt-1 text-sm text-slate-300">
-                    {t('slotMeta', {
-                      duration: slot.duration_minutes,
-                      buffer: slot.buffer_minutes
-                    })}
-                  </p>
-                </button>
-              ))}
-              {!isLoadingSlots && slots.length === 0 ? (
-                <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300">{t('noSlots')}</p>
-              ) : null}
-            </div>
+            {selectedSlot && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4 pt-4 border-t border-white/10">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-medium text-white">{t('notesLabel')}</span>
+                  <textarea
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                    className="min-h-24 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300"
+                    placeholder={t('notesPlaceholder')}
+                  />
+                </label>
 
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-white">{t('notesLabel')}</span>
-              <textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none transition focus:border-emerald-300"
-                placeholder={t('notesPlaceholder')}
-              />
-            </label>
+                <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300">{t('cashNote')}</p>
+                {error ? <p className="rounded-2xl bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</p> : null}
 
-            <p className="rounded-2xl bg-white/5 px-4 py-3 text-sm text-slate-300">{t('cashNote')}</p>
-            {error ? <p className="rounded-2xl bg-rose-400/10 px-4 py-3 text-sm text-rose-200">{error}</p> : null}
-
-            {user?.role !== 'patient' ? (
-              <button
-                type="button"
-                onClick={() => router.push(`/${locale}/auth/login`)}
-                className="w-full rounded-2xl bg-amber-400 px-4 py-3 text-sm font-medium text-slate-950 transition hover:bg-amber-300"
-              >
-                {t('loginToBook')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleBook}
-                disabled={!selectedSlot || isSubmitting}
-                className="w-full rounded-2xl bg-emerald-300 px-4 py-3 text-sm font-medium text-slate-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSubmitting ? t('bookingNow') : t('confirmBooking')}
-              </button>
+                {user?.role !== 'patient' ? (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/${locale}/auth/login`)}
+                    className="w-full rounded-2xl bg-amber-400 px-4 py-3 text-sm font-medium text-slate-950 transition hover:bg-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+                  >
+                    {t('loginToBook')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleBook}
+                    disabled={isSubmitting}
+                    className="w-full rounded-2xl bg-emerald-300 px-4 py-3 text-sm font-medium text-slate-950 transition hover:bg-emerald-200 disabled:cursor-not-allowed disabled:opacity-60 shadow-[0_0_20px_rgba(110,231,183,0.3)]"
+                  >
+                    {isSubmitting ? t('bookingNow') : t('confirmBooking')}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         ) : null}
