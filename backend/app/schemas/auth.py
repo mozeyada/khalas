@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 import re
 
-from pydantic import Field, field_validator
+from pydantic import EmailStr, Field, field_validator
 
 from app.schemas.common import APIModel
 from app.schemas.user import Role, UserProfile
@@ -15,7 +15,7 @@ class RegisterRequest(APIModel):
     """Payload for creating a new user and issuing an OTP."""
 
     phone: str
-    email: str | None = None
+    email: EmailStr
     name_ar: str
     name_en: str
     role: Role = "patient"

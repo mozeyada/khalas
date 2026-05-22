@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from dataclasses import dataclass
 
@@ -20,6 +21,7 @@ from app.core.security import (
 )
 from app.repositories.users import UserRepository
 from app.schemas.auth import AuthTokensData, OtpChallengeData, RegisterRequest
+from app.services.notifications import send_otp_email
 from app.services.serializers import serialize_user
 
 logger = logging.getLogger(__name__)
@@ -44,21 +46,28 @@ class AuthService:
             "phone": request.phone,
             "name_ar": request.name_ar,
             "name_en": request.name_en,
-            "role": request.role,
+            "email": request.email,
             "is_active": True,
             "otp_code": otp_code,
             "otp_expires_at": otp_expires_at,
             "refresh_token": None,
             "created_at": timestamp,
             "updated_at": timestamp,
+            "role": request.role,
         }
-        if request.email is not None:
-            document["email"] = request.email
         try:
             await self.user_repository.create(document)
         except DuplicateKeyError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.") from exc
-        logger.info("[KHALAS OTP] %s -> %s", request.phone, otp_code)
+        # Deliver OTP via email — fire-and-forget so it never blocks the response.
+        asyncio.create_task(
+            send_otp_email(
+                to_email=request.email,
+                name=request.name_ar or request.name_en,
+                otp_code=otp_code,
+            )
+        )
+        logger.info("[KHALAS OTP] %s -> %s (email queued)", request.phone, otp_code)
         return OtpChallengeData(phone=request.phone, otp_expires_at=otp_expires_at, role=request.role)
 
     async def request_login_otp(self, phone: str) -> OtpChallengeData:
@@ -80,6 +89,17 @@ class AuthService:
             },
         )
         logger.info("[KHALAS OTP] %s -> %s", phone, otp_code)
+        # Deliver OTP via email if the user has an email address.
+        email = user.get("email")
+        if email:
+            name = user.get("name_ar") or user.get("name_en") or ""
+            asyncio.create_task(
+                send_otp_email(
+                    to_email=email,
+                    name=name,
+                    otp_code=otp_code,
+                )
+            )
         return OtpChallengeData(phone=phone, otp_expires_at=otp_expires_at, role=user["role"])
 
     async def verify_otp(self, *, phone: str, otp_code: str) -> AuthTokensData:

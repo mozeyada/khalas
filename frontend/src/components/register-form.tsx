@@ -113,6 +113,7 @@ export function RegisterForm() {
                   className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
                   placeholder={t('placeholders.email')}
                   type="email"
+                  required
                 />
               </label>
             </>
