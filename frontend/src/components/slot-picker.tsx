@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { CalendarSearch, Loader2, CalendarX2 } from 'lucide-react';
 import { Slot } from '@/lib/types';
-import { formatDateTime } from '@/lib/format';
 
 type SlotPickerProps = {
   slots: Slot[];
@@ -20,13 +20,11 @@ export function SlotPicker({
   onSelectSlot,
   locale
 }: SlotPickerProps) {
-  const t = useTranslations('StaffPage'); // Re-use staff page translations for now, or move to common
+  const t = useTranslations('StaffPage'); 
 
-  // Group slots by date (YYYY-MM-DD)
   const groupedSlots = useMemo(() => {
     const groups: Record<string, Slot[]> = {};
     for (const slot of slots) {
-      // Extract date part from ISO string (e.g., "2026-05-25")
       const dateKey = slot.slot_datetime.split('T')[0];
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -37,11 +35,8 @@ export function SlotPicker({
   }, [slots]);
 
   const availableDates = Object.keys(groupedSlots).sort();
-  
-  // Selected date state
   const [selectedDate, setSelectedDate] = useState<string>('');
 
-  // Auto-select the first available date when slots load
   useEffect(() => {
     if (availableDates.length > 0) {
       if (!availableDates.includes(selectedDate)) {
@@ -54,16 +49,18 @@ export function SlotPicker({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[15rem] items-center justify-center rounded-2xl bg-white/5 border border-white/10">
-        <p className="text-sm text-slate-300 animate-pulse">{t('loadingSlots')}</p>
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-dashed border-white/10 bg-white/5 backdrop-blur-sm">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-400/50" />
+        <p className="text-sm font-medium text-slate-400 animate-pulse">{t('loadingSlots')}</p>
       </div>
     );
   }
 
   if (slots.length === 0) {
     return (
-      <div className="flex min-h-[15rem] items-center justify-center rounded-2xl bg-white/5 border border-white/10">
-        <p className="text-sm text-slate-300">{t('noSlots')}</p>
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-dashed border-white/10 bg-white/5 backdrop-blur-sm">
+        <CalendarX2 className="h-8 w-8 text-slate-500" />
+        <p className="text-sm font-medium text-slate-400">{t('noSlots')}</p>
       </div>
     );
   }
@@ -73,9 +70,21 @@ export function SlotPicker({
   return (
     <div className="space-y-6">
       {/* Date Carousel */}
-      <div>
-        <p className="mb-3 text-sm font-medium text-white">Select a Date</p>
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="relative">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-slate-200">Select Date</p>
+          {!selectedDate && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-400 animate-pulse">
+              <CalendarSearch className="h-3 w-3" />
+              Pick a day
+            </span>
+          )}
+        </div>
+        
+        {/* Horizontal scroll fade effect */}
+        <div className="pointer-events-none absolute right-0 top-10 z-10 h-[5.5rem] w-12 bg-gradient-to-l from-slate-950 to-transparent" />
+        
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide relative z-0">
           {availableDates.map((date) => {
             const isSelected = selectedDate === date;
             const dateObj = new Date(date);
@@ -88,30 +97,31 @@ export function SlotPicker({
                 key={date}
                 type="button"
                 onClick={() => setSelectedDate(date)}
-                className={`flex min-w-[4.5rem] flex-col items-center justify-center rounded-2xl border p-3 transition-all ${
+                className={`group relative flex min-w-[5rem] flex-col items-center justify-center overflow-hidden rounded-[1.25rem] border p-3 transition-all duration-300 active:scale-95 ${
                   isSelected
-                    ? 'border-emerald-300 bg-emerald-300/10 text-emerald-300 shadow-[0_0_15px_rgba(110,231,183,0.15)]'
-                    : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                    ? 'border-emerald-400 bg-emerald-400/10 text-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.15)] -translate-y-1'
+                    : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10 hover:text-slate-200'
                 }`}
               >
-                <span className="text-xs uppercase opacity-80 mb-1">{dayName}</span>
-                <span className="text-xl font-bold leading-none">{dayNumber}</span>
-                <span className="text-[10px] uppercase opacity-80 mt-1">{monthName}</span>
+                {isSelected && (
+                  <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 to-transparent opacity-50" />
+                )}
+                <span className="relative z-10 text-xs uppercase font-medium tracking-wider opacity-80 mb-1">{dayName}</span>
+                <span className="relative z-10 text-2xl font-bold leading-none">{dayNumber}</span>
+                <span className="relative z-10 text-[10px] uppercase font-bold tracking-widest opacity-80 mt-1">{monthName}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Time Grid */}
+      {/* Time Grid with Predictive Cascading Entry */}
       {selectedDate && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <p className="mb-3 text-sm font-medium text-white">Select a Time</p>
-          <div className="grid grid-cols-3 gap-2">
-            {activeSlots.map((slot) => {
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <p className="mb-3 text-sm font-semibold text-slate-200">Select Time</p>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {activeSlots.map((slot, index) => {
               const isSelected = selectedSlot === slot.slot_datetime;
-              
-              // Format time (e.g. 9:00 AM)
               const timeObj = new Date(slot.slot_datetime);
               const timeStr = new Intl.DateTimeFormat(locale, {
                 hour: 'numeric',
@@ -123,11 +133,12 @@ export function SlotPicker({
                   key={slot.slot_datetime}
                   type="button"
                   onClick={() => onSelectSlot(slot.slot_datetime)}
-                  className={`rounded-xl border py-3 text-center text-sm font-medium transition-all ${
+                  className={`animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden rounded-xl border py-3 text-center text-sm font-semibold transition-all duration-300 active:scale-95 ${
                     isSelected
-                      ? 'border-emerald-300 bg-emerald-300 text-slate-950 shadow-md scale-[1.02]'
-                      : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:border-white/20'
+                      ? 'border-emerald-300 bg-emerald-300 text-slate-950 shadow-[0_0_15px_rgba(110,231,183,0.3)] scale-[1.02]'
+                      : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
                   }`}
+                  style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                 >
                   {timeStr}
                 </button>
