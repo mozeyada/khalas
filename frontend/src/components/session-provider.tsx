@@ -25,7 +25,7 @@ type SessionContextValue = {
     phone: string;
     name_ar: string;
     name_en: string;
-    email?: string;
+    email: string;
   }) => Promise<OtpChallengeData>;
   requestOtp: (phone: string) => Promise<OtpChallengeData>;
   verifyOtpCode: (phone: string, otpCode: string) => Promise<Role>;
@@ -76,7 +76,7 @@ export function SessionProvider({children}: {children: ReactNode}) {
     phone: string;
     name_ar: string;
     name_en: string;
-    email?: string;
+    email: string;
   }) {
     return registerPatient(input);
   }
