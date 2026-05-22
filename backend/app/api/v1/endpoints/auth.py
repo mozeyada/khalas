@@ -12,6 +12,9 @@ from app.repositories.users import UserRepository
 from app.schemas.auth import (
     AuthTokensData,
     LoginOtpRequest,
+    LoginPasswordRequest,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
     OtpChallengeData,
     RefreshTokenRequest,
     RegisterRequest,
@@ -64,6 +67,42 @@ async def verify_login_otp(
     """Verify an OTP and return an access and refresh token pair."""
     tokens = await auth_service.verify_otp(phone=payload.phone, otp_code=payload.otp_code)
     return ApiResponse(data=tokens)
+
+
+@router.post("/login/password", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
+async def login_with_password(
+    request: Request,
+    payload: LoginPasswordRequest,
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ApiResponse[AuthTokensData]:
+    """Log in using identifier and password."""
+    tokens = await auth_service.login_with_password(payload)
+    return ApiResponse(data=tokens)
+
+
+@router.post("/forgot-password", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+@limiter.limit("3/minute")
+async def forgot_password(
+    request: Request,
+    payload: ForgotPasswordRequest,
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ApiResponse[dict]:
+    """Request a password reset link/token."""
+    result = await auth_service.request_password_reset(payload)
+    return ApiResponse(data=result)
+
+
+@router.post("/reset-password", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def reset_password(
+    request: Request,
+    payload: ResetPasswordRequest,
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ApiResponse[dict]:
+    """Reset the password using a valid token."""
+    result = await auth_service.reset_password(payload)
+    return ApiResponse(data=result)
 
 
 @router.post("/refresh", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)

@@ -8,8 +8,11 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
+from passlib.context import CryptContext
 
 from app.core.config import settings
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def utc_now() -> datetime:
@@ -79,3 +82,13 @@ def decode_refresh_token(token: str) -> dict[str, Any]:
 def hash_token(token: str) -> str:
     """Hash a token before persisting it."""
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a plain password against its hashed version."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    """Hash a plain password for storage."""
+    return pwd_context.hash(password)

@@ -33,9 +33,11 @@ class UserCreatePayload:
         name_en: str,
         role: Role,
         email: str | None = None,
+        hashed_password: str | None = None,
     ) -> None:
         self.phone = phone
         self.name_ar = name_ar
         self.name_en = name_en
         self.role = role
         self.email = email
+        self.hashed_password = hashed_password

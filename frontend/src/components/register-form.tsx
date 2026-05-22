@@ -18,6 +18,7 @@ export function RegisterForm() {
     nameAr: '',
     nameEn: '',
     email: '',
+    password: '',
     otpCode: '',
     preferredChannel: 'whatsapp' as 'email' | 'whatsapp'
   });
@@ -38,6 +39,7 @@ export function RegisterForm() {
         name_ar: formState.nameAr,
         name_en: formState.nameEn,
         email: formState.email || undefined,
+        password: formState.password || undefined,
         preferred_channel: (formState.phone && formState.email) ? formState.preferredChannel : undefined
       });
       setOtpSent(true);
@@ -112,9 +114,19 @@ export function RegisterForm() {
                 <input
                   value={formState.email}
                   onChange={(event) => setFormState((current) => ({...current, email: event.target.value}))}
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
                   placeholder={t('placeholders.email')}
                   type="email"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-ink">Password (Optional)</span>
+                <input
+                  value={formState.password}
+                  onChange={(event) => setFormState((current) => ({...current, password: event.target.value}))}
+                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
+                  placeholder="Set a password for email login"
+                  type="password"
+                  minLength={8}
                 />
               </label>
               

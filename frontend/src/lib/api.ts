@@ -130,6 +130,7 @@ export async function registerPatient(input: {
   name_en: string;
   email?: string;
   preferred_channel?: 'email' | 'whatsapp';
+  password?: string;
 }): Promise<OtpChallengeData> {
   return publicFetch<OtpChallengeData>('/api/v1/auth/register', {
     method: 'POST',
@@ -141,6 +142,20 @@ export async function requestLoginOtp(phone: string): Promise<OtpChallengeData> 
   return publicFetch<OtpChallengeData>('/api/v1/auth/login/request-otp', {
     method: 'POST',
     body: JSON.stringify({phone}),
+  });
+}
+
+export async function requestPasswordReset(identifier: string): Promise<{detail: string}> {
+  return publicFetch<{detail: string}>('/api/v1/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({identifier}),
+  });
+}
+
+export async function resetPassword(token: string, new_password: string): Promise<{detail: string}> {
+  return publicFetch<{detail: string}>('/api/v1/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({token, new_password}),
   });
 }
 

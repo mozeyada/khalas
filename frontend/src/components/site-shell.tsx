@@ -27,9 +27,9 @@ export function SiteShell({
       <header className="mb-6 rounded-[2rem] border border-white/60 bg-white/70 p-4 shadow-soft backdrop-blur sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex rounded-full border border-ink/10 bg-sand px-3 py-1 text-sm font-semibold text-ink">
+            <Link href="/" locale={locale} className="inline-flex items-center rounded-full border border-ink/10 bg-sand px-3 py-1 text-sm font-semibold text-ink transition hover:bg-black/5 hover:scale-105">
               {t('brand')}
-            </div>
+            </Link>
             {title ? <h1 className="text-2xl font-semibold text-ink sm:text-3xl">{title}</h1> : null}
             {subtitle ? <p className="max-w-2xl text-sm leading-6 text-ink/70">{subtitle}</p> : null}
           </div>

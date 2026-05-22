@@ -21,6 +21,7 @@ class RegisterRequest(APIModel):
     name_en: str
     role: Role = "patient"
     preferred_channel: Literal["email", "whatsapp"] | None = None
+    password: str | None = Field(default=None, min_length=8)
 
     from pydantic import model_validator
     @model_validator(mode="after")
@@ -50,6 +51,26 @@ class LoginOtpRequest(APIModel):
         if re.fullmatch(r"\+20\d{10}", value) is None:
             raise ValueError("Phone must be in +20XXXXXXXXXX format.")
         return value
+
+
+class LoginPasswordRequest(APIModel):
+    """Payload for logging in with a password."""
+    
+    identifier: str  # Can be phone or email
+    password: str
+
+
+class ForgotPasswordRequest(APIModel):
+    """Payload for requesting a password reset token."""
+    
+    identifier: str
+
+
+class ResetPasswordRequest(APIModel):
+    """Payload for resetting the password with a token."""
+    
+    token: str
+    new_password: str = Field(min_length=8)
 
 
 class VerifyOtpRequest(APIModel):

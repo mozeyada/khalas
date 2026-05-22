@@ -27,9 +27,11 @@ type SessionContextValue = {
     name_en: string;
     email?: string;
     preferred_channel?: 'email' | 'whatsapp';
+    password?: string;
   }) => Promise<OtpChallengeData>;
   requestOtp: (phone: string) => Promise<OtpChallengeData>;
   verifyOtpCode: (phone: string, otpCode: string) => Promise<Role>;
+  loginWithPassword: (identifier: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -39,6 +41,8 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionProvider({children}: {children: ReactNode}) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * On mount, attempt to fetch the current user via the BFF /me route.
@@ -110,6 +114,33 @@ export function SessionProvider({children}: {children: ReactNode}) {
     window.location.href = '/';
   }, []);
 
+  const loginWithPassword = useCallback(
+    async (identifier: string, password: string) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/auth/login-password', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({identifier, password}),
+        });
+
+        const payload = (await res.json()) as {error?: string; data?: {user: UserProfile}};
+        if (!res.ok || !payload.data) {
+          throw new Error(payload.error ?? 'Invalid login credentials.');
+        }
+
+        setUser(payload.data.user);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Login failed.');
+        throw err;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
   const refresh = useCallback(async () => {
     const res = await fetch('/api/auth/refresh', {method: 'POST', cache: 'no-store'});
     if (!res.ok) {
@@ -126,6 +157,7 @@ export function SessionProvider({children}: {children: ReactNode}) {
     register,
     requestOtp,
     verifyOtpCode,
+    loginWithPassword,
     logout,
     refresh,
   };
