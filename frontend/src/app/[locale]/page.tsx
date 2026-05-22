@@ -13,6 +13,7 @@ type HomePageProps = {
 export default async function HomePage({params}: HomePageProps) {
   const t = await getTranslations({locale: params.locale, namespace: 'HomePage'});
 
+  return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Navbar substitute (since SiteShell is wrapping this, we'll keep the landing page content below SiteShell) */}
       <SiteShell>
@@ -115,4 +116,5 @@ export default async function HomePage({params}: HomePageProps) {
         </section>
       </SiteShell>
     </main>
+  );
 }
