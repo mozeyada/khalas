@@ -42,15 +42,7 @@ class RegisterRequest(APIModel):
 class LoginOtpRequest(APIModel):
     """Payload for requesting a login OTP."""
 
-    phone: str
-
-    @field_validator("phone")
-    @classmethod
-    def validate_phone(cls, value: str) -> str:
-        """Validate the phone number format."""
-        if re.fullmatch(r"\+20\d{10}", value) is None:
-            raise ValueError("Phone must be in +20XXXXXXXXXX format.")
-        return value
+    identifier: str
 
 
 class LoginPasswordRequest(APIModel):
@@ -76,16 +68,8 @@ class ResetPasswordRequest(APIModel):
 class VerifyOtpRequest(APIModel):
     """Payload for verifying an OTP and logging in."""
 
-    phone: str
+    identifier: str
     otp_code: str = Field(min_length=4, max_length=4)
-
-    @field_validator("phone")
-    @classmethod
-    def validate_phone(cls, value: str) -> str:
-        """Validate the phone number format."""
-        if re.fullmatch(r"\+20\d{10}", value) is None:
-            raise ValueError("Phone must be in +20XXXXXXXXXX format.")
-        return value
 
 
 class RefreshTokenRequest(APIModel):
@@ -97,7 +81,7 @@ class RefreshTokenRequest(APIModel):
 class OtpChallengeData(APIModel):
     """Response body for OTP issuance."""
 
-    phone: str
+    identifier: str
     otp_expires_at: datetime
     role: Role
 

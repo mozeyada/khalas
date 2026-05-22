@@ -29,8 +29,8 @@ type SessionContextValue = {
     preferred_channel?: 'email' | 'whatsapp';
     password?: string;
   }) => Promise<OtpChallengeData>;
-  requestOtp: (phone: string) => Promise<OtpChallengeData>;
-  verifyOtpCode: (phone: string, otpCode: string) => Promise<Role>;
+  requestOtp: (identifier: string) => Promise<OtpChallengeData>;
+  verifyOtpCode: (identifier: string, otpCode: string) => Promise<Role>;
   loginWithPassword: (identifier: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -87,15 +87,15 @@ export function SessionProvider({children}: {children: ReactNode}) {
     return registerPatient(input);
   }
 
-  async function requestOtp(phone: string) {
-    return requestLoginOtp(phone);
+  async function requestOtp(identifier: string) {
+    return requestLoginOtp(identifier);
   }
 
-  async function verifyOtpCode(phone: string, otpCode: string): Promise<Role> {
+  async function verifyOtpCode(identifier: string, otpCode: string): Promise<Role> {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({phone, otp_code: otpCode}),
+      body: JSON.stringify({identifier, otp_code: otpCode}),
     });
     if (!res.ok) {
       const body = (await res.json()) as {error?: string};

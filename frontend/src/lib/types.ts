@@ -20,7 +20,7 @@ export type UserProfile = {
 };
 
 export type OtpChallengeData = {
-  phone: string;
+  identifier: string;
   otp_expires_at: string;
   role: Role;
 };

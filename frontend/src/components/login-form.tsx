@@ -3,6 +3,7 @@
 import {FormEvent, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
+import {Mail, Lock, KeyRound, ArrowRight} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
@@ -13,19 +14,21 @@ export function LoginForm() {
   const router = useRouter();
   const {requestOtp, verifyOtpCode, loginWithPassword} = useSession();
 
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  
-  const [phone, setPhone] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
+  
+  const [authMode, setAuthMode] = useState<'initial' | 'otp_verify'>('initial');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handlePasswordLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!password) {
+      setError('Please enter your password to log in.');
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
 
@@ -39,16 +42,19 @@ export function LoginForm() {
     }
   }
 
-  async function handleRequest(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleRequestOtp() {
+    if (!identifier) {
+      setError('Please enter an email or phone number first.');
+      return;
+    }
     setError(null);
     setFeedback(null);
     setIsSubmitting(true);
 
     try {
-      const challenge = await requestOtp(phone);
-      setOtpSent(true);
-      setFeedback(t('otpSent', {phone: challenge.phone}));
+      const challenge = await requestOtp(identifier);
+      setAuthMode('otp_verify');
+      setFeedback(`Login code sent to ${challenge.identifier}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
     } finally {
@@ -56,13 +62,13 @@ export function LoginForm() {
     }
   }
 
-  async function handleVerify(event: FormEvent<HTMLFormElement>) {
+  async function handleVerifyOtp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const role = await verifyOtpCode(phone, otpCode);
+      const role = await verifyOtpCode(identifier, otpCode);
       router.push(`/${locale}/${role === 'provider' ? 'provider/appointments' : 'dashboard'}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
@@ -73,106 +79,136 @@ export function LoginForm() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300">{t('eyebrow')}</p>
-        <h2 className="mb-3 text-2xl font-semibold">{t('title')}</h2>
-        <p className="text-sm leading-7 text-slate-300">{t('subtitle')}</p>
+      <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal/20 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300 relative z-10">{t('eyebrow')}</p>
+        <h2 className="mb-3 text-2xl font-semibold relative z-10">{t('title')}</h2>
+        <p className="text-sm leading-7 text-slate-300 relative z-10">{t('subtitle')}</p>
       </section>
 
       <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
         
-        <div className="flex mb-6 border-b border-black/10">
-          <button
-            onClick={() => { setLoginMethod('password'); setError(null); setFeedback(null); }}
-            className={`flex-1 pb-3 text-sm font-medium transition ${loginMethod === 'password' ? 'text-teal border-b-2 border-teal' : 'text-ink/60 hover:text-ink'}`}
-          >
-            Password
-          </button>
-          <button
-            onClick={() => { setLoginMethod('otp'); setError(null); setFeedback(null); }}
-            className={`flex-1 pb-3 text-sm font-medium transition ${loginMethod === 'otp' ? 'text-teal border-b-2 border-teal' : 'text-ink/60 hover:text-ink'}`}
-          >
-            OTP (Phone)
-          </button>
-        </div>
+        {authMode === 'initial' ? (
+          <form className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handlePasswordLogin}>
+            <div className="space-y-4">
+              <label className="block group">
+                <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Email or Phone Number</span>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
+                    <Mail className="h-5 w-5" />
+                  </div>
+                  <input
+                    value={identifier}
+                    onChange={(event) => setIdentifier(event.target.value)}
+                    className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
+                    placeholder="e.g. user@example.com or +201000000000"
+                    required
+                  />
+                </div>
+              </label>
 
-        {loginMethod === 'password' ? (
-          <form className="space-y-4" onSubmit={handlePasswordLogin}>
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-ink">Email or Phone Number</span>
-              <input
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
-                placeholder="e.g. +201000000000 or user@example.com"
-                required
-              />
-            </label>
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-ink">Password</span>
-              <input
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
-                placeholder="••••••••"
-                type="password"
-                required
-              />
-            </label>
+              <label className="block group">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Password</span>
+                  <a href={`/${locale}/auth/forgot-password`} className="text-xs font-medium text-teal hover:text-teal/80 transition-colors">
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
+                    <Lock className="h-5 w-5" />
+                  </div>
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
+                    placeholder="••••••••"
+                    type="password"
+                  />
+                </div>
+              </label>
+            </div>
 
-            {error ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
+            {error ? <p className="rounded-2xl border border-rose-100 bg-rose-50/80 backdrop-blur px-4 py-3 text-sm text-rose-700 animate-in fade-in">{error}</p> : null}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white transition hover:bg-teal/90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Log in
-            </button>
+            <div className="space-y-3 pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Log In with Password
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </button>
 
-            <div className="text-center mt-4">
-              <a href={`/${locale}/auth/forgot-password`} className="text-sm text-teal hover:underline">
-                Forgot password?
-              </a>
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-ink/10"></div>
+                <span className="flex-shrink-0 mx-4 text-xs font-medium text-ink/40 uppercase tracking-wider">or</span>
+                <div className="flex-grow border-t border-ink/10"></div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRequestOtp}
+                disabled={isSubmitting}
+                className="group w-full rounded-2xl border-2 border-transparent bg-white/60 px-4 py-3.5 text-sm font-medium text-ink backdrop-blur transition-all hover:bg-white hover:border-teal/20 hover:text-teal hover:shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="flex items-center justify-center gap-2">
+                  <KeyRound className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  Send Login Code (OTP)
+                </span>
+              </button>
             </div>
           </form>
         ) : (
-          <form className="space-y-4" onSubmit={otpSent ? handleVerify : handleRequest}>
-            <label className="block">
-              <span className="mb-2 block text-sm font-medium text-ink">{t('fields.phone')}</span>
+          <form className="space-y-5 animate-in slide-in-from-right-8 fade-in duration-500" onSubmit={handleVerifyOtp}>
+            <div className="text-center mb-6">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
+                <KeyRound className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-semibold text-ink mb-1">Verify your code</h3>
+              <p className="text-sm text-ink/60">
+                We've sent a 4-digit code to <span className="font-medium text-ink">{identifier}</span>
+              </p>
+            </div>
+
+            <label className="block group">
+              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.otp')}</span>
               <input
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
-                placeholder={t('placeholders.phone')}
+                value={otpCode}
+                onChange={(event) => setOtpCode(event.target.value)}
+                className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md px-4 py-4 text-center text-2xl tracking-[0.4em] text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
+                placeholder="0000"
+                maxLength={4}
                 required
+                autoFocus
               />
             </label>
 
-            {otpSent ? (
-              <label className="block">
-                <span className="mb-2 block text-sm font-medium text-ink">{t('fields.otp')}</span>
-                <input
-                  value={otpCode}
-                  onChange={(event) => setOtpCode(event.target.value)}
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm tracking-[0.4em] text-ink outline-none transition focus:border-teal"
-                  placeholder={t('placeholders.otp')}
-                  maxLength={4}
-                  required
-                />
-              </label>
-            ) : null}
+            {feedback ? <p className="rounded-2xl border border-emerald-100 bg-emerald-50/80 backdrop-blur px-4 py-3 text-sm text-emerald-800 text-center">{feedback}</p> : null}
+            {error ? <p className="rounded-2xl border border-rose-100 bg-rose-50/80 backdrop-blur px-4 py-3 text-sm text-rose-700 text-center animate-in fade-in">{error}</p> : null}
 
-            {feedback ? <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{feedback}</p> : null}
-            {error ? <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p> : null}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white transition hover:bg-teal/90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {otpSent ? t('actions.verify') : t('actions.request')}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="group w-full rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {t('actions.verify')}
+              </button>
+            </div>
+            
+            <div className="text-center">
+              <button 
+                type="button" 
+                onClick={() => setAuthMode('initial')}
+                className="text-sm text-ink/50 hover:text-ink transition-colors"
+              >
+                Back to login options
+              </button>
+            </div>
           </form>
         )}
       </section>

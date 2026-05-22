@@ -138,10 +138,10 @@ export async function registerPatient(input: {
   });
 }
 
-export async function requestLoginOtp(phone: string): Promise<OtpChallengeData> {
+export async function requestLoginOtp(identifier: string): Promise<OtpChallengeData> {
   return publicFetch<OtpChallengeData>('/api/v1/auth/login/request-otp', {
     method: 'POST',
-    body: JSON.stringify({phone}),
+    body: JSON.stringify({identifier}),
   });
 }
 

@@ -53,7 +53,7 @@ async def request_login_otp(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[OtpChallengeData]:
     """Issue a mock OTP for an existing user."""
-    challenge = await auth_service.request_login_otp(payload.phone)
+    challenge = await auth_service.request_login_otp(payload.identifier)
     return ApiResponse(data=challenge)
 
 
@@ -65,7 +65,7 @@ async def verify_login_otp(
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> ApiResponse[AuthTokensData]:
     """Verify an OTP and return an access and refresh token pair."""
-    tokens = await auth_service.verify_otp(phone=payload.phone, otp_code=payload.otp_code)
+    tokens = await auth_service.verify_otp(identifier=payload.identifier, otp_code=payload.otp_code)
     return ApiResponse(data=tokens)
 
 

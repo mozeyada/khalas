@@ -92,9 +92,9 @@ class AuthService:
         logger.info("[KHALAS OTP] %s -> %s (%s queued)", request.phone, otp_code, channel)
         return OtpChallengeData(phone=request.phone, otp_expires_at=otp_expires_at, role=request.role)
 
-    async def request_login_otp(self, phone: str) -> OtpChallengeData:
+    async def request_login_otp(self, identifier: str) -> OtpChallengeData:
         """Issue a fresh OTP to an existing user."""
-        user = await self.user_repository.find_by_identifier(phone)
+        user = await self.user_repository.find_by_identifier(identifier)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
         if not user["is_active"]:
@@ -110,14 +110,14 @@ class AuthService:
                 "updated_at": utc_now(),
             },
         )
-        logger.info("[KHALAS OTP] %s -> %s", phone, otp_code)
+        logger.info("[KHALAS OTP] %s -> %s", identifier, otp_code)
         
-        channel = user.get("preferred_channel", "whatsapp")
-        if channel == "email" and user.get("email"):
+        is_email_input = "@" in identifier
+        if is_email_input or (user.get("preferred_channel") == "email" and user.get("email")):
             name = user.get("name_ar") or user.get("name_en") or ""
             asyncio.create_task(
                 send_otp_email(
-                    to_email=user["email"],
+                    to_email=user.get("email") if not is_email_input else identifier,
                     name=name,
                     otp_code=otp_code,
                 )
@@ -126,16 +126,16 @@ class AuthService:
             from app.services.notifications import send_otp_whatsapp
             asyncio.create_task(
                 send_otp_whatsapp(
-                    phone=user["phone"],
+                    phone=user.get("phone", identifier),
                     otp_code=otp_code,
                 )
             )
             
-        return OtpChallengeData(phone=phone, otp_expires_at=otp_expires_at, role=user["role"])
+        return OtpChallengeData(identifier=identifier, otp_expires_at=otp_expires_at, role=user["role"])
 
-    async def verify_otp(self, *, phone: str, otp_code: str) -> AuthTokensData:
+    async def verify_otp(self, *, identifier: str, otp_code: str) -> AuthTokensData:
         """Validate an OTP and issue tokens."""
-        user = await self.user_repository.find_by_identifier(phone)
+        user = await self.user_repository.find_by_identifier(identifier)
         if user is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
         if user.get("otp_code") != otp_code:
