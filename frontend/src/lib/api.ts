@@ -128,7 +128,8 @@ export async function registerPatient(input: {
   phone: string;
   name_ar: string;
   name_en: string;
-  email: string;
+  email?: string;
+  preferred_channel?: 'email' | 'whatsapp';
 }): Promise<OtpChallengeData> {
   return publicFetch<OtpChallengeData>('/api/v1/auth/register', {
     method: 'POST',

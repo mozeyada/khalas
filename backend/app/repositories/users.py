@@ -19,9 +19,11 @@ class UserRepository:
         """Return the MongoDB collection."""
         return get_collection(USERS_COLLECTION)
 
-    async def find_by_phone(self, phone: str) -> dict | None:
-        """Return a user by phone number."""
-        return await self.collection.find_one({"phone": phone})
+    async def find_by_identifier(self, identifier: str) -> dict | None:
+        """Return a user by phone or email."""
+        return await self.collection.find_one({
+            "$or": [{"phone": identifier}, {"email": identifier}]
+        })
 
     async def find_by_id(self, user_id: str) -> dict | None:
         """Return a user by identifier."""

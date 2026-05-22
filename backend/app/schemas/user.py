@@ -14,13 +14,13 @@ Role = Literal["patient", "provider", "admin"]
 class UserProfile(IdentifierModel, TimestampedModel):
     """Public user profile exposed via the API."""
 
-    phone: str
+    phone: str | None = None
     email: str | None = None
     name_ar: str
     name_en: str
     role: Role
     is_active: bool = True
-
+    preferred_channel: Literal["email", "whatsapp"]
 
 class UserCreatePayload:
     """Internal payload used for user creation."""

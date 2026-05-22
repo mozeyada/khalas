@@ -39,6 +39,11 @@ class AuthService:
         if existing is not None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this phone already exists.")
 
+        if request.email:
+            existing_email = await self.user_repository.find_by_identifier(request.email)
+            if existing_email is not None and str(existing_email["_id"]) != str(existing.get("_id") if existing else ""):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.")
+
         timestamp = utc_now()
         otp_code = generate_otp_code()
         otp_expires_at = build_otp_expiry()
@@ -54,20 +59,32 @@ class AuthService:
             "created_at": timestamp,
             "updated_at": timestamp,
             "role": request.role,
+            "preferred_channel": request.preferred_channel or ("email" if request.email else "whatsapp"),
         }
         try:
             await self.user_repository.create(document)
         except DuplicateKeyError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.") from exc
-        # Deliver OTP via email — fire-and-forget so it never blocks the response.
-        asyncio.create_task(
-            send_otp_email(
-                to_email=request.email,
-                name=request.name_ar or request.name_en,
-                otp_code=otp_code,
+        
+        channel = document["preferred_channel"]
+        if channel == "email" and request.email:
+            asyncio.create_task(
+                send_otp_email(
+                    to_email=request.email,
+                    name=request.name_ar or request.name_en,
+                    otp_code=otp_code,
+                )
             )
-        )
-        logger.info("[KHALAS OTP] %s -> %s (email queued)", request.phone, otp_code)
+        else: # defaults to whatsapp if no email or channel=whatsapp
+            from app.services.notifications import send_otp_whatsapp
+            asyncio.create_task(
+                send_otp_whatsapp(
+                    phone=request.phone,
+                    otp_code=otp_code,
+                )
+            )
+
+        logger.info("[KHALAS OTP] %s -> %s (%s queued)", request.phone, otp_code, channel)
         return OtpChallengeData(phone=request.phone, otp_expires_at=otp_expires_at, role=request.role)
 
     async def request_login_otp(self, phone: str) -> OtpChallengeData:
@@ -89,17 +106,26 @@ class AuthService:
             },
         )
         logger.info("[KHALAS OTP] %s -> %s", phone, otp_code)
-        # Deliver OTP via email if the user has an email address.
-        email = user.get("email")
-        if email:
+        
+        channel = user.get("preferred_channel", "whatsapp")
+        if channel == "email" and user.get("email"):
             name = user.get("name_ar") or user.get("name_en") or ""
             asyncio.create_task(
                 send_otp_email(
-                    to_email=email,
+                    to_email=user["email"],
                     name=name,
                     otp_code=otp_code,
                 )
             )
+        else: # defaults to whatsapp
+            from app.services.notifications import send_otp_whatsapp
+            asyncio.create_task(
+                send_otp_whatsapp(
+                    phone=user["phone"],
+                    otp_code=otp_code,
+                )
+            )
+            
         return OtpChallengeData(phone=phone, otp_expires_at=otp_expires_at, role=user["role"])
 
     async def verify_otp(self, *, phone: str, otp_code: str) -> AuthTokensData:

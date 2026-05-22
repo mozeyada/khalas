@@ -14,6 +14,7 @@ export type UserProfile = {
   name_en: string;
   role: Role;
   is_active: boolean;
+  preferred_channel: 'email' | 'whatsapp';
   created_at: string;
   updated_at: string;
 };

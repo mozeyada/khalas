@@ -18,7 +18,8 @@ export function RegisterForm() {
     nameAr: '',
     nameEn: '',
     email: '',
-    otpCode: ''
+    otpCode: '',
+    preferredChannel: 'whatsapp' as 'email' | 'whatsapp'
   });
   const [otpSent, setOtpSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,7 +37,8 @@ export function RegisterForm() {
         phone: formState.phone,
         name_ar: formState.nameAr,
         name_en: formState.nameEn,
-        email: formState.email
+        email: formState.email || undefined,
+        preferred_channel: (formState.phone && formState.email) ? formState.preferredChannel : undefined
       });
       setOtpSent(true);
       setFeedback(
@@ -113,9 +115,38 @@ export function RegisterForm() {
                   className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-teal"
                   placeholder={t('placeholders.email')}
                   type="email"
-                  required
                 />
               </label>
+              
+              {formState.phone && formState.email && (
+                <div className="block pt-2">
+                  <span className="mb-2 block text-sm font-medium text-ink">Preferred Notification Channel</span>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="preferredChannel" 
+                        value="whatsapp" 
+                        checked={formState.preferredChannel === 'whatsapp'}
+                        onChange={() => setFormState(c => ({...c, preferredChannel: 'whatsapp'}))}
+                        className="accent-teal"
+                      />
+                      <span className="text-sm text-ink">WhatsApp</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="preferredChannel" 
+                        value="email" 
+                        checked={formState.preferredChannel === 'email'}
+                        onChange={() => setFormState(c => ({...c, preferredChannel: 'email'}))}
+                        className="accent-teal"
+                      />
+                      <span className="text-sm text-ink">Email</span>
+                    </label>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <label className="block">
