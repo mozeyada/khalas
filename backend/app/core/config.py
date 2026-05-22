@@ -66,6 +66,11 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = Field(default=7)
     otp_expire_minutes: int = Field(default=10)
 
+    @property
+    def frontend_origins_list(self) -> list[str]:
+        """Parse the frontend_origin string into a list of origins."""
+        return [origin.strip() for origin in self.frontend_origin.split(",") if origin.strip()]
+
     @model_validator(mode="after")
     def _resolve_jwt_secrets(self) -> "Settings":
         """Resolve JWT secrets with a multi-tiered fallback.
