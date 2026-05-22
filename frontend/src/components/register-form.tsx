@@ -36,7 +36,7 @@ export function RegisterForm() {
         phone: formState.phone,
         name_ar: formState.nameAr,
         name_en: formState.nameEn,
-        email: formState.email || undefined
+        email: formState.email
       });
       setOtpSent(true);
       setFeedback(

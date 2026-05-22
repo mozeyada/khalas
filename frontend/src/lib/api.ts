@@ -46,7 +46,15 @@ async function publicFetch<T>(path: string, options: FetchOptions = {}): Promise
   const payload = (await response.json()) as ApiResponse<T> | {detail?: string};
 
   if (!response.ok) {
-    const message = 'detail' in payload && payload.detail ? payload.detail : 'Request failed.';
+    let message = 'Request failed.';
+    if ('detail' in payload && payload.detail) {
+      if (Array.isArray(payload.detail)) {
+        // FastAPI validation error array
+        message = payload.detail.map((err: any) => `${err.loc?.join('.')} ${err.msg}`).join(', ');
+      } else if (typeof payload.detail === 'string') {
+        message = payload.detail;
+      }
+    }
     throw new ApiError(message, response.status);
   }
 
@@ -120,7 +128,7 @@ export async function registerPatient(input: {
   phone: string;
   name_ar: string;
   name_en: string;
-  email?: string;
+  email: string;
 }): Promise<OtpChallengeData> {
   return publicFetch<OtpChallengeData>('/api/v1/auth/register', {
     method: 'POST',
