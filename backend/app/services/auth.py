@@ -240,7 +240,7 @@ class AuthService:
             return {"detail": "If your account exists, a reset code will be sent to you."}
 
         import secrets
-        reset_token = secrets.token_urlsafe(32)
+        reset_token = secrets.token_hex(3).upper()
         # Using a 1 hour expiry
         from datetime import timedelta
         reset_expires_at = utc_now() + timedelta(hours=1)
@@ -267,7 +267,7 @@ class AuthService:
                 send_otp_email(
                     to_email=user.get("email") if not is_email_input else request.identifier,
                     name=name,
-                    otp_code=f"Reset Code: {reset_token[:6]} (Check console for full)",
+                    otp_code=reset_token,
                 )
             )
         else:
@@ -275,7 +275,7 @@ class AuthService:
             asyncio.create_task(
                 send_otp_whatsapp(
                     phone=user["phone"],
-                    otp_code=f"Reset Code: {reset_token[:6]}",
+                    otp_code=reset_token,
                 )
             )
             

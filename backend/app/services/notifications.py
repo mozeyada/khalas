@@ -59,8 +59,8 @@ def _whatsapp_phone_id() -> str | None:
 # Email — via Resend
 # ---------------------------------------------------------------------------
 
-def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
-    """Bilingual OTP email body (Arabic + English)."""
+def _base_email_html(title: str, arabic_content: str, english_content: str) -> str:
+    """A premium, responsive base HTML template for all Khalas emails."""
     return f"""
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -70,7 +70,7 @@ def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
     <tr><td align="center" style="padding:40px 20px">
       <table width="480" cellpadding="0" cellspacing="0"
              style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)">
-
+        
         <!-- Header -->
         <tr>
           <td style="background:#0f766e;padding:32px;text-align:center">
@@ -82,20 +82,7 @@ def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
         <!-- Arabic body -->
         <tr>
           <td style="padding:32px 32px 16px;text-align:right">
-            <p style="margin:0 0 8px;font-size:16px;color:#1e293b">مرحباً {name}،</p>
-            <p style="margin:0 0 24px;font-size:14px;color:#475569;line-height:1.7">
-              كود التحقق الخاص بك هو:
-            </p>
-            <div style="text-align:center;margin:0 0 24px">
-              <span style="display:inline-block;background:#f0fdfa;border:2px dashed #0f766e;
-                           border-radius:12px;padding:16px 40px;font-size:36px;
-                           font-weight:700;letter-spacing:12px;color:#0f766e">
-                {otp_code}
-              </span>
-            </div>
-            <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">
-              ينتهي الكود خلال {expires_minutes} دقيقة
-            </p>
+            {arabic_content}
           </td>
         </tr>
 
@@ -104,17 +91,8 @@ def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
 
         <!-- English body -->
         <tr>
-          <td style="padding:16px 32px 32px;text-align:left">
-            <p style="margin:0 0 8px;font-size:15px;color:#1e293b">Hi {name},</p>
-            <p style="margin:0 0 16px;font-size:14px;color:#475569;line-height:1.7">
-              Your Khalas verification code is:
-            </p>
-            <p style="margin:0 0 16px;text-align:center;font-size:36px;font-weight:700;
-                      letter-spacing:12px;color:#0f766e">{otp_code}</p>
-            <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">
-              This code expires in {expires_minutes} minutes.<br>
-              If you did not request this, please ignore this email.
-            </p>
+          <td style="padding:16px 32px 32px;text-align:left;direction:ltr">
+            {english_content}
           </td>
         </tr>
 
@@ -126,13 +104,45 @@ def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
             </p>
           </td>
         </tr>
-
       </table>
     </td></tr>
   </table>
 </body>
 </html>
 """
+
+def _otp_email_html(name: str, otp_code: str, expires_minutes: int) -> str:
+    """Bilingual OTP email body (Arabic + English)."""
+    ar_content = f"""
+            <p style="margin:0 0 8px;font-size:16px;color:#1e293b">مرحباً {name}،</p>
+            <p style="margin:0 0 24px;font-size:14px;color:#475569;line-height:1.7">
+              كود التحقق الخاص بك هو:
+            </p>
+            <div style="text-align:center;margin:0 0 24px">
+              <span style="display:inline-block;background:#f0fdfa;border:2px dashed #0f766e;
+                           border-radius:12px;padding:16px 40px;font-size:36px;
+                           font-weight:700;letter-spacing:12px;color:#0f766e;direction:ltr;">
+                {otp_code}
+              </span>
+            </div>
+            <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">
+              ينتهي الكود خلال {expires_minutes} دقيقة
+            </p>
+    """
+    
+    en_content = f"""
+            <p style="margin:0 0 8px;font-size:15px;color:#1e293b">Hi {name},</p>
+            <p style="margin:0 0 16px;font-size:14px;color:#475569;line-height:1.7">
+              Your Khalas verification code is:
+            </p>
+            <p style="margin:0 0 16px;text-align:center;font-size:36px;font-weight:700;
+                      letter-spacing:12px;color:#0f766e">{otp_code}</p>
+            <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center">
+              This code expires in {expires_minutes} minutes.<br>
+              If you did not request this, please ignore this email.
+            </p>
+    """
+    return _base_email_html("Verification Code", ar_content, en_content)
 
 
 async def send_otp_email(
@@ -360,14 +370,13 @@ async def notify_appointment_booked(appointment: dict, user: dict) -> None:
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        html = (
-            f"<p>مرحباً {name}، تم حجز موعدك بنجاح بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-            f"<p>Hi {name}, your appointment has been booked for <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
-        )
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم حجز موعدك بنجاح بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment has been booked for <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
+        
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تم الحجز / Appointment Booked",
-            html=html,
+            html=_base_email_html("Appointment Booked", ar_html, en_html),
         )
 
 
@@ -391,14 +400,13 @@ async def notify_appointment_confirmed(appointment: dict, user: dict) -> None:
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        html = (
-            f"<p>مرحباً {name}، تم تأكيد موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>. ✅</p>"
-            f"<p>Hi {name}, your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been confirmed. ✅</p>"
-        )
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم تأكيد موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>. ✅</p>"
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been confirmed. ✅</p>"
+        
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تم التأكيد / Appointment Confirmed ✅",
-            html=html,
+            html=_base_email_html("Appointment Confirmed", ar_html, en_html),
         )
 
 
@@ -425,16 +433,17 @@ async def notify_appointment_cancelled(
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        html = (
-            f"<p>مرحباً {name}، تم إلغاء موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-            f"<p>Hi {name}, your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been cancelled by {cancelled_by}.</p>"
-        )
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم إلغاء موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been cancelled by {cancelled_by}.</p>"
+        
         if reason:
-            html += f"<p>السبب / Reason: {reason}</p>"
+            ar_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>السبب: {reason}</p>"
+            en_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>Reason: {reason}</p>"
+
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تم الإلغاء / Appointment Cancelled",
-            html=html,
+            html=_base_email_html("Appointment Cancelled", ar_html, en_html),
         )
 
 
@@ -458,12 +467,11 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        html = (
-            f"<p>تذكير: موعدك غداً بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-            f"<p>Reminder: your appointment is tomorrow on <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
-        )
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>تذكير: موعدك غداً بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Reminder: your appointment is tomorrow on <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
+        
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تذكير بالموعد / Appointment Reminder",
-            html=html,
+            html=_base_email_html("Appointment Reminder", ar_html, en_html),
         )
