@@ -8,6 +8,15 @@ import {User, Mail, Phone, Lock, KeyRound, ArrowRight, MessageSquare} from 'luci
 import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
 
+function normalizePhone(phone: string): string {
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
+  if (cleaned.startsWith('1') && cleaned.length === 10) return '+20' + cleaned;
+  if (cleaned.startsWith('201') && cleaned.length === 12) return '+' + cleaned;
+  return cleaned;
+}
+
 export function RegisterForm() {
   const t = useTranslations('RegisterPage');
   const locale = useLocale();
@@ -33,12 +42,7 @@ export function RegisterForm() {
     setFeedback(null);
     setIsSubmitting(true);
 
-    let normalizedPhone = formState.phone.trim();
-    if (normalizedPhone.startsWith('01')) {
-      normalizedPhone = '+2' + normalizedPhone;
-    } else if (normalizedPhone.startsWith('1')) {
-      normalizedPhone = '+20' + normalizedPhone;
-    }
+    const normalizedPhone = normalizePhone(formState.phone);
 
     try {
       const challenge = await register({
@@ -67,12 +71,7 @@ export function RegisterForm() {
     setError(null);
     setIsSubmitting(true);
 
-    let normalizedPhone = formState.phone.trim();
-    if (normalizedPhone.startsWith('01')) {
-      normalizedPhone = '+2' + normalizedPhone;
-    } else if (normalizedPhone.startsWith('1')) {
-      normalizedPhone = '+20' + normalizedPhone;
-    }
+    const normalizedPhone = normalizePhone(formState.phone);
 
     try {
       await verifyOtpCode(normalizedPhone, formState.otpCode);

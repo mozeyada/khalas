@@ -8,6 +8,15 @@ import {Mail, Lock, KeyRound, ArrowRight} from 'lucide-react';
 import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
 
+function normalizePhone(phone: string): string {
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
+  if (cleaned.startsWith('1') && cleaned.length === 10) return '+20' + cleaned;
+  if (cleaned.startsWith('201') && cleaned.length === 12) return '+' + cleaned;
+  return cleaned;
+}
+
 export function LoginForm() {
   const t = useTranslations('LoginPage');
   const locale = useLocale();
@@ -33,7 +42,8 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const role = await loginWithPassword(identifier, password);
+      const normalizedIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
+      const role = await loginWithPassword(normalizedIdentifier, password);
       let targetPath = 'dashboard';
       if (role === 'admin') targetPath = 'admin';
       else if (role === 'salesman') targetPath = 'salesman';
@@ -57,7 +67,8 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const challenge = await requestOtp(identifier);
+      const normalizedIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
+      const challenge = await requestOtp(normalizedIdentifier);
       setAuthMode('otp_verify');
       setFeedback(`Login code sent to ${challenge.identifier}`);
     } catch (caught) {
@@ -73,7 +84,8 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const role = await verifyOtpCode(identifier, otpCode);
+      const normalizedIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
+      const role = await verifyOtpCode(normalizedIdentifier, otpCode);
       let targetPath = 'dashboard';
       if (role === 'admin') targetPath = 'admin';
       else if (role === 'salesman') targetPath = 'salesman';

@@ -8,6 +8,15 @@ import {ApiError} from '@/lib/api';
 import {SiteShell} from '@/components/site-shell';
 import {Building2, Plus, Sparkles} from 'lucide-react';
 
+function normalizePhone(phone: string): string {
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
+  if (cleaned.startsWith('1') && cleaned.length === 10) return '+20' + cleaned;
+  if (cleaned.startsWith('201') && cleaned.length === 12) return '+' + cleaned;
+  return cleaned;
+}
+
 export default function SalesmanPage() {
   const t = useTranslations('Navigation');
   const locale = useLocale();
@@ -46,12 +55,7 @@ export default function SalesmanPage() {
 
     const slug = generateSlug(clinicName) + '-' + Math.floor(1000 + Math.random() * 9000);
 
-    let normalizedPhone = doctorPhone.trim();
-    if (normalizedPhone.startsWith('01')) {
-      normalizedPhone = '+2' + normalizedPhone;
-    } else if (normalizedPhone.startsWith('1')) {
-      normalizedPhone = '+20' + normalizedPhone;
-    }
+    const normalizedPhone = normalizePhone(doctorPhone);
 
     try {
       const res = await fetch(`/api/proxy/salesman/demo-clinic`, {
