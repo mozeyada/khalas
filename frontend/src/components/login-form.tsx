@@ -9,15 +9,20 @@ import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
 
 function normalizePhone(phone: string): string {
-  // Convert Eastern Arabic numerals to Western numerals
   const westernised = phone.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
-  // Strip all non-digit characters except leading +
   let cleaned = westernised.replace(/[^\d+]/g, '');
-  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('+201') && cleaned.length === 13) return cleaned;
   if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
-  if (cleaned.startsWith('1') && cleaned.length === 10) return '+20' + cleaned;
-  if (cleaned.startsWith('201') && cleaned.length === 12) return '+' + cleaned;
   return cleaned;
+}
+
+function isValidIdentifier(id: string): boolean {
+  if (!id) return false;
+  if (id.includes('@')) return id.length > 5 && id.includes('.');
+  const westernised = id.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+  const cleaned = westernised.replace(/[^\d+]/g, '');
+  return (cleaned.startsWith('+201') && cleaned.length === 13) || 
+         (cleaned.startsWith('01') && cleaned.length === 11);
 }
 
 export function LoginForm() {
@@ -125,7 +130,13 @@ export function LoginForm() {
                   <input
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
-                    className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
+                    className={`w-full rounded-2xl border bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm outline-none transition-all focus:bg-white
+                      ${identifier.length > 0
+                        ? isValidIdentifier(identifier)
+                          ? 'border-emerald-500 text-emerald-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'
+                          : 'border-rose-500 text-rose-600 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10'
+                        : 'border-white/40 text-ink focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20'
+                      }`}
                     placeholder={t('placeholders.identifier')}
                     required
                   />
