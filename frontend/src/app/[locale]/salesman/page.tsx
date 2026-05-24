@@ -46,6 +46,13 @@ export default function SalesmanPage() {
 
     const slug = generateSlug(clinicName) + '-' + Math.floor(1000 + Math.random() * 9000);
 
+    let normalizedPhone = doctorPhone.trim();
+    if (normalizedPhone.startsWith('01')) {
+      normalizedPhone = '+2' + normalizedPhone;
+    } else if (normalizedPhone.startsWith('1')) {
+      normalizedPhone = '+20' + normalizedPhone;
+    }
+
     try {
       const res = await fetch(`/api/proxy/salesman/demo-clinic`, {
         method: 'POST',
@@ -55,7 +62,7 @@ export default function SalesmanPage() {
           slug,
           specialty,
           governorate,
-          doctor_phone: doctorPhone
+          doctor_phone: normalizedPhone
         }),
       });
 
@@ -106,23 +113,66 @@ export default function SalesmanPage() {
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-ink">Specialty</span>
                 <input
+                  list="specialties-list"
                   value={specialty}
                   onChange={(e) => setSpecialty(e.target.value)}
                   required
                   className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
                   placeholder="e.g., Cardiology"
                 />
+                <datalist id="specialties-list">
+                  <option value="Cardiology" />
+                  <option value="Dentistry" />
+                  <option value="Dermatology" />
+                  <option value="Orthopedics" />
+                  <option value="Pediatrics" />
+                  <option value="Internal Medicine" />
+                  <option value="Ophthalmology" />
+                  <option value="Neurology" />
+                  <option value="Psychiatry" />
+                  <option value="General Surgery" />
+                </datalist>
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-ink">Governorate</span>
                 <input
+                  list="governorates-list"
                   value={governorate}
                   onChange={(e) => setGovernorate(e.target.value)}
                   required
                   className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
                   placeholder="e.g., Cairo"
                 />
+                <datalist id="governorates-list">
+                  <option value="Cairo" />
+                  <option value="Giza" />
+                  <option value="Alexandria" />
+                  <option value="Dakahlia" />
+                  <option value="Red Sea" />
+                  <option value="Beheira" />
+                  <option value="Fayoum" />
+                  <option value="Gharbia" />
+                  <option value="Ismailia" />
+                  <option value="Menofia" />
+                  <option value="Minya" />
+                  <option value="Qalyubia" />
+                  <option value="New Valley" />
+                  <option value="Suez" />
+                  <option value="Aswan" />
+                  <option value="Assiut" />
+                  <option value="Beni Suef" />
+                  <option value="Port Said" />
+                  <option value="Damietta" />
+                  <option value="Sharkia" />
+                  <option value="South Sinai" />
+                  <option value="Kafr El Sheikh" />
+                  <option value="Matrouh" />
+                  <option value="Luxor" />
+                  <option value="Qena" />
+                  <option value="North Sinai" />
+                  <option value="Sohag" />
+                </datalist>
               </label>
             </div>
 

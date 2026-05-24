@@ -25,8 +25,8 @@ export function SiteShell({
   const dashboardHref = user?.role === 'provider' ? '/provider/dashboard' : '/dashboard';
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
-      {/* Floating Portal Navbar */}
+    <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-6">
+      {/* Floating Portal Navbar (Desktop) & Top Branding (Mobile) */}
       <header className="sticky top-4 z-50 mb-8 rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-lg shadow-teal/5 backdrop-blur-md transition-all hover:bg-white/80 hover:shadow-xl hover:shadow-teal/10 sm:p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -45,7 +45,7 @@ export function SiteShell({
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="hidden md:flex flex-wrap items-center gap-2">
             <LocaleSwitcher />
             
             <Link
@@ -163,6 +163,84 @@ export function SiteShell({
       )}
 
       {children}
+
+      {/* Fixed Bottom Navigation Bar (Mobile only) */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-ink/10 bg-white/90 pb-[env(safe-area-inset-bottom,16px)] pt-2 backdrop-blur-lg md:hidden">
+        <Link
+          href="/"
+          locale={locale}
+          className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+            pathname === '/' ? 'text-teal' : 'text-ink/50'
+          }`}
+        >
+          <Home className="h-5 w-5" />
+          <span>{t('home')}</span>
+        </Link>
+        <Link
+          href="/search"
+          locale={locale}
+          className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+            pathname === '/search' ? 'text-teal' : 'text-ink/50'
+          }`}
+        >
+          <Search className="h-5 w-5" />
+          <span>{t('search')}</span>
+        </Link>
+
+        {isReady && isAuthenticated ? (
+          <>
+            {(user?.role === 'provider' || user?.role === 'patient' || user?.role === 'admin') && (
+              <Link
+                href={dashboardHref}
+                locale={locale}
+                className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+                  pathname === dashboardHref ? 'text-teal' : 'text-ink/50'
+                }`}
+              >
+                <LayoutDashboard className="h-5 w-5" />
+                <span>{user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}</span>
+              </Link>
+            )}
+            
+            {(user?.role === 'admin' || user?.role === 'salesman') && (
+              <Link
+                href="/salesman"
+                locale={locale}
+                className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+                  pathname === '/salesman' ? 'text-indigo-600' : 'text-ink/50'
+                }`}
+              >
+                <Sparkles className="h-5 w-5" />
+                <span>{t('sales')}</span>
+              </Link>
+            )}
+            
+            <Link
+              href="/profile"
+              locale={locale}
+              className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+                pathname === '/profile' ? 'text-teal' : 'text-ink/50'
+              }`}
+            >
+              <UserCircle className="h-5 w-5" />
+              <span>{t('profile')}</span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/auth/login"
+              locale={locale}
+              className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
+                pathname === '/auth/login' ? 'text-teal' : 'text-ink/50'
+              }`}
+            >
+              <LogIn className="h-5 w-5" />
+              <span>{t('login')}</span>
+            </Link>
+          </>
+        )}
+      </nav>
     </main>
   );
 }
