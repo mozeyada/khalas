@@ -255,15 +255,17 @@ class AuthService:
         )
 
         channel = user.get("preferred_channel", "whatsapp")
+        is_email_input = "@" in request.identifier
+        
         # Reuse existing OTP notification mechanism, but we really should have a proper reset notification
         # For simplicity in this iteration, we send the reset token like an OTP
-        if channel == "email" and user.get("email"):
+        if is_email_input or (channel == "email" and user.get("email")):
             name = user.get("name_ar") or user.get("name_en") or ""
             # Truncating token to 6 chars just so it fits in the current OTP email template if needed,
             # but ideally we send the full link
             asyncio.create_task(
                 send_otp_email(
-                    to_email=user["email"],
+                    to_email=user.get("email") if not is_email_input else request.identifier,
                     name=name,
                     otp_code=f"Reset Code: {reset_token[:6]} (Check console for full)",
                 )
