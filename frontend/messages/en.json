@@ -157,6 +157,11 @@
       "staff": "Provider",
       "service": "Service",
       "slot": "Appointment time"
+    },
+    "qr": {
+      "loading": "Loading QR...",
+      "unavailable": "QR unavailable",
+      "instruction": "Show this QR code at the clinic for fast check-in."
     }
   },
   "DashboardPage": {
@@ -234,6 +239,12 @@
     "tryAnother": "Try another email or phone number",
     "actions": {
       "submit": "Send Reset Link"
+    },
+    "fields": {
+      "identifier": "Email or Phone Number"
+    },
+    "placeholders": {
+      "identifier": "e.g. user@example.com or +201000000000"
     }
   },
   "ResetPasswordPage": {

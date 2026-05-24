@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from 'react';
 import QRCode from 'react-qr-code';
+import {useTranslations} from 'next-intl';
 import {ApiError} from '@/lib/api';
 
 type QRPayload = {
@@ -22,6 +23,7 @@ async function bffGetQR(appointmentId: string): Promise<QRPayload> {
 }
 
 export function AppointmentQRCode({appointmentId}: {appointmentId: string}) {
+  const t = useTranslations('ConfirmationPage.qr');
   const [payload, setPayload] = useState<QRPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,14 +46,15 @@ export function AppointmentQRCode({appointmentId}: {appointmentId: string}) {
   }, [appointmentId]);
 
   if (loading) {
-    return <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-ink/20 bg-black/5 text-sm text-ink/50">Loading QR...</div>;
+    return <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-ink/20 bg-black/5 text-sm text-ink/50">{t('loading')}</div>;
   }
 
   if (error || !payload) {
-    return <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-rose-200 bg-rose-50 text-sm text-rose-500">QR unavailable</div>;
+    return <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-rose-200 bg-rose-50 text-sm text-rose-500">{t('unavailable')}</div>;
   }
 
-  const qrString = JSON.stringify(payload);
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://khalas.app';
+  const qrString = `${baseUrl}/admin/check-in?appointment=${payload.appointment_id}&sig=${encodeURIComponent(payload.signature)}`;
 
   return (
     <div className="flex flex-col items-center space-y-4 rounded-2xl bg-white p-6 shadow-sm">
@@ -59,7 +62,7 @@ export function AppointmentQRCode({appointmentId}: {appointmentId: string}) {
         <QRCode value={qrString} size={180} level="M" />
       </div>
       <p className="text-center text-xs text-ink/60">
-        Show this QR code at the clinic for fast check-in.
+        {t('instruction')}
       </p>
     </div>
   );

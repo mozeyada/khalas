@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
             </div>
 
             <label className="block group">
-              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">Email or Phone Number</span>
+              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.identifier')}</span>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                   <Mail className="h-5 w-5" />
@@ -56,7 +56,7 @@ export function ForgotPasswordForm() {
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}
                   className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                  placeholder="e.g. user@example.com or +201000000000"
+                  placeholder={t('placeholders.identifier')}
                   required
                 />
               </div>

@@ -157,6 +157,11 @@
       "staff": "مقدم الخدمة",
       "service": "الخدمة",
       "slot": "الموعد"
+    },
+    "qr": {
+      "loading": "جاري تحميل رمز الاستجابة...",
+      "unavailable": "الرمز غير متاح",
+      "instruction": "أظهر هذا الرمز في العيادة لتسريع الدخول."
     }
   },
   "DashboardPage": {
@@ -234,6 +239,12 @@
     "tryAnother": "جرب بريداً أو رقماً آخر",
     "actions": {
       "submit": "إرسال رابط الاستعادة"
+    },
+    "fields": {
+      "identifier": "البريد الإلكتروني أو رقم الهاتف"
+    },
+    "placeholders": {
+      "identifier": "مثال: user@example.com أو +201000000000"
     }
   },
   "ResetPasswordPage": {
