@@ -85,6 +85,7 @@ async def create_demo_clinic(
         "name_en": payload.clinic_name,
         "category": payload.specialty,
         "governorate": payload.governorate,
+        "area": "منطقة تجريبية",
         "address_ar": "عنوان تجريبي",
         "address_en": "Demo Address",
         "latitude": None,
@@ -114,6 +115,8 @@ async def create_demo_clinic(
         "bio_ar": "حساب تجريبي",
         "bio_en": "Demo Account",
         "photo_url": None,
+        "is_bookable": True,
+        "is_active": True,
         "created_at": timestamp,
         "updated_at": timestamp,
     }
@@ -129,7 +132,9 @@ async def create_demo_clinic(
         "description_ar": "كشف تجريبي",
         "description_en": "Demo Consultation",
         "duration_minutes": 30,
-        "price_egp": 200,
+        "buffer_minutes": 0,
+        "price": 200.0,
+        "is_active": True,
         "created_at": timestamp,
         "updated_at": timestamp,
     }
