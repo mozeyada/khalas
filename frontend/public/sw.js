@@ -1,6 +1,5 @@
 const CACHE_NAME = 'khalas-cache-v1';
 const STATIC_ASSETS = [
-  '/',
   '/manifest.json',
   '/icon.svg',
   '/icon-maskable.svg',
