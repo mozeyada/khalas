@@ -19,6 +19,8 @@ from app.schemas.auth import (
     RefreshTokenRequest,
     RegisterRequest,
     VerifyOtpRequest,
+    ChangePasswordRequest,
+    UpdateProfileRequest
 )
 from app.schemas.common import ApiResponse
 from app.schemas.user import UserProfile
@@ -123,3 +125,28 @@ async def get_me(
 ) -> ApiResponse[UserProfile]:
     """Return the currently authenticated user."""
     return ApiResponse(data=serialize_user(current_user))
+
+
+@router.put("/me", response_model=ApiResponse[UserProfile], status_code=status.HTTP_200_OK)
+async def update_me(
+    request: Request,
+    payload: UpdateProfileRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ApiResponse[UserProfile]:
+    """Update the currently authenticated user's profile."""
+    updated_user = await auth_service.update_profile(str(current_user["_id"]), payload)
+    return ApiResponse(data=updated_user)
+
+
+@router.post("/change-password", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def change_password(
+    request: Request,
+    payload: ChangePasswordRequest,
+    current_user: Annotated[dict, Depends(get_current_user)],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+) -> ApiResponse[dict]:
+    """Change password for the currently authenticated user."""
+    result = await auth_service.change_password(str(current_user["_id"]), payload)
+    return ApiResponse(data=result)

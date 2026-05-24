@@ -1,7 +1,7 @@
 'use client';
 
 import {useLocale, useTranslations} from 'next-intl';
-import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield} from 'lucide-react';
+import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle} from 'lucide-react';
 
 import {Link, usePathname} from '@/i18n/navigation';
 import {useSession} from '@/components/session-provider';
@@ -21,6 +21,7 @@ export function SiteShell({
   const t = useTranslations('Navigation');
   const {isAuthenticated, logout, user, isReady} = useSession();
 
+  // If user is admin, we default their "user" dashboard to the patient dashboard.
   const dashboardHref = user?.role === 'provider' ? '/provider/dashboard' : '/dashboard';
 
   return (
@@ -71,14 +72,22 @@ export function SiteShell({
 
             {isReady && isAuthenticated ? (
               <>
-                <Link
-                  href={dashboardHref}
-                  locale={locale}
-                  className="group flex items-center gap-2 rounded-full bg-teal px-4 py-2 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-md hover:shadow-teal/20"
-                >
-                  <LayoutDashboard className="h-4 w-4 transition-transform group-hover:scale-110" />
-                  <span className="hidden sm:inline">{user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}</span>
-                </Link>
+                {user?.role === 'provider' || user?.role === 'patient' || user?.role === 'admin' ? (
+                  <Link
+                    href={dashboardHref}
+                    locale={locale}
+                    className={`group flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                      pathname === dashboardHref
+                        ? 'bg-teal text-white shadow-sm'
+                        : 'bg-transparent text-ink/70 hover:bg-black/5 hover:text-ink'
+                    }`}
+                  >
+                    <LayoutDashboard className={`h-4 w-4 transition-transform ${pathname !== dashboardHref && 'group-hover:scale-110'}`} />
+                    <span className="hidden sm:inline">
+                      {user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}
+                    </span>
+                  </Link>
+                ) : null}
                 
                 {user?.role === 'admin' ? (
                   <Link
@@ -91,6 +100,15 @@ export function SiteShell({
                   </Link>
                 ) : null}
                 
+                <Link
+                  href="/profile"
+                  locale={locale}
+                  className="group flex items-center gap-2 rounded-full bg-transparent px-4 py-2 text-sm font-medium text-ink/70 transition-all hover:bg-black/5 hover:text-ink"
+                >
+                  <UserCircle className="h-4 w-4 transition-transform group-hover:scale-110" />
+                  <span className="hidden sm:inline">{t('profile')}</span>
+                </Link>
+
                 <button
                   type="button"
                   onClick={logout}

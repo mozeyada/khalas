@@ -9,6 +9,7 @@
     "providerDashboard": "Provider Dashboard",
     "provider": "Provider Appointments",
     "admin": "Admin",
+    "profile": "Profile",
     "logout": "Logout"
   },
   "HomePage": {
@@ -307,5 +308,29 @@
     "actions": {
       "submit": "Update Password"
     }
+  },
+  "ProfilePage": {
+    "pageTitle": "Profile Settings",
+    "pageSubtitle": "Manage your personal information and security settings.",
+    "tabBasic": "Basic Info",
+    "tabSecurity": "Security",
+    "basicEyebrow": "Personal Details",
+    "basicTitle": "Update your information",
+    "securityEyebrow": "Password",
+    "securityTitle": "Change your password",
+    "fields": {
+      "nameAr": "Arabic Name",
+      "nameEn": "English Name",
+      "email": "Email Address",
+      "preferredChannel": "Preferred Notification Channel",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password"
+    },
+    "actions": {
+      "save": "Save Changes"
+    },
+    "successProfile": "Profile updated successfully.",
+    "successPassword": "Password changed successfully.",
+    "genericError": "Something went wrong. Please try again."
   }
 }

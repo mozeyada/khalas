@@ -65,6 +65,22 @@ class ResetPasswordRequest(APIModel):
     new_password: str = Field(min_length=8)
 
 
+class ChangePasswordRequest(APIModel):
+    """Payload for changing password while authenticated."""
+    
+    current_password: str
+    new_password: str = Field(min_length=8)
+
+
+class UpdateProfileRequest(APIModel):
+    """Payload for updating user profile information."""
+    
+    name_ar: str | None = None
+    name_en: str | None = None
+    email: EmailStr | None = None
+    preferred_channel: Literal["email", "whatsapp"] | None = None
+
+
 class VerifyOtpRequest(APIModel):
     """Payload for verifying an OTP and logging in."""
 

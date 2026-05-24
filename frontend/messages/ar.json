@@ -9,6 +9,7 @@
     "providerDashboard": "لوحة مقدم الخدمة",
     "provider": "مواعيد العيادة",
     "admin": "لوحة الإدارة",
+    "profile": "الملف الشخصي",
     "logout": "تسجيل الخروج"
   },
   "HomePage": {
@@ -307,5 +308,29 @@
     "actions": {
       "submit": "تحديث كلمة المرور"
     }
+  },
+  "ProfilePage": {
+    "pageTitle": "إعدادات الحساب",
+    "pageSubtitle": "أدر معلوماتك الشخصية وإعدادات الأمان.",
+    "tabBasic": "المعلومات الأساسية",
+    "tabSecurity": "الأمان",
+    "basicEyebrow": "التفاصيل الشخصية",
+    "basicTitle": "تحديث بياناتك",
+    "securityEyebrow": "كلمة المرور",
+    "securityTitle": "تغيير كلمة المرور",
+    "fields": {
+      "nameAr": "الاسم بالعربية",
+      "nameEn": "الاسم بالإنجليزية",
+      "email": "البريد الإلكتروني",
+      "preferredChannel": "وسيلة الإشعارات المفضلة",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة"
+    },
+    "actions": {
+      "save": "حفظ التغييرات"
+    },
+    "successProfile": "تم تحديث الملف الشخصي بنجاح.",
+    "successPassword": "تم تغيير كلمة المرور بنجاح.",
+    "genericError": "حدث خطأ غير متوقع. حاول مرة أخرى."
   }
 }

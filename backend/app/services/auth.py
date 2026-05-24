@@ -22,7 +22,16 @@ from app.core.security import (
     verify_password,
 )
 from app.repositories.users import UserRepository
-from app.schemas.auth import AuthTokensData, OtpChallengeData, RegisterRequest, LoginPasswordRequest, ForgotPasswordRequest, ResetPasswordRequest
+from app.schemas.auth import (
+    AuthTokensData, 
+    OtpChallengeData, 
+    RegisterRequest, 
+    LoginPasswordRequest, 
+    ForgotPasswordRequest, 
+    ResetPasswordRequest,
+    ChangePasswordRequest,
+    UpdateProfileRequest
+)
 from app.services.notifications import send_otp_email
 from app.services.serializers import serialize_user
 
@@ -307,3 +316,45 @@ class AuthService:
             },
         )
         return {"detail": "Password has been reset successfully."}
+
+    async def change_password(self, user_id: str, request: ChangePasswordRequest) -> dict:
+        """Change the password for an authenticated user."""
+        user = await self.user_repository.find_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+        if user.get("hashed_password") and not verify_password(request.current_password, user["hashed_password"]):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect current password.")
+
+        await self.user_repository.update_by_id(
+            user_id,
+            {
+                "hashed_password": get_password_hash(request.new_password),
+                "updated_at": utc_now(),
+            },
+        )
+        return {"detail": "Password updated successfully."}
+
+    async def update_profile(self, user_id: str, request: UpdateProfileRequest) -> dict:
+        """Update the basic profile information of an authenticated user."""
+        user = await self.user_repository.find_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+
+        updates = {"updated_at": utc_now()}
+        if request.name_ar is not None:
+            updates["name_ar"] = request.name_ar
+        if request.name_en is not None:
+            updates["name_en"] = request.name_en
+        if request.email is not None:
+            # Check for duplicate email
+            if request.email != user.get("email"):
+                existing = await self.user_repository.find_by_identifier(request.email)
+                if existing and str(existing["_id"]) != user_id:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already in use.")
+            updates["email"] = request.email
+        if request.preferred_channel is not None:
+            updates["preferred_channel"] = request.preferred_channel
+
+        updated_user = await self.user_repository.update_by_id(user_id, updates)
+        return serialize_user(updated_user)
