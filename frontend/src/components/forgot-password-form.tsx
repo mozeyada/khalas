@@ -1,12 +1,15 @@
 'use client';
 
 import {FormEvent, useState} from 'react';
-import {useTranslations} from 'next-intl';
-import {Mail, ArrowRight, KeyRound} from 'lucide-react';
+import {useTranslations, useLocale} from 'next-intl';
+import {Mail, ArrowRight, KeyRound, ArrowRightCircle} from 'lucide-react';
 import {requestPasswordReset} from '@/lib/api';
+import {useRouter} from 'next/navigation';
 
 export function ForgotPasswordForm() {
   const t = useTranslations('ForgotPasswordPage');
+  const locale = useLocale();
+  const router = useRouter();
   const [identifier, setIdentifier] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -86,12 +89,23 @@ export function ForgotPasswordForm() {
             <p className="mb-6 text-sm text-ink/70">
               {feedback}
             </p>
-            <button
-              onClick={() => setIsSuccess(false)}
-              className="text-sm font-medium text-teal hover:text-teal/80 transition-colors"
-            >
-              {t('tryAnother')}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push(`/${locale}/auth/reset-password`)}
+                className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Enter Reset Code
+                  <ArrowRightCircle className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </button>
+              <button
+                onClick={() => setIsSuccess(false)}
+                className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md px-4 py-3.5 text-sm font-medium text-teal outline-none transition-all hover:bg-white focus:border-teal hover:border-black/20"
+              >
+                {t('tryAnother')}
+              </button>
+            </div>
           </div>
         )}
       </section>
