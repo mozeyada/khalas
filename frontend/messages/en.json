@@ -105,7 +105,12 @@
       "verify": "Verify code",
       "forgotPassword": "Forgot password?",
       "loginPassword": "Log In with Password",
+      "sendOtp": "Send Login Code (OTP)",
       "back": "Back to login options"
+    },
+    "errors": {
+      "missingPassword": "Please enter your password to log in.",
+      "missingIdentifier": "Please enter an email or phone number first."
     },
     "otpSent": "Login code sent to {phone}",
     "genericError": "Something went wrong. Please try again.",
@@ -144,6 +149,7 @@
     "loginToBook": "Log in as a patient to complete booking",
     "bookingNow": "Booking now",
     "confirmBooking": "Confirm booking",
+    "bookingConfirmed": "Confirmed",
     "genericError": "The action could not be completed right now."
   },
   "ConfirmationPage": {
@@ -169,6 +175,8 @@
     "pageSubtitle": "Review current bookings and cancel quickly from the same screen.",
     "loading": "Loading appointments...",
     "empty": "There are no upcoming appointments right now.",
+    "noAppointments": "No Appointments",
+    "bookNow": "Book Now",
     "priceLine": "Booked price: {price}",
     "cancel": "Cancel appointment",
     "cancelReasonDefault": "Plans changed",
@@ -196,7 +204,43 @@
     "searchButton": "Search",
     "noResults": "No venues found matching your search.",
     "loading": "Searching...",
-    "viewVenue": "Book now"
+    "viewVenue": "Book now",
+    "categories": {
+      "clinic": "Clinic",
+      "beauty": "Beauty",
+      "fitness": "Fitness",
+      "physiotherapy": "Physiotherapy",
+      "legal": "Legal",
+      "dental": "Dental"
+    },
+    "governorates": {
+      "القاهرة": "Cairo",
+      "الجيزة": "Giza",
+      "الإسكندرية": "Alexandria",
+      "الشرقية": "Sharqia",
+      "الدقهلية": "Dakahlia",
+      "البحيرة": "Beheira",
+      "المنيا": "Minya",
+      "الغربية": "Gharbia",
+      "المنوفية": "Monufia",
+      "القليوبية": "Qalyubia",
+      "الفيوم": "Faiyum",
+      "بني سويف": "Beni Suef",
+      "سوهاج": "Sohag",
+      "أسيوط": "Asyut",
+      "الأقصر": "Luxor",
+      "أسوان": "Aswan",
+      "كفر الشيخ": "Kafr El Sheikh",
+      "دمياط": "Damietta",
+      "الإسماعيلية": "Ismailia",
+      "بورسعيد": "Port Said",
+      "السويس": "Suez",
+      "شمال سيناء": "North Sinai",
+      "جنوب سيناء": "South Sinai",
+      "البحر الأحمر": "Red Sea",
+      "مطروح": "Matrouh",
+      "الوادي الجديد": "New Valley"
+    }
   },
   "ProviderDashboardPage": {
     "pageTitle": "Provider dashboard",

@@ -26,7 +26,7 @@ export function LoginForm() {
   async function handlePasswordLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!password) {
-      setError('Please enter your password to log in.');
+      setError(t('errors.missingPassword'));
       return;
     }
     setError(null);
@@ -44,7 +44,7 @@ export function LoginForm() {
 
   async function handleRequestOtp() {
     if (!identifier) {
-      setError('Please enter an email or phone number first.');
+      setError(t('errors.missingIdentifier'));
       return;
     }
     setError(null);
@@ -157,7 +157,7 @@ export function LoginForm() {
               >
                 <span className="flex items-center justify-center gap-2">
                   <KeyRound className="h-4 w-4 transition-transform group-hover:scale-110" />
-                  Send Login Code (OTP)
+                  {t('actions.sendOtp')}
                 </span>
               </button>
             </div>

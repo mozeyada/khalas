@@ -253,7 +253,7 @@ export function BookingPanel({
                       ) : isSuccess ? (
                         <>
                           <CheckCircle2 className="h-5 w-5" />
-                          Confirmed
+                          {t('bookingConfirmed')}
                         </>
                       ) : (
                         <>

@@ -72,7 +72,7 @@ export function PatientDashboard() {
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-teal/5">
             <CalendarX className="h-10 w-10 text-teal/40" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-ink">No Appointments</h3>
+          <h3 className="mb-2 text-xl font-semibold text-ink">{t('noAppointments')}</h3>
           <p className="mb-8 max-w-sm text-sm text-ink/60 leading-relaxed">
             {t('empty')}
           </p>
@@ -80,7 +80,7 @@ export function PatientDashboard() {
             onClick={() => router.push(`/${locale}/search`)}
             className="group flex items-center gap-2 rounded-full bg-teal px-6 py-3 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-[0_0_20px_rgba(15,118,110,0.4)] hover:-translate-y-0.5"
           >
-            Book Now
+            {t('bookNow')}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </button>
         </div>
@@ -124,13 +124,15 @@ export function PatientDashboard() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => void handleCancel(appointment._id)}
-                    className="relative overflow-hidden rounded-full border border-rose-200 bg-white/50 px-5 py-2.5 text-sm font-medium text-rose-600 shadow-sm backdrop-blur transition-all hover:bg-rose-500 hover:text-white hover:border-transparent hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:-translate-y-0.5"
-                  >
-                    {t('cancel')}
-                  </button>
+                  {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                    <button
+                      type="button"
+                      onClick={() => void handleCancel(appointment._id)}
+                      className="relative overflow-hidden rounded-full border border-rose-200 bg-white/50 px-5 py-2.5 text-sm font-medium text-rose-600 shadow-sm backdrop-blur transition-all hover:bg-rose-500 hover:text-white hover:border-transparent hover:shadow-[0_0_20px_rgba(244,63,94,0.3)] hover:-translate-y-0.5"
+                    >
+                      {t('cancel')}
+                    </button>
+                  )}
                 </div>
               </article>
             );

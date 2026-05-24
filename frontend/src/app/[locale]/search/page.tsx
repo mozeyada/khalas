@@ -92,7 +92,7 @@ export default function SearchPage() {
           >
             <option value="">{t('allGovernorates')}</option>
             {EGYPT_GOVERNORATES.map((g) => (
-              <option key={g} value={g}>{g}</option>
+              <option key={g} value={g}>{(t as any)(`governorates.${g}`)}</option>
             ))}
           </select>
           <select
@@ -103,7 +103,7 @@ export default function SearchPage() {
           >
             <option value="">{t('allCategories')}</option>
             {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>{(t as any)(`categories.${c}`)}</option>
             ))}
           </select>
           <button
