@@ -9,7 +9,10 @@ import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
 
 function normalizePhone(phone: string): string {
-  let cleaned = phone.replace(/[^\d+]/g, '');
+  // Convert Eastern Arabic numerals to Western numerals
+  const westernised = phone.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
+  // Strip all non-digit characters except leading +
+  let cleaned = westernised.replace(/[^\d+]/g, '');
   if (cleaned.startsWith('+')) return cleaned;
   if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
   if (cleaned.startsWith('1') && cleaned.length === 10) return '+20' + cleaned;
