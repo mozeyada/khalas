@@ -57,6 +57,7 @@
     "noteTitle": "OTP is mock-only at this stage",
     "noteBody": "No SMS is sent yet. Open the backend console, copy the four-digit code, and enter it here.",
     "fields": {
+      "name": "Full name",
       "nameAr": "Arabic name",
       "nameEn": "English name",
       "phone": "Phone number",
@@ -67,6 +68,7 @@
       "preferredChannel": "Preferred Notification Channel"
     },
     "placeholders": {
+      "name": "Example: Mohamed Ahmed",
       "nameAr": "Example: Mohamed Ahmed",
       "nameEn": "Example: Mohamed Ahmed",
       "phone": "+201000000000",

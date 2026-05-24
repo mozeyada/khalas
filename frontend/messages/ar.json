@@ -57,6 +57,7 @@
     "noteTitle": "OTP تجريبي في هذه المرحلة",
     "noteBody": "لن يتم إرسال رسالة SMS بعد. افتح سجل الخادم في الطرفية للحصول على الرمز المكوّن من أربعة أرقام ثم أدخله هنا.",
     "fields": {
+      "name": "الاسم بالكامل",
       "nameAr": "الاسم بالعربية",
       "nameEn": "الاسم بالإنجليزية",
       "phone": "رقم الهاتف",
@@ -67,8 +68,9 @@
       "preferredChannel": "وسيلة التواصل المفضلة"
     },
     "placeholders": {
+      "name": "مثال: محمد أحمد",
       "nameAr": "مثال: محمد أحمد",
-      "nameEn": "Example: Mohamed Ahmed",
+      "nameEn": "مثال: Mohamed Ahmed",
       "phone": "+201000000000",
       "email": "name@example.com",
       "otp": "1234",

@@ -16,8 +16,7 @@ export function RegisterForm() {
 
   const [formState, setFormState] = useState({
     phone: '',
-    nameAr: '',
-    nameEn: '',
+    name: '',
     email: '',
     password: '',
     otpCode: '',
@@ -34,14 +33,21 @@ export function RegisterForm() {
     setFeedback(null);
     setIsSubmitting(true);
 
+    let normalizedPhone = formState.phone.trim();
+    if (normalizedPhone.startsWith('01')) {
+      normalizedPhone = '+2' + normalizedPhone;
+    } else if (normalizedPhone.startsWith('1')) {
+      normalizedPhone = '+20' + normalizedPhone;
+    }
+
     try {
       const challenge = await register({
-        phone: formState.phone,
-        name_ar: formState.nameAr,
-        name_en: formState.nameEn,
+        phone: normalizedPhone,
+        name_ar: formState.name,
+        name_en: formState.name,
         email: formState.email || undefined,
         password: formState.password || undefined,
-        preferred_channel: (formState.phone && formState.email) ? formState.preferredChannel : undefined
+        preferred_channel: (normalizedPhone && formState.email) ? formState.preferredChannel : undefined
       });
       setOtpSent(true);
       setFeedback(
@@ -61,8 +67,15 @@ export function RegisterForm() {
     setError(null);
     setIsSubmitting(true);
 
+    let normalizedPhone = formState.phone.trim();
+    if (normalizedPhone.startsWith('01')) {
+      normalizedPhone = '+2' + normalizedPhone;
+    } else if (normalizedPhone.startsWith('1')) {
+      normalizedPhone = '+20' + normalizedPhone;
+    }
+
     try {
-      await verifyOtpCode(formState.phone, formState.otpCode);
+      await verifyOtpCode(normalizedPhone, formState.otpCode);
       router.push(`/${locale}/dashboard`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
@@ -80,33 +93,18 @@ export function RegisterForm() {
         <form className="space-y-5" onSubmit={otpSent ? handleVerify : handleRegister}>
           {!otpSent ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4">
                 <label className="block group">
-                  <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.nameEn')}</span>
+                  <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.name')}</span>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
                       <User className="h-4 w-4" />
                     </div>
                     <input
-                      value={formState.nameEn}
-                      onChange={(event) => setFormState((current) => ({...current, nameEn: event.target.value}))}
+                      value={formState.name}
+                      onChange={(event) => setFormState((current) => ({...current, name: event.target.value}))}
                       className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-11 pr-4 py-3 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
-                      placeholder={t('placeholders.nameEn')}
-                      required
-                    />
-                  </div>
-                </label>
-                <label className="block group">
-                  <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.nameAr')}</span>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <input
-                      value={formState.nameAr}
-                      onChange={(event) => setFormState((current) => ({...current, nameAr: event.target.value}))}
-                      className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-11 pr-4 py-3 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20 text-right"
-                      placeholder={t('placeholders.nameAr')}
+                      placeholder={t('placeholders.name')}
                       required
                     />
                   </div>
