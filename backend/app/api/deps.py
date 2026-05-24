@@ -34,11 +34,11 @@ async def get_current_user(
     return user
 
 
-def require_role(required_role: Role) -> Callable[[dict], dict]:
-    """Create a dependency that enforces a user role."""
+def require_role(*required_roles: Role) -> Callable[[dict], dict]:
+    """Create a dependency that enforces any of the provided user roles."""
 
     async def dependency(current_user: Annotated[dict, Depends(get_current_user)]) -> dict:
-        if current_user["role"] != required_role:
+        if current_user["role"] not in required_roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions.")
         return current_user
 

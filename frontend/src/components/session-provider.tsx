@@ -31,7 +31,7 @@ type SessionContextValue = {
   }) => Promise<OtpChallengeData>;
   requestOtp: (identifier: string) => Promise<OtpChallengeData>;
   verifyOtpCode: (identifier: string, otpCode: string) => Promise<Role>;
-  loginWithPassword: (identifier: string, password: string) => Promise<void>;
+  loginWithPassword: (identifier: string, password: string) => Promise<Role>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -131,6 +131,7 @@ export function SessionProvider({children}: {children: ReactNode}) {
         }
 
         setUser(payload.data.user);
+        return payload.data.user.role;
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Login failed.');
         throw err;

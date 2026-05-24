@@ -46,7 +46,7 @@ def get_appointment_service() -> AppointmentService:
 @router.post("/appointments", response_model=ApiResponse[AppointmentResponse], status_code=status.HTTP_201_CREATED)
 async def create_appointment(
     payload: AppointmentCreateRequest,
-    current_user: Annotated[dict, Depends(require_role("patient"))],
+    current_user: Annotated[dict, Depends(require_role("patient", "admin", "salesman"))],
     appointment_service: Annotated[AppointmentService, Depends(get_appointment_service)],
 ) -> ApiResponse[AppointmentResponse]:
     """Book an appointment for the authenticated patient."""
@@ -67,7 +67,7 @@ async def create_appointment(
 
 @router.get("/appointments/mine", response_model=ApiResponse[list[AppointmentResponse]], status_code=status.HTTP_200_OK)
 async def list_my_appointments(
-    current_user: Annotated[dict, Depends(require_role("patient"))],
+    current_user: Annotated[dict, Depends(require_role("patient", "admin", "salesman"))],
 ) -> ApiResponse[list[AppointmentResponse]]:
     """List the authenticated patient's appointments."""
     appointments = await AppointmentRepository().list_upcoming_for_patient(str(current_user["_id"]), utc_now())
@@ -78,7 +78,7 @@ async def list_my_appointments(
 async def cancel_my_appointment(
     appointment_id: str,
     payload: AppointmentCancelRequest,
-    current_user: Annotated[dict, Depends(require_role("patient"))],
+    current_user: Annotated[dict, Depends(require_role("patient", "admin", "salesman"))],
 ) -> ApiResponse[AppointmentResponse]:
     """Cancel a patient-owned appointment."""
     repository = AppointmentRepository()

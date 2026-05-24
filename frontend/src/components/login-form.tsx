@@ -33,8 +33,13 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await loginWithPassword(identifier, password);
-      router.push(`/${locale}/dashboard`);
+      const role = await loginWithPassword(identifier, password);
+      let targetPath = 'dashboard';
+      if (role === 'admin') targetPath = 'admin';
+      else if (role === 'salesman') targetPath = 'salesman';
+      else if (role === 'provider') targetPath = 'provider/appointments';
+      
+      router.push(`/${locale}/${targetPath}`);
     } catch (caught: any) {
       setError(caught.message || t('genericError'));
     } finally {
@@ -69,7 +74,12 @@ export function LoginForm() {
 
     try {
       const role = await verifyOtpCode(identifier, otpCode);
-      router.push(`/${locale}/${role === 'provider' ? 'provider/appointments' : 'dashboard'}`);
+      let targetPath = 'dashboard';
+      if (role === 'admin') targetPath = 'admin';
+      else if (role === 'salesman') targetPath = 'salesman';
+      else if (role === 'provider') targetPath = 'provider/appointments';
+      
+      router.push(`/${locale}/${targetPath}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
     } finally {

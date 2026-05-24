@@ -8,7 +8,7 @@ from pydantic import Field
 
 from app.schemas.common import IdentifierModel, TimestampedModel
 
-Role = Literal["patient", "provider", "admin"]
+Role = Literal["patient", "provider", "admin", "salesman"]
 
 
 class UserProfile(IdentifierModel, TimestampedModel):

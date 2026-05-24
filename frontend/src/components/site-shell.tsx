@@ -1,7 +1,7 @@
 'use client';
 
 import {useLocale, useTranslations} from 'next-intl';
-import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle} from 'lucide-react';
+import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle, Sparkles} from 'lucide-react';
 
 import {Link, usePathname} from '@/i18n/navigation';
 import {useSession} from '@/components/session-provider';
@@ -97,6 +97,17 @@ export function SiteShell({
                   >
                     <Shield className="h-4 w-4 transition-transform group-hover:scale-110" />
                     <span className="hidden sm:inline">{t('admin')}</span>
+                  </Link>
+                ) : null}
+                
+                {user?.role === 'admin' || user?.role === 'salesman' ? (
+                  <Link
+                    href="/salesman"
+                    locale={locale}
+                    className="group flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-md"
+                  >
+                    <Sparkles className="h-4 w-4 transition-transform group-hover:scale-110" />
+                    <span className="hidden sm:inline">{t('sales')}</span>
                   </Link>
                 ) : null}
                 
