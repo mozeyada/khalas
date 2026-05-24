@@ -335,5 +335,39 @@
     "successProfile": "Profile updated successfully.",
     "successPassword": "Password changed successfully.",
     "genericError": "Something went wrong. Please try again."
+  },
+  "SalesmanPage": {
+    "pageTitle": "Sales Workspace",
+    "pageSubtitle": "Setup instant demos for clinics in 3 minutes.",
+    "formTitle": "New Clinic Demo",
+    "formSubtitle": "Instantly generate a working clinic page.",
+    "fields": {
+      "clinicName": "Clinic Name (Public)",
+      "specialty": "Specialty",
+      "governorate": "Governorate",
+      "doctorPhone": "Doctor's WhatsApp / Phone",
+      "doctorPhoneHelper": "Used to send the live notification during demo."
+    },
+    "placeholders": {
+      "clinicName": "e.g., Dr. Ahmed Cardiology",
+      "specialty": "e.g., Cardiology",
+      "governorate": "e.g., Cairo",
+      "doctorPhone": "+2010..."
+    },
+    "actions": {
+      "submit": "Generate Live Demo",
+      "loading": "Building Clinic..."
+    },
+    "instructionsTitle": "How to do the perfect demo",
+    "steps": {
+      "step1Title": "Fill out this quick form.",
+      "step1Body": "Takes 15 seconds. Use the doctor's real phone number.",
+      "step2Title": "Hand them the device.",
+      "step2Body": "The app will instantly redirect to their new clinic page. Let them click around.",
+      "step3Title": "Book a test appointment.",
+      "step3Body": "Book a slot right in front of them so they can see the QR code system.",
+      "step4Title": "Show the notification.",
+      "step4Body": "Their phone will buzz with a WhatsApp confirmation message instantly."
+    }
   }
 }

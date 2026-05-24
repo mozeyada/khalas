@@ -21,7 +21,8 @@ function normalizePhone(phone: string): string {
 }
 
 export default function SalesmanPage() {
-  const t = useTranslations('Navigation');
+  const nav = useTranslations('Navigation');
+  const t = useTranslations('SalesmanPage');
   const locale = useLocale();
   const router = useRouter();
   const {isAuthenticated, isReady, user} = useSession();
@@ -36,7 +37,7 @@ export default function SalesmanPage() {
 
   if (!isReady) {
     return (
-      <SiteShell title="Salesman Dashboard" subtitle="Loading...">
+      <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
         <p className="text-sm text-ink/60">Loading...</p>
       </SiteShell>
     );
@@ -89,7 +90,7 @@ export default function SalesmanPage() {
   }
 
   return (
-    <SiteShell title="Sales Workspace" subtitle="Setup instant demos for clinics in 3 minutes.">
+    <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
         
         {/* Left Column: Form */}
@@ -99,33 +100,33 @@ export default function SalesmanPage() {
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-ink">New Clinic Demo</h2>
-              <p className="text-sm text-ink/60">Instantly generate a working clinic page.</p>
+              <h2 className="text-xl font-semibold text-ink">{t('formTitle')}</h2>
+              <p className="text-sm text-ink/60">{t('formSubtitle')}</p>
             </div>
           </div>
 
           <form onSubmit={handleDemoSubmit} className="space-y-4">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-ink">Clinic Name (Public)</span>
+              <span className="mb-2 block text-sm font-medium text-ink">{t('fields.clinicName')}</span>
               <input
                 value={clinicName}
                 onChange={(e) => setClinicName(e.target.value)}
                 required
                 className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
-                placeholder="e.g., Dr. Ahmed Cardiology"
+                placeholder={t('placeholders.clinicName')}
               />
             </label>
 
             <div className="grid grid-cols-2 gap-4">
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-ink">Specialty</span>
+                <span className="mb-2 block text-sm font-medium text-ink">{t('fields.specialty')}</span>
                 <input
                   list="specialties-list"
                   value={specialty}
                   onChange={(e) => setSpecialty(e.target.value)}
                   required
                   className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
-                  placeholder="e.g., Cardiology"
+                  placeholder={t('placeholders.specialty')}
                 />
                 <datalist id="specialties-list">
                   <option value="Cardiology" />
@@ -142,14 +143,14 @@ export default function SalesmanPage() {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-medium text-ink">Governorate</span>
+                <span className="mb-2 block text-sm font-medium text-ink">{t('fields.governorate')}</span>
                 <input
                   list="governorates-list"
                   value={governorate}
                   onChange={(e) => setGovernorate(e.target.value)}
                   required
                   className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
-                  placeholder="e.g., Cairo"
+                  placeholder={t('placeholders.governorate')}
                 />
                 <datalist id="governorates-list">
                   <option value="Cairo" />
@@ -184,15 +185,15 @@ export default function SalesmanPage() {
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-ink">Doctor's WhatsApp / Phone</span>
+              <span className="mb-2 block text-sm font-medium text-ink">{t('fields.doctorPhone')}</span>
               <input
                 value={doctorPhone}
                 onChange={(e) => setDoctorPhone(e.target.value)}
                 required
                 className="w-full rounded-2xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none transition-all focus:border-teal focus:bg-white"
-                placeholder="+2010..."
+                placeholder={t('placeholders.doctorPhone')}
               />
-              <p className="mt-1 text-xs text-ink/50">Used to send the live notification during demo.</p>
+              <p className="mt-1 text-xs text-ink/50">{t('fields.doctorPhoneHelper')}</p>
             </label>
 
             {error && (
@@ -204,41 +205,41 @@ export default function SalesmanPage() {
               disabled={isSubmitting}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg disabled:opacity-50"
             >
-              {isSubmitting ? 'Building Clinic...' : 'Generate Live Demo'}
+              {isSubmitting ? t('actions.loading') : t('actions.submit')}
             </button>
           </form>
         </section>
 
         {/* Right Column: Instructions */}
         <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8">
-          <h3 className="mb-4 text-lg font-semibold text-emerald-300">How to do the perfect demo</h3>
+          <h3 className="mb-4 text-lg font-semibold text-emerald-300">{t('instructionsTitle')}</h3>
           <ul className="space-y-4 text-sm leading-relaxed text-slate-300">
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">1</span>
               <div>
-                <strong className="block text-white">Fill out this quick form.</strong>
-                <p>Takes 15 seconds. Use the doctor's real phone number.</p>
+                <strong className="block text-white">{t('steps.step1Title')}</strong>
+                <p>{t('steps.step1Body')}</p>
               </div>
             </li>
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">2</span>
               <div>
-                <strong className="block text-white">Hand them the device.</strong>
-                <p>The app will instantly redirect to their new clinic page. Let them click around.</p>
+                <strong className="block text-white">{t('steps.step2Title')}</strong>
+                <p>{t('steps.step2Body')}</p>
               </div>
             </li>
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">3</span>
               <div>
-                <strong className="block text-white">Book a test appointment.</strong>
-                <p>Book a slot right in front of them so they can see the QR code system.</p>
+                <strong className="block text-white">{t('steps.step3Title')}</strong>
+                <p>{t('steps.step3Body')}</p>
               </div>
             </li>
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">4</span>
               <div>
-                <strong className="block text-white">Show the notification.</strong>
-                <p>Their phone will buzz with a WhatsApp confirmation message instantly.</p>
+                <strong className="block text-white">{t('steps.step4Title')}</strong>
+                <p>{t('steps.step4Body')}</p>
               </div>
             </li>
           </ul>

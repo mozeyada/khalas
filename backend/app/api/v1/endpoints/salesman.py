@@ -51,7 +51,7 @@ async def create_demo_clinic(
     user_repo = UserRepository()
     
     # 1. Find or create Provider User
-    provider_user = await user_repo.find_by_phone(payload.doctor_phone)
+    provider_user = await user_repo.find_by_identifier(payload.doctor_phone)
     if provider_user is None:
         document = {
             "phone": payload.doctor_phone,
