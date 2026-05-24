@@ -92,6 +92,17 @@ export default function AdminPage() {
     }
   }
 
+  async function updateRole(userId: string, newRole: string) {
+    try {
+      const updated = await bffPatch<User>(`/api/v1/admin/users/${userId}/role`, {
+        role: newRole,
+      });
+      setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('genericError'));
+    }
+  }
+
   if (!isReady || isLoading) {
     return (
       <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
@@ -189,10 +200,23 @@ export default function AdminPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="font-semibold text-ink">{locale === 'ar' ? u.name_ar : u.name_en}</h2>
-                    <p className="text-sm text-ink/60">{u.phone} · {u.role}</p>
-                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs ${u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
-                      {u.is_active ? 'Active' : 'Deactivated'}
-                    </span>
+                    <p className="text-sm text-ink/60">{u.phone}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <select
+                        value={u.role}
+                        onChange={(e) => void updateRole(u._id, e.target.value)}
+                        disabled={!u.is_active}
+                        className="rounded-lg border border-black/10 bg-white/50 px-2 py-1 text-xs text-ink outline-none transition hover:bg-white"
+                      >
+                        <option value="patient">Patient</option>
+                        <option value="provider">Provider</option>
+                        <option value="salesman">Salesman</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
+                        {u.is_active ? 'Active' : 'Deactivated'}
+                      </span>
+                    </div>
                   </div>
                   {u.is_active ? (
                     <button

@@ -33,6 +33,11 @@ class VenueSubscriptionRequest(BaseModel):
     billing_notes: str | None = None
 
 
+class UserRoleRequest(BaseModel):
+    """Update user role."""
+    role: str
+
+
 # ── Venue moderation ──────────────────────────────────────────────────────────
 
 @router.get("/venues", response_model=ApiResponse[list[VenueResponse]], status_code=status.HTTP_200_OK)
@@ -101,6 +106,25 @@ async def admin_deactivate_user(
     user = await UserRepository().update_by_id(user_id, {
         "is_active": False,
         "refresh_token": None,  # Invalidate all sessions
+        "updated_at": utc_now(),
+    })
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    return ApiResponse(data=serialize_user(user))
+
+
+@router.patch("/users/{user_id}/role", response_model=ApiResponse[UserProfile], status_code=status.HTTP_200_OK)
+async def admin_update_user_role(
+    user_id: str,
+    payload: UserRoleRequest,
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> ApiResponse[UserProfile]:
+    """Change a user's role."""
+    if payload.role not in ["admin", "provider", "patient", "salesman"]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role.")
+    
+    user = await UserRepository().update_by_id(user_id, {
+        "role": payload.role,
         "updated_at": utc_now(),
     })
     if user is None:
