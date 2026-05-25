@@ -6,8 +6,8 @@
     "login": "Login",
     "register": "Register",
     "dashboard": "My Appointments",
-    "providerDashboard": "Provider Dashboard",
-    "provider": "Provider Appointments",
+    "providerDashboard": "Clinic / Doctor's Office Dashboard",
+    "provider": "Clinic / Doctor's Office Appointments",
     "admin": "Admin",
     "sales": "Sales",
     "profile": "Profile",
@@ -17,7 +17,7 @@
     "brand": "Khalas | خلاص",
     "eyebrow": "A scalable appointment platform for Egypt",
     "headline": "Start booking clinics and managing appointments from the web.",
-    "body": "This slice now connects OTP auth, venue pages, booking, and the patient/provider dashboards in one web flow.",
+    "body": "This slice now connects OTP auth, venue pages, booking, and the patient/clinic dashboards in one web flow.",
     "ctaPrimary": "Create patient account",
     "ctaSecondary": "Log in",
     "ctaSearch": "Find a clinic",
@@ -91,7 +91,7 @@
     "pageSubtitle": "Request an OTP and enter it to continue booking or managing appointments.",
     "eyebrow": "Phone + OTP sign in",
     "title": "Sign in to an existing account",
-    "subtitle": "Patients and providers use the same login flow. You will be redirected to the matching dashboard after verification.",
+    "subtitle": "Patients and clinics use the same login flow. You will be redirected to the matching dashboard after verification.",
     "fields": {
       "phone": "Phone number",
       "otp": "OTP code",
@@ -132,7 +132,7 @@
     "emptyStaff": "No bookable staff are available right now."
   },
   "StaffPage": {
-    "overviewEyebrow": "Provider profile",
+    "overviewEyebrow": "Practitioner Profile",
     "bookingEyebrow": "Booking step",
     "bookingTitle": "Choose a service and a slot",
     "bookingBody": "Pick a service first, then load the next seven days of available appointments.",
@@ -147,7 +147,7 @@
     "loadSlots": "Load available slots",
     "slotMeta": "{duration} min + {buffer} min buffer",
     "noSlots": "No available slots were found in the current window.",
-    "notesLabel": "Notes for the provider",
+    "notesLabel": "Notes for the doctor / clinic",
     "notesPlaceholder": "Add any booking note you want to include",
     "cashNote": "Pay cash at the clinic",
     "loginToBook": "Log in as a patient to complete booking",
@@ -164,7 +164,7 @@
     "fields": {
       "appointmentId": "Appointment ID",
       "venue": "Venue",
-      "staff": "Provider",
+      "staff": "Doctor / Practitioner",
       "service": "Service",
       "slot": "Appointment time"
     },
@@ -187,14 +187,14 @@
     "genericError": "Appointments could not be loaded right now."
   },
   "ProviderAppointmentsPage": {
-    "pageTitle": "Provider appointments",
+    "pageTitle": "Clinic / Doctor's Office Appointments",
     "pageSubtitle": "Review incoming requests and confirm or cancel them from the same screen.",
     "loading": "Loading appointments...",
-    "empty": "There are no appointments across this provider account yet.",
+    "empty": "There are no appointments across this clinic/doctor account yet.",
     "priceLine": "Service price: {price}",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "providerCancelledReason": "Cancelled by provider",
+    "providerCancelledReason": "Cancelled by clinic/doctor",
     "genericError": "Appointments could not be updated right now."
   },
   "SearchPage": {
@@ -247,18 +247,18 @@
     }
   },
   "ProviderDashboardPage": {
-    "pageTitle": "Provider dashboard",
+    "pageTitle": "Clinic / Dr. Office Dashboard",
     "pageSubtitle": "Manage your venues, staff, services, and availability.",
-    "tabVenues": "Venues",
-    "tabStaff": "Staff",
+    "tabVenues": "Venues / Clinics",
+    "tabStaff": "Doctors / Team",
     "tabServices": "Services",
     "tabAvailability": "Availability",
     "loading": "Loading...",
     "createVenue": "New venue",
-    "createStaff": "New staff member",
+    "createStaff": "New Doctor / Specialist",
     "createService": "New service",
     "noVenues": "No venues yet. Create one to get started.",
-    "noStaff": "No staff members yet.",
+    "noStaff": "No doctors or staff members yet.",
     "noServices": "No services yet.",
     "genericError": "Something went wrong.",
     "save": "Save",
@@ -266,7 +266,7 @@
   },
   "AdminPage": {
     "pageTitle": "Admin panel",
-    "pageSubtitle": "Moderate venues and manage user accounts.",
+    "pageSubtitle": "Moderate clinics and manage user accounts.",
     "tabVenues": "Venues",
     "tabUsers": "Users",
     "loading": "Loading...",

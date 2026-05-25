@@ -19,6 +19,7 @@ class UserProfile(IdentifierModel, TimestampedModel):
     name_ar: str
     name_en: str
     role: Role
+    provider_type: Literal["doctor", "clinic"] | None = None
     is_active: bool = True
     preferred_channel: Literal["email", "whatsapp"]
 

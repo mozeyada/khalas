@@ -13,6 +13,7 @@ export type UserProfile = {
   name_ar: string;
   name_en: string;
   role: Role;
+  provider_type: 'doctor' | 'clinic' | null;
   is_active: boolean;
   preferred_channel: 'email' | 'whatsapp';
   created_at: string;

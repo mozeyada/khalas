@@ -15,7 +15,7 @@
 import {createContext, ReactNode, useCallback, useContext, useEffect, useState} from 'react';
 
 import {OtpChallengeData, Role, UserProfile} from '@/lib/types';
-import {ApiError, registerPatient, requestLoginOtp} from '@/lib/api';
+import {ApiError, registerAccount, requestLoginOtp} from '@/lib/api';
 
 type SessionContextValue = {
   user: UserProfile | null;
@@ -25,6 +25,8 @@ type SessionContextValue = {
     phone: string;
     name_ar: string;
     name_en: string;
+    role?: 'patient' | 'provider';
+    provider_type?: 'doctor' | 'clinic';
     email?: string;
     preferred_channel?: 'email' | 'whatsapp';
     password?: string;
@@ -81,10 +83,13 @@ export function SessionProvider({children}: {children: ReactNode}) {
     phone: string;
     name_ar: string;
     name_en: string;
+    role?: 'patient' | 'provider';
+    provider_type?: 'doctor' | 'clinic';
     email?: string;
     preferred_channel?: 'email' | 'whatsapp';
+    password?: string;
   }) {
-    return registerPatient(input);
+    return registerAccount({ ...input, role: input.role || 'patient' });
   }
 
   async function requestOtp(identifier: string) {

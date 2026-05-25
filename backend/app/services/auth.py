@@ -70,6 +70,7 @@ class AuthService:
             "created_at": timestamp,
             "updated_at": timestamp,
             "role": request.role,
+            "provider_type": request.provider_type if request.role == "provider" else None,
             "preferred_channel": request.preferred_channel or ("email" if request.email else "whatsapp"),
             "hashed_password": get_password_hash(request.password) if request.password else None,
             "reset_token": None,

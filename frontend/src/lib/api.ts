@@ -124,17 +124,19 @@ export async function getStaffSlots(staffId: string, serviceId: string): Promise
 // OTP verification (login) goes through /api/auth/login (BFF route) in
 // session-provider.tsx to keep the token out of client code entirely.
 
-export async function registerPatient(input: {
+export async function registerAccount(input: {
   phone: string;
   name_ar: string;
   name_en: string;
+  role: 'patient' | 'provider';
+  provider_type?: 'doctor' | 'clinic';
   email?: string;
   preferred_channel?: 'email' | 'whatsapp';
   password?: string;
 }): Promise<OtpChallengeData> {
   return publicFetch<OtpChallengeData>('/api/v1/auth/register', {
     method: 'POST',
-    body: JSON.stringify({...input, role: 'patient'}),
+    body: JSON.stringify(input),
   });
 }
 

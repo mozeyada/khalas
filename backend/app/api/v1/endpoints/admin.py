@@ -36,6 +36,7 @@ class VenueSubscriptionRequest(BaseModel):
 class UserRoleRequest(BaseModel):
     """Update user role."""
     role: str
+    provider_type: str | None = None
 
 
 # ── Venue moderation ──────────────────────────────────────────────────────────
@@ -122,11 +123,15 @@ async def admin_update_user_role(
     """Change a user's role."""
     if payload.role not in ["admin", "provider", "patient", "salesman"]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role.")
+    if payload.role == "provider" and payload.provider_type not in ["doctor", "clinic"]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid provider_type.")
     
-    user = await UserRepository().update_by_id(user_id, {
+    update_data = {
         "role": payload.role,
+        "provider_type": payload.provider_type if payload.role == "provider" else None,
         "updated_at": utc_now(),
-    })
+    }
+    user = await UserRepository().update_by_id(user_id, update_data)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return ApiResponse(data=serialize_user(user))

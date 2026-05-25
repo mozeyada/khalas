@@ -36,7 +36,9 @@ export function RegisterForm() {
     email: '',
     password: '',
     otpCode: '',
-    preferredChannel: 'whatsapp' as 'email' | 'whatsapp'
+    preferredChannel: 'whatsapp' as 'email' | 'whatsapp',
+    role: 'patient' as 'patient' | 'provider',
+    providerType: undefined as 'doctor' | 'clinic' | undefined
   });
   const [otpSent, setOtpSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +58,8 @@ export function RegisterForm() {
         phone: normalizedPhone,
         name_ar: formState.name,
         name_en: formState.name,
+        role: formState.role,
+        provider_type: formState.role === 'provider' ? formState.providerType : undefined,
         email: formState.email || undefined,
         password: formState.password || undefined,
         preferred_channel: (normalizedPhone && formState.email) ? formState.preferredChannel : undefined
@@ -81,8 +85,13 @@ export function RegisterForm() {
     const normalizedPhone = normalizePhone(formState.phone);
 
     try {
-      await verifyOtpCode(normalizedPhone, formState.otpCode);
-      router.push(`/${locale}/dashboard`);
+      const role = await verifyOtpCode(normalizedPhone, formState.otpCode);
+      let targetPath = 'dashboard';
+      if (role === 'admin') targetPath = 'admin';
+      else if (role === 'salesman') targetPath = 'salesman';
+      else if (role === 'provider') targetPath = 'provider/appointments';
+      
+      router.push(`/${locale}/${targetPath}`);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
     } finally {
@@ -99,6 +108,43 @@ export function RegisterForm() {
         <form className="space-y-5" onSubmit={otpSent ? handleVerify : handleRegister}>
           {!otpSent ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              <div className="flex flex-col sm:flex-row bg-black/5 p-1 rounded-2xl mb-6 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setFormState(c => ({...c, role: 'patient', providerType: undefined}))}
+                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
+                    formState.role === 'patient' 
+                      ? 'bg-white shadow-sm text-teal' 
+                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
+                  }`}
+                >
+                  {locale === 'ar' ? 'أنا عميل' : 'I am a Patient'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'doctor'}))}
+                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
+                    formState.role === 'provider' && formState.providerType === 'doctor'
+                      ? 'bg-white shadow-sm text-teal' 
+                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
+                  }`}
+                >
+                  {locale === 'ar' ? 'أنا طبيب' : 'I am a Doctor'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'clinic'}))}
+                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
+                    formState.role === 'provider' && formState.providerType === 'clinic'
+                      ? 'bg-white shadow-sm text-teal' 
+                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
+                  }`}
+                >
+                  {locale === 'ar' ? 'أنا عيادة / مركز طبي' : 'I am a Clinic / Dr. Office'}
+                </button>
+              </div>
+
               <div className="grid gap-4">
                 <label className="block group">
                   <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.name')}</span>

@@ -20,6 +20,7 @@ class RegisterRequest(APIModel):
     name_ar: str
     name_en: str
     role: Role = "patient"
+    provider_type: Literal["doctor", "clinic"] | None = None
     preferred_channel: Literal["email", "whatsapp"] | None = None
     password: str | None = Field(default=None, min_length=8)
 
@@ -28,6 +29,8 @@ class RegisterRequest(APIModel):
     def validate_contact_info(self) -> RegisterRequest:
         if self.email and not self.preferred_channel:
             raise ValueError("preferred_channel must be provided when email is given.")
+        if self.role == "provider" and not self.provider_type:
+            raise ValueError("provider_type must be provided for provider role.")
         return self
 
     @field_validator("phone")

@@ -14,7 +14,7 @@ type Venue = {
 };
 type User = {
   _id: string; name_ar: string; name_en: string; phone: string;
-  role: string; is_active: boolean; created_at: string;
+  role: string; provider_type?: string | null; is_active: boolean; created_at: string;
 };
 
 async function bffPatch<T>(path: string, body: unknown): Promise<T> {
@@ -92,10 +92,11 @@ export default function AdminPage() {
     }
   }
 
-  async function updateRole(userId: string, newRole: string) {
+  async function updateRole(userId: string, newRole: string, providerType?: string | null) {
     try {
       const updated = await bffPatch<User>(`/api/v1/admin/users/${userId}/role`, {
         role: newRole,
+        provider_type: providerType || null
       });
       setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
     } catch (e) {
@@ -203,15 +204,19 @@ export default function AdminPage() {
                     <p className="text-sm text-ink/60">{u.phone}</p>
                     <div className="mt-2 flex items-center gap-2">
                       <select
-                        value={u.role}
-                        onChange={(e) => void updateRole(u._id, e.target.value)}
+                        value={u.role === 'provider' ? `provider:${u.provider_type || 'clinic'}` : u.role}
+                        onChange={(e) => {
+                          const [r, pt] = e.target.value.split(':');
+                          void updateRole(u._id, r, pt);
+                        }}
                         disabled={!u.is_active}
                         className="rounded-lg border border-black/10 bg-white/50 px-2 py-1 text-xs text-ink outline-none transition hover:bg-white"
                       >
-                        <option value="patient">Patient</option>
-                        <option value="provider">Provider</option>
-                        <option value="salesman">Salesman</option>
-                        <option value="admin">Admin</option>
+                        <option value="patient">{locale === 'ar' ? 'عميل' : 'Patient'}</option>
+                        <option value="provider:doctor">{locale === 'ar' ? 'طبيب (مقدم)' : 'Doctor (Individual)'}</option>
+                        <option value="provider:clinic">{locale === 'ar' ? 'عيادة / مركز طبي' : 'Clinic / Dr. Office'}</option>
+                        <option value="salesman">{locale === 'ar' ? 'مبيعات' : 'Salesman'}</option>
+                        <option value="admin">{locale === 'ar' ? 'مدير' : 'Admin'}</option>
                       </select>
                       <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${u.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
                         {u.is_active ? 'Active' : 'Deactivated'}
