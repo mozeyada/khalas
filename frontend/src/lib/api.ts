@@ -12,9 +12,12 @@ import {
 
 /**
  * Public (unauthenticated) backend base URL.
- * Used only for public endpoints that don't require an auth token.
+ * On client-side (browser) fetches, we use the local proxy path to avoid CORS preflight latency.
+ * On server-side fetches, we query the backend API directly.
  */
-export const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
+export const apiBaseUrl = typeof window !== 'undefined'
+  ? '/public-api'
+  : (process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000');
 
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
