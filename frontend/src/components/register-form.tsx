@@ -1,8 +1,8 @@
 'use client';
 
-import {FormEvent, useState} from 'react';
+import {FormEvent, useState, useEffect} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import {User, Mail, Phone, Lock, KeyRound, ArrowRight, MessageSquare} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
@@ -28,6 +28,8 @@ export function RegisterForm() {
   const t = useTranslations('RegisterPage');
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isProviderFlow = searchParams?.get('role') === 'provider';
   const {register, verifyOtpCode} = useSession();
 
   const [formState, setFormState] = useState({
@@ -37,13 +39,21 @@ export function RegisterForm() {
     password: '',
     otpCode: '',
     preferredChannel: 'whatsapp' as 'email' | 'whatsapp',
-    role: 'patient' as 'patient' | 'provider',
-    providerType: undefined as 'doctor' | 'clinic' | undefined
+    role: (isProviderFlow ? 'provider' : 'patient') as 'patient' | 'provider',
+    providerType: (isProviderFlow ? 'doctor' : undefined) as 'doctor' | 'clinic' | undefined
   });
   const [otpSent, setOtpSent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFormState(c => ({
+      ...c,
+      role: isProviderFlow ? 'provider' : 'patient',
+      providerType: isProviderFlow ? 'doctor' : undefined
+    }));
+  }, [isProviderFlow]);
 
   async function handleRegister(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -102,48 +112,43 @@ export function RegisterForm() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
-        <h2 className="mb-2 text-2xl font-semibold text-ink">{t('title')}</h2>
-        <p className="mb-6 text-sm leading-6 text-ink/70">{t('subtitle')}</p>
+        <h2 className="mb-2 text-2xl font-semibold text-ink">
+          {isProviderFlow ? t('providerTitle') : t('title')}
+        </h2>
+        <p className="mb-6 text-sm leading-6 text-ink/70">
+          {isProviderFlow ? t('providerSubtitle') : t('subtitle')}
+        </p>
 
         <form className="space-y-5" onSubmit={otpSent ? handleVerify : handleRegister}>
           {!otpSent ? (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
               
-              <div className="flex flex-col sm:flex-row bg-black/5 p-1 rounded-2xl mb-6 gap-1">
-                <button
-                  type="button"
-                  onClick={() => setFormState(c => ({...c, role: 'patient', providerType: undefined}))}
-                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
-                    formState.role === 'patient' 
-                      ? 'bg-white shadow-sm text-teal' 
-                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
-                  }`}
-                >
-                  {locale === 'ar' ? 'أنا عميل' : 'I am a Patient'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'doctor'}))}
-                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
-                    formState.role === 'provider' && formState.providerType === 'doctor'
-                      ? 'bg-white shadow-sm text-teal' 
-                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
-                  }`}
-                >
-                  {locale === 'ar' ? 'أنا طبيب' : 'I am a Doctor'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'clinic'}))}
-                  className={`flex-1 rounded-xl py-2 text-sm font-medium transition-all ${
-                    formState.role === 'provider' && formState.providerType === 'clinic'
-                      ? 'bg-white shadow-sm text-teal' 
-                      : 'text-ink/60 hover:text-ink hover:bg-black/5'
-                  }`}
-                >
-                  {locale === 'ar' ? 'أنا عيادة / مركز طبي' : 'I am a Clinic / Dr. Office'}
-                </button>
-              </div>
+              {isProviderFlow && (
+                <div className="flex bg-black/5 p-1 rounded-2xl mb-6">
+                  <button
+                    type="button"
+                    onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'doctor'}))}
+                    className={`flex-grow rounded-xl py-2 text-sm font-medium transition-all ${
+                      formState.role === 'provider' && formState.providerType === 'doctor'
+                        ? 'bg-white shadow-sm text-teal' 
+                        : 'text-ink/60 hover:text-ink hover:bg-black/5'
+                    }`}
+                  >
+                    {locale === 'ar' ? 'أنا طبيب' : 'I am a Doctor'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormState(c => ({...c, role: 'provider', providerType: 'clinic'}))}
+                    className={`flex-grow rounded-xl py-2 text-sm font-medium transition-all ${
+                      formState.role === 'provider' && formState.providerType === 'clinic'
+                        ? 'bg-white shadow-sm text-teal' 
+                        : 'text-ink/60 hover:text-ink hover:bg-black/5'
+                    }`}
+                  >
+                    {locale === 'ar' ? 'أنا عيادة / مركز طبي' : 'I am a Clinic / Dr. Office'}
+                  </button>
+                </div>
+              )}
 
               <div className="grid gap-4">
                 <label className="block group">
@@ -293,6 +298,36 @@ export function RegisterForm() {
               </span>
             </button>
           </div>
+
+          {!otpSent && (
+            <div className="mt-6 text-center space-y-3">
+              <div>
+                <a
+                  href={`/${locale}/auth/login`}
+                  className="text-sm text-ink/50 hover:text-teal font-medium transition-colors"
+                >
+                  {t('loginLink')}
+                </a>
+              </div>
+              <div className="pt-2 border-t border-black/5">
+                {isProviderFlow ? (
+                  <a
+                    href={`/${locale}/auth/register`}
+                    className="text-sm text-teal hover:text-teal/80 font-semibold transition-colors"
+                  >
+                    {t('patientLink')}
+                  </a>
+                ) : (
+                  <a
+                    href={`/${locale}/auth/register?role=provider`}
+                    className="text-sm text-ink/60 hover:text-teal font-semibold transition-colors"
+                  >
+                    {t('providerLink')}
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
         </form>
       </section>
 

@@ -56,6 +56,11 @@
     "noteEyebrow": "Note",
     "noteTitle": "OTP is mock-only at this stage",
     "noteBody": "No SMS is sent yet. Open the backend console, copy the four-digit code, and enter it here.",
+    "loginLink": "Already have an account? Log in",
+    "providerLink": "Are you a clinic or doctor? Register as a Provider",
+    "patientLink": "Are you a patient? Book an appointment",
+    "providerTitle": "Clinic / Doctor Details",
+    "providerSubtitle": "Create an account to manage your venues, staff schedules, and bookings.",
     "fields": {
       "name": "Full name",
       "nameAr": "Arabic name",
