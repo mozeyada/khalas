@@ -14,7 +14,7 @@ type Venue = {
 };
 type User = {
   _id: string; name_ar: string; name_en: string; phone: string;
-  role: string; provider_type?: string | null; is_active: boolean; created_at: string;
+  email?: string | null; role: string; provider_type?: string | null; is_active: boolean; created_at: string;
 };
 
 async function bffPatch<T>(path: string, body: unknown): Promise<T> {
@@ -89,6 +89,23 @@ export default function AdminPage() {
       setUsers((prev) => prev.map((u) => (u._id === updated._id ? updated : u)));
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('genericError'));
+    }
+  }
+
+  async function impersonateUser(userId: string) {
+    try {
+      const res = await fetch('/api/auth/impersonate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({userId}),
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Impersonation failed.');
+      }
+      window.location.href = `/${locale}`;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('genericError'));
     }
   }
 
@@ -201,7 +218,15 @@ export default function AdminPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="font-semibold text-ink">{locale === 'ar' ? u.name_ar : u.name_en}</h2>
-                    <p className="text-sm text-ink/60">{u.phone}</p>
+                    <p className="text-sm text-ink/60 flex items-center gap-1.5 flex-wrap" dir="ltr">
+                      <span>{u.phone}</span>
+                      {u.email && (
+                        <>
+                          <span className="text-ink/30">•</span>
+                          <span className="text-ink/60">{u.email}</span>
+                        </>
+                      )}
+                    </p>
                     <div className="mt-2 flex items-center gap-2">
                       <select
                         value={u.role === 'provider' ? `provider:${u.provider_type || 'clinic'}` : u.role}
@@ -223,15 +248,26 @@ export default function AdminPage() {
                       </span>
                     </div>
                   </div>
-                  {u.is_active ? (
-                    <button
-                      type="button"
-                      onClick={() => void deactivateUser(u._id)}
-                      className="rounded-2xl bg-rose-500 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600"
-                    >
-                      {t('deactivate')}
-                    </button>
-                  ) : null}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {u.is_active && u.role !== 'admin' && (
+                      <button
+                        type="button"
+                        onClick={() => void impersonateUser(u._id)}
+                        className="rounded-2xl border border-teal text-teal hover:bg-teal/5 px-4 py-2 text-sm font-medium transition"
+                      >
+                        {locale === 'ar' ? 'دخول كـ' : 'Login As'}
+                      </button>
+                    )}
+                    {u.is_active ? (
+                      <button
+                        type="button"
+                        onClick={() => void deactivateUser(u._id)}
+                        className="rounded-2xl bg-rose-500 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600"
+                      >
+                        {t('deactivate')}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))

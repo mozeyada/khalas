@@ -11,12 +11,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.api.deps import require_role
-from app.core.security import utc_now
+from app.core.security import utc_now, create_access_token, create_refresh_token
 from app.repositories.users import UserRepository
 from app.repositories.venues import VenueRepository
 from app.schemas.common import ApiResponse
 from app.schemas.user import UserProfile
 from app.schemas.venue import VenueResponse
+from app.schemas.auth import AuthTokensData
 from app.services.serializers import serialize_user, serialize_venue
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -135,3 +136,34 @@ async def admin_update_user_role(
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return ApiResponse(data=serialize_user(user))
+
+
+@router.post("/users/{user_id}/impersonate", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+async def admin_impersonate_user(
+    user_id: str,
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> ApiResponse[AuthTokensData]:
+    """Issue auth tokens for any user to allow admin impersonation."""
+    user = await UserRepository().find_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    
+    if user["role"] == "admin":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot impersonate other admins.")
+        
+    access_token, access_expires_at = create_access_token(str(user["_id"]), user["role"])
+    refresh_token, refresh_expires_at = create_refresh_token(str(user["_id"]), user["role"])
+    
+    await UserRepository().update_by_id(str(user["_id"]), {
+        "refresh_token": refresh_token,
+        "updated_at": utc_now(),
+    })
+    
+    tokens_data = AuthTokensData(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        access_token_expires_at=access_expires_at,
+        refresh_token_expires_at=refresh_expires_at,
+        user=serialize_user(user)
+    )
+    return ApiResponse(data=tokens_data)
