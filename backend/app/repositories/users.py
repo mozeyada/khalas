@@ -32,6 +32,17 @@ class UserRepository:
         except InvalidId:
             return None
 
+    async def list_by_ids(self, user_ids: list[str]) -> list[dict]:
+        """Return a list of users by their ids."""
+        valid_ids = []
+        for uid in user_ids:
+            try:
+                valid_ids.append(to_object_id(uid))
+            except InvalidId:
+                continue
+        cursor = self.collection.find({"_id": {"$in": valid_ids}})
+        return await cursor.to_list(length=None)
+
     async def create(self, payload: dict) -> dict:
         """Insert a new user and return it."""
         result = await self.collection.insert_one(payload)

@@ -102,7 +102,9 @@ export type Appointment = {
   venue_id: string;
   staff_id: string;
   service_id: string;
-  patient_id: string;
+  patient_id: string | null;
+  patient_name?: string;
+  patient_phone?: string;
   slot_datetime: string;
   duration_minutes: number;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';

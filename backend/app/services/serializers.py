@@ -52,6 +52,7 @@ def serialize_venue(document: dict) -> VenueResponse:
         "trial_ends_at": document["trial_ends_at"],
         "billing_notes": document.get("billing_notes"),
         "owner_id": document["owner_id"],
+        "staff_users": document.get("staff_users", []),
         "created_at": document["created_at"],
         "updated_at": document["updated_at"],
     }
@@ -169,7 +170,9 @@ def serialize_appointment(document: dict) -> AppointmentResponse:
         "venue_id": document["venue_id"],
         "staff_id": document["staff_id"],
         "service_id": document["service_id"],
-        "patient_id": document["patient_id"],
+        "patient_id": document.get("patient_id"),
+        "patient_name": document.get("patient_name"),
+        "patient_phone": document.get("patient_phone"),
         "slot_datetime": document["slot_datetime"],
         "duration_minutes": document["duration_minutes"],
         "status": document["status"],

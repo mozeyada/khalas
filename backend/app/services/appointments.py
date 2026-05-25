@@ -14,7 +14,7 @@ from app.repositories.availability import AvailabilityRepository
 from app.repositories.services import ServiceRepository
 from app.repositories.staff import StaffRepository
 from app.repositories.venues import VenueRepository
-from app.schemas.appointment import AppointmentCreateRequest, SlotResponse, SlotsAvailabilityResponse
+from app.schemas.appointment import AppointmentCreateRequest, ProviderWalkInCreateRequest, SlotResponse, SlotsAvailabilityResponse
 from app.services.scheduling import (
     CAIRO_TZ,
     build_candidate_slots,
@@ -170,6 +170,86 @@ class AppointmentService:
         except Exception:
             # Atlas M0 or other environments that don't support transactions
             # fall back to the optimistic check-then-insert approach.
+            import logging
+            logging.getLogger(__name__).warning(
+                "MongoDB transaction unavailable – falling back to optimistic booking insert."
+            )
+            conflicts = await self.appointment_repository.list_for_staff_between(
+                staff_id=staff_id,
+                range_start=slot_datetime,
+                range_end=occupied_until,
+                statuses=["pending", "confirmed"],
+            )
+            if conflicts:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="The selected slot is no longer available.",
+                )
+            return await self.appointment_repository.create(document)
+
+    async def create_walkin_appointment(
+        self,
+        *,
+        staff_id: str,
+        payload: ProviderWalkInCreateRequest,
+    ) -> dict:
+        """Create a walk-in appointment from the provider dashboard."""
+        _, service, venue = await self.get_service_context(staff_id=staff_id, service_id=payload.service_id)
+        slot_datetime = payload.slot_datetime.astimezone(tz=UTC) if payload.slot_datetime.tzinfo else payload.slot_datetime.replace(tzinfo=UTC)
+        available_slots = await self.get_available_slots(
+            staff_id=staff_id,
+            service_id=payload.service_id,
+            requested_date=slot_datetime.astimezone(CAIRO_TZ).date().isoformat(),
+        )
+        if slot_datetime not in {slot.slot_datetime for slot in available_slots.slots}:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The selected slot is not available.")
+
+        occupied_until = slot_datetime + timedelta(minutes=service["duration_minutes"] + service.get("buffer_minutes", 0))
+        timestamp = utc_now()
+        document = {
+            "venue_id": str(venue["_id"]),
+            "staff_id": staff_id,
+            "service_id": payload.service_id,
+            "patient_id": None,
+            "patient_name": payload.patient_name,
+            "patient_phone": payload.patient_phone,
+            "slot_datetime": slot_datetime,
+            "occupied_until": occupied_until,
+            "duration_minutes": service["duration_minutes"],
+            "buffer_minutes_at_booking": service.get("buffer_minutes", 0),
+            "status": "confirmed", # Walk-ins are automatically confirmed
+            "payment_method": "cash",
+            "payment_status": "unpaid",
+            "deposit_amount": None,
+            "price_at_booking": service["price"],
+            "notes": payload.notes,
+            "cancellation_reason": None,
+            "cancelled_by": None,
+            "reminder_sent": False,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+        }
+
+        try:
+            motor_client = get_client()
+            async with await motor_client.start_session() as session:
+                async with session.start_transaction():
+                    conflicts = await self.appointment_repository.list_for_staff_between(
+                        staff_id=staff_id,
+                        range_start=slot_datetime,
+                        range_end=occupied_until,
+                        statuses=["pending", "confirmed"],
+                        session=session,
+                    )
+                    if conflicts:
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="The selected slot is no longer available.",
+                        )
+                    return await self.appointment_repository.create(document, session=session)
+        except HTTPException:
+            raise
+        except Exception:
             import logging
             logging.getLogger(__name__).warning(
                 "MongoDB transaction unavailable – falling back to optimistic booking insert."

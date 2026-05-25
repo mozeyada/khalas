@@ -10,11 +10,11 @@ Environment variables:
     RESEND_FROM_EMAIL         — Sender address.
                                 Defaults to 'onboarding@resend.dev' (works without a
                                 verified domain — use this until khalas.app is verified).
-    WHATSAPP_TOKEN            — Meta permanent access token
-    WHATSAPP_PHONE_NUMBER_ID  — Meta WhatsApp phone number ID
+    ULTRAMSG_INSTANCE_ID      — UltraMsg instance ID for instant WhatsApp delivery
+    ULTRAMSG_TOKEN            — UltraMsg token
 
 When RESEND_API_KEY is absent, OTP is printed to the console only (current behaviour).
-When WHATSAPP_TOKEN is absent, appointment events are printed to the console only.
+When ULTRAMSG_TOKEN is absent, appointment events are printed to the console only.
 Nothing breaks if the vars are not set.
 """
 
@@ -47,12 +47,11 @@ def _resend_from() -> str:
     return os.getenv("RESEND_FROM_EMAIL", "Khalas <onboarding@resend.dev>")
 
 
-def _whatsapp_token() -> str | None:
-    return os.getenv("WHATSAPP_TOKEN")
+def _ultramsg_instance_id() -> str | None:
+    return os.getenv("ULTRAMSG_INSTANCE_ID")
 
-
-def _whatsapp_phone_id() -> str | None:
-    return os.getenv("WHATSAPP_PHONE_NUMBER_ID")
+def _ultramsg_token() -> str | None:
+    return os.getenv("ULTRAMSG_TOKEN")
 
 
 # ---------------------------------------------------------------------------
@@ -202,11 +201,11 @@ async def send_otp_whatsapp(
     otp_code: str,
     expires_minutes: int = 10,
 ) -> None:
-    """Send an OTP code to the user's WhatsApp via Meta Cloud API."""
-    token = _whatsapp_token()
+    """Send an OTP code to the user's WhatsApp via UltraMsg."""
+    token = _ultramsg_token()
     if not token:
         logger.info(
-            "[KHALAS OTP] WhatsApp delivery skipped — WHATSAPP_TOKEN not set. "
+            "[KHALAS OTP] WhatsApp delivery skipped — ULTRAMSG_TOKEN not set. "
             "OTP for %s: %s",
             phone,
             otp_code,
@@ -269,62 +268,56 @@ async def _send_whatsapp(
     template_name: str,
     parameters: list[str],
 ) -> bool:
-    """Send a WhatsApp template message via Meta Cloud API.
+    """Send a WhatsApp message via UltraMsg.
 
     Returns True if the message was accepted, False otherwise.
-    Falls back gracefully when credentials are absent.
-
-    Template parameter mapping: parameters[0] → {{1}}, parameters[1] → {{2}}, etc.
+    Falls back gracefully to console when credentials are absent.
     """
-    token = _whatsapp_token()
-    phone_id = _whatsapp_phone_id()
+    instance = _ultramsg_instance_id()
+    token = _ultramsg_token()
 
-    if not token or not phone_id:
+    if not instance or not token:
         return False  # Caller will log to console
 
-    # Normalise phone: Meta requires E.164 without the leading +
-    wa_phone = phone.lstrip("+")
+    # Build the text dynamically instead of using pre-approved templates
+    text = ""
+    if template_name == "khalas_otp_auth":
+        text = f"كود التحقق الخاص بك هو: {parameters[0]}\nينتهي خلال {parameters[1]} دقائق."
+    elif template_name == "khalas_appointment_booked":
+        text = f"مرحباً {parameters[0]}،\nتم حجز موعدك بنجاح بتاريخ {parameters[2]} الساعة {parameters[3]}."
+    elif template_name == "khalas_appointment_confirmed":
+        text = f"مرحباً {parameters[0]}،\nتم تأكيد موعدك بتاريخ {parameters[2]} الساعة {parameters[3]}."
+    elif template_name == "khalas_appointment_cancelled":
+        text = f"مرحباً {parameters[0]}،\nتم إلغاء موعدك بتاريخ {parameters[2]} الساعة {parameters[3]}."
+    elif template_name == "khalas_reminder_24h":
+        text = f"مرحباً {parameters[0]}،\nتذكير: موعدك غداً بتاريخ {parameters[2]} الساعة {parameters[3]}."
+    else:
+        text = "رسالة من خلاص: " + " ".join(parameters)
 
-    body = {
-        "messaging_product": "whatsapp",
-        "to": wa_phone,
-        "type": "template",
-        "template": {
-            "name": template_name,
-            "language": {"code": "ar"},
-            "components": [
-                {
-                    "type": "body",
-                    "parameters": [
-                        {"type": "text", "text": p} for p in parameters
-                    ],
-                }
-            ],
-        },
-    }
+    # Normalise phone: UltraMsg expects standard E.164 without the +
+    wa_phone = phone.lstrip("+")
 
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(
-                f"https://graph.facebook.com/v19.0/{phone_id}/messages",
-                headers={
-                    "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
+                f"https://api.ultramsg.com/{instance}/messages/chat",
+                data={
+                    "token": token,
+                    "to": wa_phone,
+                    "body": text,
                 },
-                json=body,
             )
             if resp.status_code >= 400:
                 logger.warning(
-                    "[NOTIFY] WhatsApp send failed (template=%s): %s %s",
-                    template_name,
+                    "[NOTIFY] UltraMsg send failed: %s %s",
                     resp.status_code,
                     resp.text,
                 )
                 return False
-            logger.info("[NOTIFY] WhatsApp sent template=%s to %s", template_name, phone)
+            logger.info("[NOTIFY] WhatsApp sent via UltraMsg to %s", phone)
             return True
     except Exception as exc:
-        logger.warning("[NOTIFY] WhatsApp error (template=%s): %s", template_name, exc)
+        logger.warning("[NOTIFY] UltraMsg error: %s", exc)
         return False
 
 

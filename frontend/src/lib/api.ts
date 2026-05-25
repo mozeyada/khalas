@@ -202,6 +202,21 @@ export async function updateProviderAppointmentStatus(
   });
 }
 
+export async function createProviderWalkInAppointment(
+  input: {
+    service_id: string; 
+    slot_datetime: string; 
+    patient_name: string;
+    patient_phone?: string;
+    notes?: string;
+  }
+): Promise<Appointment> {
+  return bffFetch<Appointment>('/api/v1/provider/appointments/walkin', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
 // Legacy compatibility – these were accepting explicit tokens before BFF.
 // Kept as re-exports with the same shape so callers don't need updating yet.
 // TODO: Remove the token parameter from all call sites.

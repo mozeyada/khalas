@@ -29,8 +29,13 @@ class VenueRepository:
             return None
 
     async def list_by_owner(self, owner_id: str) -> list[dict]:
-        """List venues owned by a provider."""
-        cursor = self.collection.find({"owner_id": owner_id}).sort("created_at", 1)
+        """List venues owned by a provider or where they are staff."""
+        cursor = self.collection.find({
+            "$or": [
+                {"owner_id": owner_id},
+                {"staff_users": owner_id}
+            ]
+        }).sort("created_at", 1)
         return await cursor.to_list(length=None)
 
     async def create(self, payload: dict) -> dict:

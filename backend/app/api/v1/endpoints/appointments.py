@@ -18,6 +18,7 @@ from app.schemas.appointment import (
     AppointmentCreateRequest,
     AppointmentResponse,
     ProviderAppointmentStatusUpdateRequest,
+    ProviderWalkInCreateRequest,
 )
 from app.schemas.common import ApiResponse
 from app.services.appointments import AppointmentService
@@ -113,6 +114,49 @@ async def list_provider_appointments(
     venue_ids = [str(venue["_id"]) for venue in venues]
     appointments = await AppointmentRepository().list_for_provider_venues(venue_ids)
     return ApiResponse(data=[serialize_appointment(item) for item in appointments])
+
+
+@router.post("/provider/appointments/walkin", response_model=ApiResponse[AppointmentResponse], status_code=status.HTTP_201_CREATED)
+async def create_walkin_appointment(
+    payload: ProviderWalkInCreateRequest,
+    current_user: Annotated[dict, Depends(require_role("provider"))],
+    appointment_service: Annotated[AppointmentService, Depends(get_appointment_service)],
+) -> ApiResponse[AppointmentResponse]:
+    """Create a walk-in appointment from the provider dashboard."""
+    service = await ServiceRepository().find_by_id(payload.service_id)
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found.")
+    
+    venue = await VenueRepository().find_by_id(service["venue_id"])
+    if venue is None or venue["owner_id"] != str(current_user["_id"]):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to book for this service.")
+
+    appointment = await appointment_service.create_walkin_appointment(
+        staff_id=service["staff_id"],
+        payload=payload,
+    )
+    serialized = serialize_appointment(appointment)
+    
+    # Send a WhatsApp notification to the walk-in patient if they provided a phone number
+    if payload.patient_phone:
+        import asyncio
+        from app.services.notifications import _send_whatsapp, _format_slot, _log_notify
+        venue_id = appointment.get("venue_id", "")
+        date_str, time_str = _format_slot(appointment.get("slot_datetime"))
+        
+        async def notify_walkin():
+            sent = await _send_whatsapp(
+                phone=payload.patient_phone,
+                template_name="khalas_appointment_confirmed",
+                parameters=[payload.patient_name, venue_id, date_str, time_str],
+            )
+            if not sent:
+                msg = f"تم تأكيد موعدك بتاريخ {date_str} الساعة {time_str}"
+                _log_notify("CONSOLE", payload.patient_phone, msg)
+                
+        asyncio.create_task(notify_walkin())
+
+    return ApiResponse(data=serialized)
 
 
 @router.patch("/provider/appointments/{appointment_id}/status", response_model=ApiResponse[AppointmentResponse], status_code=status.HTTP_200_OK)

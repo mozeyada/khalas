@@ -6,6 +6,7 @@ import {useRouter} from 'next/navigation';
 import {Calendar, Clock, CreditCard, CalendarOff, CheckCircle2, XCircle, FileText} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
+import {WalkInModal} from '@/components/walkin-modal';
 import {ApiError, getProviderAppointments, updateProviderAppointmentStatus} from '@/lib/api';
 import {formatPrice} from '@/lib/format';
 import {Appointment} from '@/lib/types';
@@ -19,6 +20,8 @@ export function ProviderAppointments() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
+
   useEffect(() => {
     if (!isReady) {
       return;
@@ -29,7 +32,12 @@ export function ProviderAppointments() {
       return;
     }
 
-    void getProviderAppointments()
+    loadAppointments();
+  }, [isAuthenticated, isReady, locale, router, user?.role]);
+
+  function loadAppointments() {
+    setIsLoading(true);
+    getProviderAppointments()
       .then((response) => {
         setAppointments(response);
         setError(null);
@@ -40,7 +48,7 @@ export function ProviderAppointments() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [isAuthenticated, isReady, locale, router, t, user?.role]);
+  }
 
   async function handleStatusChange(appointmentId: string, status: 'confirmed' | 'cancelled') {
     try {
@@ -64,11 +72,31 @@ export function ProviderAppointments() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-ink">Manage Appointments</h2>
+        <button
+          onClick={() => setIsWalkInModalOpen(true)}
+          className="flex items-center gap-2 rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-105 active:scale-95"
+        >
+          <Calendar className="h-4 w-4" />
+          New Walk-In
+        </button>
+      </div>
+
       {error ? (
         <div className="animate-in fade-in slide-in-from-top-4 rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 backdrop-blur">
           {error}
         </div>
       ) : null}
+
+      <WalkInModal 
+        isOpen={isWalkInModalOpen} 
+        onClose={() => setIsWalkInModalOpen(false)} 
+        onSuccess={() => {
+          setIsWalkInModalOpen(false);
+          loadAppointments();
+        }} 
+      />
 
       {appointments.length === 0 ? (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center justify-center rounded-[2.5rem] border border-[var(--border)] bg-[var(--card)] py-16 px-6 text-center shadow-soft backdrop-blur-xl">
@@ -114,13 +142,20 @@ export function ProviderAppointments() {
                     </span>
                     
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
-                      <div className="flex items-center gap-2 text-ink">
-                        <Calendar className="h-5 w-5 text-teal/70" />
-                        <h2 className="text-lg font-medium">{dateStr}</h2>
-                      </div>
-                      <div className="flex items-center gap-2 text-ink/70">
-                        <Clock className="h-4 w-4 text-teal/50" />
-                        <span className="text-sm">{timeStr}</span>
+                      <div>
+                        <h2 className="text-xl font-bold text-ink mb-1">
+                          {appointment.patient_name || 'Online Booking'}
+                        </h2>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1.5 text-ink/80 font-medium">
+                            <Calendar className="h-4 w-4 text-teal/70" />
+                            <span>{dateStr}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-ink/70">
+                            <Clock className="h-4 w-4 text-teal/50" />
+                            <span className="text-sm">{timeStr}</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 

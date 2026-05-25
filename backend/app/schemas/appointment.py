@@ -42,13 +42,25 @@ class AppointmentCreateRequest(APIModel):
     notes: str | None = None
 
 
+class ProviderWalkInCreateRequest(APIModel):
+    """Payload for provider to create a walk-in appointment."""
+
+    service_id: str
+    slot_datetime: datetime
+    patient_name: str
+    patient_phone: str | None = None
+    notes: str | None = None
+
+
 class AppointmentResponse(IdentifierModel, TimestampedModel):
     """Appointment record returned via the API."""
 
     venue_id: str
     staff_id: str
     service_id: str
-    patient_id: str
+    patient_id: str | None = None
+    patient_name: str | None = None
+    patient_phone: str | None = None
     slot_datetime: datetime
     duration_minutes: int
     status: AppointmentStatus

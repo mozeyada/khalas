@@ -21,6 +21,9 @@ type Service = {
   _id: string; staff_id: string; venue_id: string; name_ar: string; name_en: string;
   duration_minutes: number; price: number; is_active: boolean;
 };
+type UserProfile = {
+  _id: string; phone: string; name_ar: string; name_en: string; role: string;
+};
 
 async function bffGet<T>(path: string): Promise<T> {
   const proxyPath = path.replace(/^\/api\/v1\//, '');
@@ -48,7 +51,7 @@ async function bffPost<T>(path: string, body: unknown): Promise<T> {
   return data.data;
 }
 
-type Tab = 'venues' | 'staff' | 'services';
+type Tab = 'venues' | 'staff' | 'services' | 'team';
 
 export default function ProviderDashboardPage() {
   const t = useTranslations('ProviderDashboardPage');
@@ -60,6 +63,7 @@ export default function ProviderDashboardPage() {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [team, setTeam] = useState<UserProfile[]>([]);
   const [selectedVenueId, setSelectedVenueId] = useState<string>('');
   const [selectedStaffId, setSelectedStaffId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -71,6 +75,9 @@ export default function ProviderDashboardPage() {
     slug: '', name_ar: '', name_en: '', category: 'clinic',
     governorate: 'القاهرة', area: '', address_ar: '', address_en: '', phone: '',
   });
+
+  const [invitePhone, setInvitePhone] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
@@ -90,6 +97,17 @@ export default function ProviderDashboardPage() {
     try {
       const allStaff = await bffGet<Staff[]>(`/api/v1/provider/venues/${venueId}/staff` as `/api/v1/provider/venues/${string}/staff`);
       setStaff(allStaff);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('genericError'));
+    }
+  }
+
+  async function loadTeam(venueId: string) {
+    setSelectedVenueId(venueId);
+    setTeam([]);
+    try {
+      const allTeam = await bffGet<UserProfile[]>(`/api/v1/provider/venues/${venueId}/team` as `/api/v1/provider/venues/${string}/team`);
+      setTeam(allTeam);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : t('genericError'));
     }
@@ -118,6 +136,25 @@ export default function ProviderDashboardPage() {
     }
   }
 
+  async function handleInviteTeam(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedVenueId) return;
+    setIsInviting(true);
+    setError(null);
+    try {
+      const updatedTeam = await bffPost<UserProfile[]>(
+        `/api/v1/provider/venues/${selectedVenueId}/team`,
+        { phone: invitePhone }
+      );
+      setTeam(updatedTeam);
+      setInvitePhone('');
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : t('genericError'));
+    } finally {
+      setIsInviting(false);
+    }
+  }
+
   if (!isReady || isLoading) {
     return (
       <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
@@ -130,6 +167,7 @@ export default function ProviderDashboardPage() {
     {id: 'venues', label: t('tabVenues')},
     {id: 'staff', label: t('tabStaff')},
     {id: 'services', label: t('tabServices')},
+    {id: 'team', label: 'Team & Access'},
   ];
 
   return (
@@ -240,13 +278,22 @@ export default function ProviderDashboardPage() {
                       </span>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => { setTab('staff'); void loadStaff(venue._id); }}
-                    className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
-                  >
-                    {t('tabStaff')} →
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { setTab('staff'); void loadStaff(venue._id); }}
+                      className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
+                    >
+                      {t('tabStaff')} →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setTab('team'); void loadTeam(venue._id); }}
+                      className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
+                    >
+                      Team →
+                    </button>
+                  </div>
                 </div>
               </article>
             ))
@@ -314,6 +361,54 @@ export default function ProviderDashboardPage() {
                 </span>
               </article>
             ))
+          )}
+        </div>
+      )}
+
+      {/* Team tab */}
+      {tab === 'team' && (
+        <div className="space-y-4">
+          {!selectedVenueId ? (
+            <p className="text-sm text-ink/60">Select a venue from the Venues tab to view team.</p>
+          ) : (
+            <>
+              <form onSubmit={handleInviteTeam} className="flex gap-2">
+                <input
+                  type="tel"
+                  dir="ltr"
+                  required
+                  value={invitePhone}
+                  onChange={(e) => setInvitePhone(e.target.value)}
+                  placeholder="Enter phone to invite..."
+                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm text-left outline-none focus:border-teal"
+                />
+                <button
+                  type="submit"
+                  disabled={isInviting}
+                  className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-medium text-white hover:bg-teal/90 disabled:opacity-50"
+                >
+                  Invite
+                </button>
+              </form>
+
+              {team.length === 0 ? (
+                <p className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 text-sm text-ink/60 shadow-soft">
+                  No team members found.
+                </p>
+              ) : (
+                team.map((userObj) => (
+                  <article key={userObj._id} className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft">
+                    <h2 className="font-semibold text-ink">{locale === 'ar' ? userObj.name_ar : userObj.name_en}</h2>
+                    <p className="mt-1 text-sm text-ink/60" dir="ltr" style={{textAlign: locale === 'ar' ? 'right' : 'left'}}>
+                      {userObj.phone}
+                    </p>
+                    <span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                      {userObj.role}
+                    </span>
+                  </article>
+                ))
+              )}
+            </>
           )}
         </div>
       )}

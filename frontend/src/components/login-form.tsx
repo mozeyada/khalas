@@ -128,9 +128,10 @@ export function LoginForm() {
                     <Mail className="h-5 w-5" />
                   </div>
                   <input
+                    dir="ltr"
                     value={identifier}
                     onChange={(event) => setIdentifier(event.target.value)}
-                    className={`w-full rounded-2xl border bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm outline-none transition-all focus:bg-white
+                    className={`w-full rounded-2xl border bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-left outline-none transition-all focus:bg-white
                       ${identifier.length > 0
                         ? isValidIdentifier(identifier)
                           ? 'border-emerald-500 text-emerald-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'

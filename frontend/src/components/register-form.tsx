@@ -124,9 +124,10 @@ export function RegisterForm() {
                     <Phone className="h-4 w-4" />
                   </div>
                   <input
+                    dir="ltr"
                     value={formState.phone}
                     onChange={(event) => setFormState((current) => ({...current, phone: event.target.value}))}
-                    className={`w-full rounded-2xl border bg-white/50 backdrop-blur-md pl-11 pr-4 py-3 text-sm outline-none transition-all focus:bg-white 
+                    className={`w-full rounded-2xl border bg-white/50 backdrop-blur-md pl-11 pr-4 py-3 text-sm text-left outline-none transition-all focus:bg-white 
                       ${formState.phone.length > 0
                         ? isValidPhone(formState.phone) 
                           ? 'border-emerald-500 text-emerald-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10' 

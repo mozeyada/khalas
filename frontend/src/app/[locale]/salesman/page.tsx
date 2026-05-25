@@ -191,10 +191,11 @@ export default function SalesmanPage() {
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-ink">{t('fields.doctorPhone')}</span>
               <input
+                dir="ltr"
                 value={doctorPhone}
                 onChange={(e) => setDoctorPhone(e.target.value)}
                 required
-                className={`w-full rounded-2xl border bg-white/50 px-4 py-3 text-sm outline-none transition-all focus:bg-white
+                className={`w-full rounded-2xl border bg-white/50 px-4 py-3 text-sm text-left outline-none transition-all focus:bg-white
                   ${doctorPhone.length > 0
                     ? isValidPhone(doctorPhone)
                       ? 'border-emerald-500 text-emerald-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10'

@@ -65,6 +65,12 @@ class VenueUpdateRequest(APIModel):
     photos: list[str] = Field(default_factory=list)
 
 
+class TeamMemberInviteRequest(APIModel):
+    """Payload to invite a team member to a venue."""
+
+    phone: str
+
+
 class VenueResponse(IdentifierModel, TimestampedModel):
     """Venue record returned by provider APIs."""
 
@@ -89,6 +95,7 @@ class VenueResponse(IdentifierModel, TimestampedModel):
     trial_ends_at: datetime
     billing_notes: str | None = None
     owner_id: str
+    staff_users: list[str] = Field(default_factory=list)
 
 
 class PublicVenueResponse(IdentifierModel):

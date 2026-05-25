@@ -19,8 +19,8 @@ from app.schemas.availability import AvailabilityEntry, AvailabilityUpdateReques
 from app.schemas.common import ApiResponse
 from app.schemas.service import ServiceCreateRequest, ServiceResponse, ServiceUpdateRequest
 from app.schemas.staff import StaffCreateRequest, StaffResponse, StaffUpdateRequest
-from app.schemas.user import Role
-from app.schemas.venue import VenueCreateRequest, VenueResponse, VenueUpdateRequest
+from app.schemas.user import Role, UserProfile
+from app.schemas.venue import VenueCreateRequest, VenueResponse, VenueUpdateRequest, TeamMemberInviteRequest
 from app.services.serializers import serialize_service, serialize_staff, serialize_venue
 
 router = APIRouter(prefix="/provider", tags=["provider"])
@@ -47,12 +47,12 @@ def validate_availability(slots: list[AvailabilityEntry]) -> None:
                 )
 
 
-async def require_owned_venue(venue_id: str, owner_id: str) -> dict:
-    """Return a venue if it belongs to the provider."""
+async def require_owned_venue(venue_id: str, user_id: str) -> dict:
+    """Return a venue if it belongs to the provider or they are staff."""
     venue = await VenueRepository().find_by_id(venue_id)
     if venue is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found.")
-    if venue["owner_id"] != owner_id:
+    if venue["owner_id"] != user_id and user_id not in venue.get("staff_users", []):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Venue does not belong to this provider.")
     return venue
 
@@ -126,6 +126,83 @@ async def update_provider_venue(
     if venue is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Venue not found.")
     return ApiResponse(data=serialize_venue(venue))
+
+
+@router.get("/venues/{venue_id}/team", response_model=ApiResponse[list[UserProfile]], status_code=status.HTTP_200_OK)
+async def list_venue_team(
+    venue_id: str,
+    current_user: Annotated[dict, Depends(require_role("provider"))],
+) -> ApiResponse[list[UserProfile]]:
+    """List all team members who have access to this venue."""
+    venue = await require_owned_venue(venue_id, str(current_user["_id"]))
+    
+    user_ids = [venue["owner_id"]] + venue.get("staff_users", [])
+    from app.repositories.users import UserRepository
+    users = await UserRepository().list_by_ids(user_ids)
+    
+    data = [UserProfile.model_validate({
+        "_id": str(u["_id"]),
+        "phone": u.get("phone"),
+        "email": u.get("email"),
+        "name_ar": u.get("name_ar", ""),
+        "name_en": u.get("name_en", ""),
+        "role": u.get("role", "provider"),
+        "is_active": u.get("is_active", True),
+        "preferred_channel": u.get("preferred_channel", "whatsapp"),
+        "created_at": u.get("created_at"),
+        "updated_at": u.get("updated_at"),
+    }) for u in users]
+    
+    return ApiResponse(data=data)
+
+
+@router.post("/venues/{venue_id}/team", response_model=ApiResponse[list[UserProfile]], status_code=status.HTTP_201_CREATED)
+async def invite_team_member(
+    venue_id: str,
+    payload: TeamMemberInviteRequest,
+    current_user: Annotated[dict, Depends(require_role("provider"))],
+) -> ApiResponse[list[UserProfile]]:
+    """Invite a new team member by phone number. Creates an account if missing."""
+    venue = await require_owned_venue(venue_id, str(current_user["_id"]))
+    # Only owner can add team members
+    if venue["owner_id"] != str(current_user["_id"]):
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the venue owner can invite team members.")
+         
+    from app.repositories.users import UserRepository
+    user_repo = UserRepository()
+    target_user = await user_repo.find_by_identifier(payload.phone)
+    
+    if target_user is None:
+        timestamp = utc_now()
+        document = {
+            "phone": payload.phone,
+            "name_ar": "عضو فريق",
+            "name_en": "Team Member",
+            "email": None,
+            "is_active": True,
+            "otp_code": None,
+            "otp_expires_at": None,
+            "refresh_token": None,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "role": "provider",
+            "preferred_channel": "whatsapp",
+            "hashed_password": None,
+            "reset_token": None,
+            "reset_token_expires_at": None,
+        }
+        target_user = await user_repo.create(document)
+        
+    target_id = str(target_user["_id"])
+    if target_id == venue["owner_id"]:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot invite the venue owner.")
+        
+    staff_users = venue.get("staff_users", [])
+    if target_id not in staff_users:
+        staff_users.append(target_id)
+        await VenueRepository().update_by_id(venue_id, {"staff_users": staff_users, "updated_at": utc_now()})
+        
+    return await list_venue_team(venue_id, current_user)
 
 
 @router.post("/venues/{venue_id}/staff", response_model=ApiResponse[StaffResponse], status_code=status.HTTP_201_CREATED)
