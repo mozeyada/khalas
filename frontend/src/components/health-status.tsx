@@ -84,26 +84,31 @@ export function HealthStatus() {
         : t('loading');
 
   return (
-    <div className="space-y-4 rounded-[1.75rem] border border-white/10 bg-white/5 p-5">
-      <div className="flex items-center gap-3">
-        <span className={`h-3.5 w-3.5 rounded-full ${indicatorClassName}`} />
-        <span className="text-lg font-semibold">{stateLabel}</span>
+    <div className="space-y-4 rounded-[2rem] border border-white/10 bg-slate-950/90 backdrop-blur-md p-6 text-slate-200 shadow-xl shadow-teal/5">
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+          {locale === 'ar' ? 'حالة الاتصال' : 'Connection Status'}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${indicatorClassName}`} />
+          <span className="text-sm font-semibold">{stateLabel}</span>
+        </div>
       </div>
 
-      <dl className="grid gap-4 text-sm sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <dt className="mb-2 text-slate-400">{t('service')}</dt>
-          <dd className="font-medium text-white">{serviceName}</dd>
+      <div className="space-y-3.5 pt-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-400 font-medium">{t('service')}</span>
+          <span className="text-sm font-semibold text-white">{serviceName}</span>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <dt className="mb-2 text-slate-400">{t('status')}</dt>
-          <dd className="font-medium text-white">{healthStatus}</dd>
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-400 font-medium">{t('status')}</span>
+          <span className="text-sm font-semibold text-white">{healthStatus}</span>
         </div>
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <dt className="mb-2 text-slate-400">{t('checkedAt')}</dt>
-          <dd className="font-medium text-white">{checkedAt}</dd>
+        <div className="flex flex-col gap-1 pt-3 border-t border-white/5">
+          <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{t('checkedAt')}</span>
+          <span className="text-sm font-semibold text-emerald-300/90" dir="ltr">{checkedAt}</span>
         </div>
-      </dl>
+      </div>
     </div>
   );
 }

@@ -109,7 +109,7 @@ export default async function HomePage({params}: HomePageProps) {
               <h2 className="mb-4 text-3xl font-bold text-ink">{t('statusTitle')}</h2>
               <p className="text-lg leading-relaxed text-ink/70">{t('statusBody')}</p>
             </div>
-            <div className="md:w-96 rounded-2xl bg-slate-50 p-6 border border-black/5 shadow-inner">
+            <div className="w-full md:w-96 flex-shrink-0">
               <HealthStatus />
             </div>
           </div>
