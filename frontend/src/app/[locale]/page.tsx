@@ -1,6 +1,5 @@
 import {getTranslations} from 'next-intl/server';
 
-import {HealthStatus} from '@/components/health-status';
 import {Link} from '@/i18n/navigation';
 import {SiteShell} from '@/components/site-shell';
 
@@ -17,13 +16,13 @@ export default async function HomePage({params}: HomePageProps) {
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Navbar substitute (since SiteShell is wrapping this, we'll keep the landing page content below SiteShell) */}
       <SiteShell>
-        <section className="relative overflow-hidden rounded-[3rem] bg-slate-950 px-6 py-20 text-center shadow-2xl sm:px-12 sm:py-32">
+        <section className="relative overflow-hidden rounded-[3rem] bg-[url('/hero-alexandria.png')] bg-cover bg-center px-6 py-20 text-center shadow-2xl sm:px-12 sm:py-32">
           {/* Decorative background elements */}
-          <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-teal/20 blur-3xl filter"></div>
-          <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl filter"></div>
+          <div className="absolute inset-0 bg-teal/50 mix-blend-multiply filter"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
 
           <div className="relative z-10 mx-auto max-w-4xl space-y-8">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-sm font-medium text-emerald-300 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-1.5 text-sm font-medium text-amber-300 backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
@@ -100,20 +99,7 @@ export default async function HomePage({params}: HomePageProps) {
           </article>
         </section>
 
-        <section className="mt-12 rounded-[3rem] border border-white/70 bg-[var(--card)] p-8 shadow-soft backdrop-blur sm:p-12">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-            <div className="max-w-xl">
-              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-teal">
-                {t('statusEyebrow')}
-              </p>
-              <h2 className="mb-4 text-3xl font-bold text-ink">{t('statusTitle')}</h2>
-              <p className="text-lg leading-relaxed text-ink/70">{t('statusBody')}</p>
-            </div>
-            <div className="w-full md:w-96 flex-shrink-0">
-              <HealthStatus />
-            </div>
-          </div>
-        </section>
+
       </SiteShell>
     </main>
   );
