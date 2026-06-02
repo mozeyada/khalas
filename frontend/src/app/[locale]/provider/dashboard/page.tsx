@@ -158,7 +158,10 @@ export default function ProviderDashboardPage() {
   if (!isReady || isLoading) {
     return (
       <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
-        <p className="text-sm text-ink/60">{t('loading')}</p>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-teal/30 border-t-teal" />
+          <p className="text-sm font-medium text-[var(--text-3)]">{t('loading')}</p>
+        </div>
       </SiteShell>
     );
   }
@@ -167,7 +170,7 @@ export default function ProviderDashboardPage() {
     {id: 'venues', label: t('tabVenues')},
     {id: 'staff', label: t('tabStaff')},
     {id: 'services', label: t('tabServices')},
-    {id: 'team', label: 'Team & Access'},
+    {id: 'team', label: t('tabTeam')},
   ];
 
   return (
@@ -177,14 +180,16 @@ export default function ProviderDashboardPage() {
       ) : null}
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 overflow-x-auto rounded-2xl border border-black/10 bg-white/60 p-1.5">
+      <div className="mb-6 flex gap-2 overflow-x-auto rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-sm backdrop-blur-md">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.id}
             type="button"
             onClick={() => setTab(tabItem.id)}
-            className={`rounded-xl px-5 py-2 text-sm font-medium transition ${
-              tab === tabItem.id ? 'bg-teal text-white shadow-sm' : 'text-ink hover:bg-black/5'
+            className={`whitespace-nowrap rounded-2xl px-5 py-2.5 text-sm font-bold transition-all duration-fast ${
+              tab === tabItem.id 
+                ? 'bg-teal/10 text-teal' 
+                : 'text-[var(--text-3)] hover:text-[var(--text-2)] hover:bg-[var(--surface-2)]'
             }`}
           >
             {tabItem.label}
@@ -208,7 +213,7 @@ export default function ProviderDashboardPage() {
           {showVenueForm && (
             <form
               onSubmit={handleCreateVenue}
-              className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft"
+              className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-float backdrop-blur-md"
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
@@ -256,12 +261,12 @@ export default function ProviderDashboardPage() {
           )}
 
           {venues.length === 0 ? (
-            <p className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 text-sm text-ink/60 shadow-soft">
+            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
               {t('noVenues')}
             </p>
           ) : (
             venues.map((venue) => (
-              <article key={venue._id} className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur">
+              <article key={venue._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal">{venue.category}</p>
@@ -305,14 +310,14 @@ export default function ProviderDashboardPage() {
       {tab === 'staff' && (
         <div className="space-y-4">
           {!selectedVenueId ? (
-            <p className="text-sm text-ink/60">Select a venue from the Venues tab to view staff.</p>
+            <p className="text-sm text-[var(--text-3)]">{t('selectVenueForStaff')}</p>
           ) : staff.length === 0 ? (
-            <p className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 text-sm text-ink/60 shadow-soft">
+            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
               {t('noStaff')}
             </p>
           ) : (
             staff.map((member) => (
-              <article key={member._id} className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft">
+              <article key={member._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <h2 className="font-semibold text-ink">{locale === 'ar' ? member.name_ar : member.name_en}</h2>
@@ -344,14 +349,14 @@ export default function ProviderDashboardPage() {
       {tab === 'services' && (
         <div className="space-y-4">
           {!selectedStaffId ? (
-            <p className="text-sm text-ink/60">Select a staff member from the Staff tab to view services.</p>
+            <p className="text-sm text-[var(--text-3)]">{t('selectStaffForServices')}</p>
           ) : services.length === 0 ? (
-            <p className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 text-sm text-ink/60 shadow-soft">
+            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
               {t('noServices')}
             </p>
           ) : (
             services.map((service) => (
-              <article key={service._id} className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft">
+              <article key={service._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
                 <h2 className="font-semibold text-ink">{locale === 'ar' ? service.name_ar : service.name_en}</h2>
                 <p className="mt-1 text-sm text-ink/60">
                   {service.duration_minutes} min · {(service.price / 100).toFixed(2)} EGP
@@ -369,7 +374,7 @@ export default function ProviderDashboardPage() {
       {tab === 'team' && (
         <div className="space-y-4">
           {!selectedVenueId ? (
-            <p className="text-sm text-ink/60">Select a venue from the Venues tab to view team.</p>
+            <p className="text-sm text-[var(--text-3)]">{t('selectVenueForTeam')}</p>
           ) : (
             <>
               <form onSubmit={handleInviteTeam} className="flex gap-2">
@@ -379,25 +384,25 @@ export default function ProviderDashboardPage() {
                   required
                   value={invitePhone}
                   onChange={(e) => setInvitePhone(e.target.value)}
-                  placeholder="Enter phone to invite..."
+                  placeholder={t('invitePhonePlaceholder')}
                   className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm text-left outline-none focus:border-teal"
                 />
                 <button
                   type="submit"
                   disabled={isInviting}
-                  className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-medium text-white hover:bg-teal/90 disabled:opacity-50"
+                  className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-bold text-white hover:bg-teal/90 disabled:opacity-50 transition-all"
                 >
-                  Invite
+                  {t('inviteButton')}
                 </button>
               </form>
 
               {team.length === 0 ? (
-                <p className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 text-sm text-ink/60 shadow-soft">
-                  No team members found.
+                <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
+                  {t('noTeam')}
                 </p>
               ) : (
                 team.map((userObj) => (
-                  <article key={userObj._id} className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft">
+                  <article key={userObj._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
                     <h2 className="font-semibold text-ink">{locale === 'ar' ? userObj.name_ar : userObj.name_en}</h2>
                     <p className="mt-1 text-sm text-ink/60" dir="ltr" style={{textAlign: locale === 'ar' ? 'right' : 'left'}}>
                       {userObj.phone}

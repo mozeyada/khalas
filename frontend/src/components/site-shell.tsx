@@ -2,7 +2,7 @@
 
 import {useState, useEffect, useRef} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
-import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle, Sparkles, ChevronDown} from 'lucide-react';
+import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle, Sparkles, ChevronDown, Globe} from 'lucide-react';
 
 import {Link, usePathname} from '@/i18n/navigation';
 import {useSession} from '@/components/session-provider';
@@ -62,7 +62,7 @@ export function SiteShell({
     <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-6">
       {/* Floating Portal Navbar (Desktop) & Top Branding (Mobile) */}
       <header className="sticky top-4 z-50 mb-8 rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-lg shadow-teal/5 backdrop-blur-md transition-all hover:bg-white/80 hover:shadow-xl hover:shadow-teal/10 sm:p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <Link href="/" locale={locale} className="group flex items-center gap-2 rounded-full border border-teal/10 bg-gradient-to-r from-teal/10 to-transparent px-4 py-2 text-sm font-bold text-teal transition-all hover:border-teal/30 hover:scale-105">
               <span className="relative flex h-3 w-3">
@@ -77,6 +77,30 @@ export function SiteShell({
                 <h1 className="text-sm font-semibold text-ink">{title}</h1>
               </div>
             )}
+          </div>
+
+          {/* Mobile: compact language toggle always visible */}
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="inline-flex items-center gap-1 rounded-full border border-ink/10 bg-white/80 p-1 text-xs shadow-sm">
+              <Link
+                href={pathname}
+                locale="ar"
+                className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
+                  locale === 'ar' ? 'bg-teal text-white shadow-sm' : 'text-ink/60 hover:text-ink'
+                }`}
+              >
+                ع
+              </Link>
+              <Link
+                href={pathname}
+                locale="en"
+                className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
+                  locale === 'en' ? 'bg-teal text-white shadow-sm' : 'text-ink/60 hover:text-ink'
+                }`}
+              >
+                EN
+              </Link>
+            </div>
           </div>
 
           <div className="hidden md:flex flex-wrap items-center gap-2">
@@ -281,12 +305,14 @@ export function SiteShell({
       {children}
 
       {/* Fixed Bottom Navigation Bar (Mobile only) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-ink/10 bg-white/90 pb-[env(safe-area-inset-bottom,16px)] pt-2 backdrop-blur-lg md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[var(--border)] bg-white/95 pb-[env(safe-area-inset-bottom,16px)] pt-2 backdrop-blur-xl md:hidden">
         <Link
           href="/"
           locale={locale}
-          className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-            pathname === '/' ? 'text-teal' : 'text-ink/50'
+          className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+            pathname === '/'
+              ? 'bg-teal/10 text-teal'
+              : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
           }`}
         >
           <Home className="h-5 w-5" />
@@ -295,8 +321,10 @@ export function SiteShell({
         <Link
           href="/search"
           locale={locale}
-          className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-            pathname === '/search' ? 'text-teal' : 'text-ink/50'
+          className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+            pathname === '/search'
+              ? 'bg-teal/10 text-teal'
+              : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
           }`}
         >
           <Search className="h-5 w-5" />
@@ -309,33 +337,39 @@ export function SiteShell({
               <Link
                 href={dashboardHref}
                 locale={locale}
-                className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-                  pathname === dashboardHref ? 'text-teal' : 'text-ink/50'
+                className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                  pathname === dashboardHref
+                    ? 'bg-teal/10 text-teal'
+                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
                 }`}
               >
                 <LayoutDashboard className="h-5 w-5" />
                 <span>{user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}</span>
               </Link>
             )}
-            
+
             {(user?.role === 'admin' || user?.role === 'salesman') && (
               <Link
                 href="/salesman"
                 locale={locale}
-                className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-                  pathname === '/salesman' ? 'text-indigo-600' : 'text-ink/50'
+                className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                  pathname === '/salesman'
+                    ? 'bg-indigo-400/10 text-indigo-600'
+                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
                 }`}
               >
                 <Sparkles className="h-5 w-5" />
                 <span>{t('sales')}</span>
               </Link>
             )}
-            
+
             <Link
               href="/profile"
               locale={locale}
-              className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-                pathname === '/profile' ? 'text-teal' : 'text-ink/50'
+              className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                pathname === '/profile'
+                  ? 'bg-teal/10 text-teal'
+                  : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
               }`}
             >
               <UserCircle className="h-5 w-5" />
@@ -347,8 +381,10 @@ export function SiteShell({
             <Link
               href="/auth/login"
               locale={locale}
-              className={`flex flex-col items-center gap-1 p-2 text-xs font-medium transition-all ${
-                pathname === '/auth/login' ? 'text-teal' : 'text-ink/50'
+              className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                pathname === '/auth/login'
+                  ? 'bg-teal/10 text-teal'
+                  : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
               }`}
             >
               <LogIn className="h-5 w-5" />

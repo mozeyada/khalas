@@ -72,11 +72,11 @@ export function SlotPicker({
       {/* Date Carousel */}
       <div className="relative">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-200">Select Date</p>
+          <p className="text-sm font-semibold text-slate-200">{t('loadSlots')}</p>
           {!selectedDate && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-400 animate-pulse">
               <CalendarSearch className="h-3 w-3" />
-              Pick a day
+              {t('loadingSlots')}
             </span>
           )}
         </div>
@@ -118,7 +118,7 @@ export function SlotPicker({
       {/* Time Grid with Predictive Cascading Entry */}
       {selectedDate && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <p className="mb-3 text-sm font-semibold text-slate-200">Select Time</p>
+          <p className="mb-3 text-sm font-semibold text-slate-200">{t('slotMeta')}</p>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
             {activeSlots.map((slot, index) => {
               const isSelected = selectedSlot === slot.slot_datetime;

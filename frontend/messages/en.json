@@ -23,12 +23,12 @@
     "ctaSearch": "Find a doctor",
     "ctaDemo": "How it works",
     "cards": {
-      "backendTitle": "Verified Providers",
-      "backendBody": "Every clinic and practitioner on Khalas is vetted to ensure you receive the highest quality of care.",
-      "frontendTitle": "Instant Booking",
-      "frontendBody": "No more endless phone calls. Choose a time slot that works for you and get instant confirmation.",
-      "docsTitle": "Seamless Management",
-      "docsBody": "Track your upcoming visits, manage your history, and receive smart reminders directly to your phone."
+      "verifiedTitle": "Verified Providers",
+      "verifiedBody": "Every clinic and practitioner on Khalas is vetted so you receive quality care.",
+      "bookingTitle": "Instant Booking",
+      "bookingBody": "No more phone calls. Pick a time slot and get instant confirmation.",
+      "remindersTitle": "WhatsApp Reminders",
+      "remindersBody": "We send you a WhatsApp reminder before your appointment — so you never miss it."
     },
     "language": {
       "label": "Language",
@@ -264,7 +264,14 @@
     "noServices": "No services yet.",
     "genericError": "Something went wrong.",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "tabTeam": "Team & Access",
+    "selectVenueForStaff": "Select a venue from the Venues tab to view staff.",
+    "selectStaffForServices": "Select a staff member from the Staff tab to view services.",
+    "selectVenueForTeam": "Select a venue from the Venues tab to view team.",
+    "invitePhonePlaceholder": "Enter phone to invite...",
+    "inviteButton": "Invite",
+    "noTeam": "No team members found."
   },
   "AdminPage": {
     "pageTitle": "Admin panel",

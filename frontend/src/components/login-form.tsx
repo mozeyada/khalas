@@ -109,14 +109,15 @@ export function LoginForm() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal/20 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300 relative z-10">{t('eyebrow')}</p>
-        <h2 className="mb-3 text-2xl font-semibold relative z-10">{t('title')}</h2>
-        <p className="text-sm leading-7 text-slate-300 relative z-10">{t('subtitle')}</p>
+      {/* Dark branding panel — desktop only */}
+      <section className="hidden lg:block rounded-[2rem] border border-white/70 bg-slate-950 p-8 text-slate-50 shadow-overlay relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-teal/20 to-transparent opacity-0 transition-opacity duration-slow group-hover:opacity-100" />
+        <p className="mb-2 text-sm font-bold uppercase tracking-[0.24em] text-emerald-300 relative z-10">{t('eyebrow')}</p>
+        <h2 className="mb-3 text-2xl font-bold relative z-10">{t('title')}</h2>
+        <p className="text-sm leading-relaxed text-slate-300 relative z-10">{t('subtitle')}</p>
       </section>
 
-      <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
+      <section className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-float backdrop-blur sm:p-8">
         
         {authMode === 'initial' ? (
           <form className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handlePasswordLogin}>

@@ -111,11 +111,11 @@ export function RegisterForm() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
-        <h2 className="mb-2 text-2xl font-semibold text-ink">
+      <section className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-float backdrop-blur sm:p-8">
+        <h2 className="mb-2 text-2xl font-bold text-[var(--text-1)]">
           {isProviderFlow ? t('providerTitle') : t('title')}
         </h2>
-        <p className="mb-6 text-sm leading-6 text-ink/70">
+        <p className="mb-6 text-sm leading-relaxed text-[var(--text-2)]">
           {isProviderFlow ? t('providerSubtitle') : t('subtitle')}
         </p>
 
@@ -331,11 +331,12 @@ export function RegisterForm() {
         </form>
       </section>
 
-      <aside className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
-        <p className="mb-2 text-sm font-semibold uppercase tracking-[0.24em] text-emerald-300 relative z-10">{t('noteEyebrow')}</p>
-        <h3 className="mb-3 text-2xl font-semibold relative z-10">{t('noteTitle')}</h3>
-        <p className="text-sm leading-7 text-slate-300 relative z-10">{t('noteBody')}</p>
+      {/* Dark note aside — desktop only */}
+      <aside className="hidden lg:block rounded-[2rem] border border-white/70 bg-slate-950 p-8 text-slate-50 shadow-overlay relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 transition-opacity duration-slow group-hover:opacity-100" />
+        <p className="mb-2 text-sm font-bold uppercase tracking-[0.24em] text-emerald-300 relative z-10">{t('noteEyebrow')}</p>
+        <h3 className="mb-3 text-2xl font-bold relative z-10">{t('noteTitle')}</h3>
+        <p className="text-sm leading-relaxed text-slate-300 relative z-10">{t('noteBody')}</p>
       </aside>
     </div>
   );

@@ -3,7 +3,7 @@
 import {useEffect, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
-import {Calendar, Clock, CreditCard, CalendarX, ArrowRight} from 'lucide-react';
+import {Calendar, Clock, CreditCard, CalendarX, ArrowRight, Building2} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
 import {ApiError, cancelAppointment, getMyAppointments} from '@/lib/api';
@@ -59,8 +59,25 @@ export function PatientDashboard() {
     );
   }
 
+  const hour = new Date().getHours();
+  const greeting = locale === 'ar'
+    ? (hour < 12 ? 'صباح الخير' : hour < 17 ? 'مساء الخير' : 'مساء النور')
+    : (hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening');
+
   return (
     <div className="space-y-6">
+      {/* Greeting row */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-3)]">
+            {new Intl.DateTimeFormat(locale, {weekday: 'long', day: 'numeric', month: 'long'}).format(new Date())}
+          </p>
+          <h1 className="mt-1 text-2xl font-black text-[var(--text-1)]">
+            {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''} 👋
+          </h1>
+        </div>
+      </div>
+
       {error ? (
         <div className="animate-in fade-in slide-in-from-top-4 rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 backdrop-blur">
           {error}
@@ -102,8 +119,16 @@ export function PatientDashboard() {
                 
                 <div className="relative z-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-3">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-teal/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-teal">
-                      <div className="h-1.5 w-1.5 rounded-full bg-teal animate-pulse" />
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest ${
+                      appointment.status === 'confirmed' ? 'bg-emerald-400/10 text-emerald-700'
+                      : appointment.status === 'pending' ? 'bg-amber-400/10 text-amber-700'
+                      : 'bg-slate-400/10 text-slate-600'
+                    }`}>
+                      <div className={`h-1.5 w-1.5 rounded-full ${
+                        appointment.status === 'confirmed' ? 'bg-emerald-500 animate-pulse'
+                        : appointment.status === 'pending' ? 'bg-amber-500'
+                        : 'bg-slate-400'
+                      }`} />
                       {appointment.status}
                     </span>
                     
