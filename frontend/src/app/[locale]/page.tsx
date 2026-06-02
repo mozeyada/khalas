@@ -16,10 +16,11 @@ export default async function HomePage({params}: HomePageProps) {
     <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Navbar substitute (since SiteShell is wrapping this, we'll keep the landing page content below SiteShell) */}
       <SiteShell>
-        <section className="relative overflow-hidden rounded-[3rem] bg-[url('/hero-alexandria.png')] bg-cover bg-center px-6 py-20 text-center shadow-2xl sm:px-12 sm:py-32">
-          {/* Decorative background elements */}
-          <div className="absolute inset-0 bg-teal/50 mix-blend-multiply filter"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+        <section className="relative overflow-hidden rounded-[3rem] bg-[url('/hero-alexandria.png')] bg-cover bg-center px-6 py-24 text-center shadow-2xl sm:px-12 sm:py-40">
+          {/* Dark overlay to ensure text legibility over the warm architectural image */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-900/60 to-slate-950/80"></div>
+          {/* Teal tint layer to tie the image into the brand palette */}
+          <div className="absolute inset-0 bg-teal-900/30 mix-blend-multiply"></div>
 
           <div className="relative z-10 mx-auto max-w-4xl space-y-8">
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-1.5 text-sm font-medium text-amber-300 backdrop-blur-md">
