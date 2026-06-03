@@ -21,13 +21,16 @@ export default async function HomePage({params}: HomePageProps) {
           break the hero out of the max-w-6xl gutters set by SiteShell,
           making it edge-to-edge on every screen size.
         */}
-        <section className="relative -mx-4 overflow-hidden bg-[url('/hero-alexandria.png')] bg-cover bg-center px-6 py-32 text-center sm:-mx-6 sm:px-12 sm:py-44 lg:-mx-8">
-          {/* Dark gradient overlay — bottom half is darker so cards below feel separate */}
+        <section
+          className="relative overflow-hidden bg-[url('/hero-alexandria.png')] bg-cover bg-center px-6 py-32 text-center sm:px-12 sm:py-44"
+          style={{marginLeft: 'calc(-1 * var(--page-gutter, 1rem))', marginRight: 'calc(-1 * var(--page-gutter, 1rem))'}}
+        >
+          {/* Dark gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/55 via-slate-900/60 to-slate-950/85" />
           {/* Teal brand tint */}
           <div className="absolute inset-0 bg-teal-900/20 mix-blend-multiply" />
 
-          <div className="relative z-10 mx-auto max-w-2xl space-y-6">
+          <div className="relative z-10 mx-auto max-w-sm space-y-6 sm:max-w-2xl">
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/25 px-4 py-1.5 text-sm font-semibold text-amber-300 backdrop-blur-md">
               <span className="relative flex h-2 w-2">
@@ -37,10 +40,10 @@ export default async function HomePage({params}: HomePageProps) {
               {t('eyebrow')}
             </div>
 
-            {/* Headline — text-balance prevents orphaned words */}
+            {/* Headline — clamped to 2.2rem on mobile so it never orphans */}
             <h1
-              className="text-balance text-3xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl"
-              style={{textWrap: 'balance'}}
+              className="font-black tracking-tight text-white"
+              style={{fontSize: 'clamp(2rem, 7vw, 3.75rem)', lineHeight: 1.15}}
             >
               {t('headline')}
             </h1>

@@ -77,7 +77,7 @@ export function SiteShell({
       {/* ── Fixed header ───────────────────────────────────────── */}
       <header
         style={{height: HEADER_H}}
-        className="fixed inset-x-0 top-0 z-50 border-b border-white/40 bg-white/80 backdrop-blur-xl shadow-sm shadow-black/5"
+        className="fixed inset-x-0 top-0 z-50 border-b border-white/30 bg-white/90 shadow-sm shadow-black/5 backdrop-blur-xl"
       >
         <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
 
@@ -326,8 +326,11 @@ export function SiteShell({
 
       {/* ── Page content — offset by header height ─────────────── */}
       <div
-        style={{paddingTop: HEADER_H}}
-        className="mx-auto w-full max-w-6xl px-4 pb-28 sm:px-6 md:pb-8 lg:px-8"
+        style={{
+          paddingTop: HEADER_H,
+          '--page-gutter': '1rem',
+        } as React.CSSProperties}
+        className="mx-auto w-full max-w-6xl px-4 pb-28 sm:px-6 md:pb-8 lg:px-8 [--page-gutter:1rem] sm:[--page-gutter:1.5rem] lg:[--page-gutter:2rem]"
       >
         {(title || subtitle) && (
           <div className="mb-8 px-1 md:hidden">
