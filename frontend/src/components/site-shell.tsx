@@ -2,16 +2,31 @@
 
 import {useState, useEffect, useRef} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
-import {Home, Search, LayoutDashboard, LogOut, LogIn, UserPlus, Shield, UserCircle, Sparkles, ChevronDown, Globe} from 'lucide-react';
+import {
+  Home,
+  Search,
+  LayoutDashboard,
+  LogOut,
+  LogIn,
+  UserPlus,
+  Shield,
+  UserCircle,
+  Sparkles,
+  ChevronDown,
+  Globe,
+} from 'lucide-react';
 
 import {Link, usePathname} from '@/i18n/navigation';
 import {useSession} from '@/components/session-provider';
 import {LocaleSwitcher} from '@/components/locale-switcher';
 
+// Height of the fixed header in px — used to offset page body content
+const HEADER_H = 72;
+
 export function SiteShell({
   children,
   title,
-  subtitle
+  subtitle,
 }: {
   children: React.ReactNode;
   title?: string;
@@ -32,9 +47,7 @@ export function SiteShell({
       }
     }
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setDropdownOpen(false);
-      }
+      if (event.key === 'Escape') setDropdownOpen(false);
     }
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
@@ -55,47 +68,60 @@ export function SiteShell({
     return parts[0][0] + parts[parts.length - 1][0];
   };
 
-  // If user is admin, we default their "user" dashboard to the patient dashboard.
   const dashboardHref = user?.role === 'provider' ? '/provider/dashboard' : '/dashboard';
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 pb-24 md:pb-6">
-      {/* Floating Portal Navbar (Desktop) & Top Branding (Mobile) */}
-      <header className="sticky top-4 z-50 mb-8 rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-lg shadow-teal/5 backdrop-blur-md transition-all hover:bg-white/80 hover:shadow-xl hover:shadow-teal/10 sm:p-4">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            <Link href="/" locale={locale} className="group flex items-center gap-2 rounded-full border border-teal/10 bg-gradient-to-r from-teal/10 to-transparent px-4 py-2 text-sm font-bold text-teal transition-all hover:border-teal/30 hover:scale-105">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal opacity-40"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-teal"></span>
-              </span>
-              {t('brand')}
-            </Link>
-            
-            {title && (
-              <div className="hidden md:block pl-2 border-l border-ink/10">
-                <h1 className="text-sm font-semibold text-ink">{title}</h1>
-              </div>
-            )}
-          </div>
+    /* Changed from <main> to <div> — pages supply their own <main> landmark */
+    <div className="min-h-screen w-full">
 
-          {/* Mobile: compact language toggle always visible */}
+      {/* ── Fixed header ───────────────────────────────────────── */}
+      <header
+        style={{height: HEADER_H}}
+        className="fixed inset-x-0 top-0 z-50 border-b border-white/40 bg-white/80 backdrop-blur-xl shadow-sm shadow-black/5"
+      >
+        <div className="mx-auto flex h-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+
+          {/* Brand */}
+          <Link
+            href="/"
+            locale={locale}
+            className="group flex shrink-0 items-center gap-2 rounded-full border border-teal/15 bg-gradient-to-r from-teal/10 to-transparent px-4 py-2 text-sm font-bold text-teal transition-all hover:border-teal/30 hover:scale-105"
+          >
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal opacity-40" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-teal" />
+            </span>
+            {t('brand')}
+          </Link>
+
+          {title && (
+            <div className="hidden md:block pl-2 border-l border-ink/10">
+              <h1 className="text-sm font-semibold text-ink">{title}</h1>
+            </div>
+          )}
+
+          {/* Mobile: compact language toggle (always visible) */}
           <div className="flex items-center gap-2 md:hidden">
-            <div className="inline-flex items-center gap-1 rounded-full border border-ink/10 bg-white/80 p-1 text-xs shadow-sm">
+            <div className="inline-flex items-center gap-0.5 rounded-full border border-[var(--border)] bg-[var(--surface-1)] p-1 text-xs shadow-sm backdrop-blur">
+              <Globe className="mx-1 h-3.5 w-3.5 text-[var(--text-3)]" />
               <Link
                 href={pathname}
                 locale="ar"
-                className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
-                  locale === 'ar' ? 'bg-teal text-white shadow-sm' : 'text-ink/60 hover:text-ink'
+                className={`rounded-full px-2.5 py-1 font-bold transition-all duration-fast ${
+                  locale === 'ar'
+                    ? 'bg-teal text-white shadow-sm'
+                    : 'text-[var(--text-3)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]'
                 }`}
               >
-                ع
+                عربي
               </Link>
               <Link
                 href={pathname}
                 locale="en"
-                className={`rounded-full px-2.5 py-1 font-semibold transition-all ${
-                  locale === 'en' ? 'bg-teal text-white shadow-sm' : 'text-ink/60 hover:text-ink'
+                className={`rounded-full px-2.5 py-1 font-bold transition-all duration-fast ${
+                  locale === 'en'
+                    ? 'bg-teal text-white shadow-sm'
+                    : 'text-[var(--text-3)] hover:bg-[var(--surface-2)] hover:text-[var(--text-1)]'
                 }`}
               >
                 EN
@@ -103,29 +129,34 @@ export function SiteShell({
             </div>
           </div>
 
+          {/* Desktop nav */}
           <div className="hidden md:flex flex-wrap items-center gap-2">
             <LocaleSwitcher />
-            
+
             <Link
               href="/"
               locale={locale}
               className={`group flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                pathname === '/' ? 'bg-ink text-white shadow-md' : 'bg-transparent text-ink/70 hover:bg-black/5 hover:text-ink'
+                pathname === '/'
+                  ? 'bg-ink text-white shadow-md'
+                  : 'bg-transparent text-ink/70 hover:bg-black/5 hover:text-ink'
               }`}
             >
               <Home className={`h-4 w-4 transition-transform group-hover:scale-110 ${pathname === '/' ? 'text-white' : 'text-ink/50'}`} />
-              <span className="hidden sm:inline">{t('home')}</span>
+              <span>{t('home')}</span>
             </Link>
-            
+
             <Link
               href="/search"
               locale={locale}
               className={`group flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                pathname === '/search' ? 'bg-ink text-white shadow-md' : 'bg-transparent text-ink/70 hover:bg-black/5 hover:text-ink'
+                pathname === '/search'
+                  ? 'bg-ink text-white shadow-md'
+                  : 'bg-transparent text-ink/70 hover:bg-black/5 hover:text-ink'
               }`}
             >
               <Search className={`h-4 w-4 transition-transform group-hover:scale-110 ${pathname === '/search' ? 'text-white' : 'text-ink/50'}`} />
-              <span className="hidden sm:inline">{t('search')}</span>
+              <span>{t('search')}</span>
             </Link>
 
             {isReady && isAuthenticated && user ? (
@@ -150,9 +181,9 @@ export function SiteShell({
                   <div
                     className={`absolute ${
                       locale === 'ar' ? 'left-0 origin-top-left' : 'right-0 origin-top-right'
-                    } mt-2 w-72 rounded-[2rem] border border-white/60 bg-white/95 p-4 shadow-xl shadow-teal/5 backdrop-blur-md transition-all z-50`}
+                    } mt-2 w-72 rounded-[2rem] border border-white/60 bg-white/95 p-4 shadow-xl shadow-teal/5 backdrop-blur-md z-50`}
                   >
-                    {/* User profile details header */}
+                    {/* User profile header */}
                     <div className="flex items-center gap-3 border-b border-ink/5 pb-3 mb-3">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-teal to-teal-400 text-white font-bold text-base shadow-sm">
                         {getUserInitials()}
@@ -188,9 +219,8 @@ export function SiteShell({
                       </div>
                     </div>
 
-                    {/* Navigation Links inside dropdown */}
                     <div className="space-y-1">
-                      {user.role === 'provider' || user.role === 'patient' || user.role === 'admin' ? (
+                      {(user.role === 'provider' || user.role === 'patient' || user.role === 'admin') && (
                         <Link
                           href={dashboardHref}
                           locale={locale}
@@ -204,9 +234,9 @@ export function SiteShell({
                           <LayoutDashboard className="h-4 w-4" />
                           <span>{user.role === 'provider' ? t('providerDashboard') : t('dashboard')}</span>
                         </Link>
-                      ) : null}
+                      )}
 
-                      {user.role === 'admin' ? (
+                      {user.role === 'admin' && (
                         <Link
                           href="/admin"
                           locale={locale}
@@ -220,9 +250,9 @@ export function SiteShell({
                           <Shield className="h-4 w-4" />
                           <span>{t('admin')}</span>
                         </Link>
-                      ) : null}
+                      )}
 
-                      {user.role === 'admin' || user.role === 'salesman' ? (
+                      {(user.role === 'admin' || user.role === 'salesman') && (
                         <Link
                           href="/salesman"
                           locale={locale}
@@ -236,7 +266,7 @@ export function SiteShell({
                           <Sparkles className="h-4 w-4" />
                           <span>{t('sales')}</span>
                         </Link>
-                      ) : null}
+                      )}
 
                       <Link
                         href="/profile"
@@ -271,22 +301,22 @@ export function SiteShell({
               </div>
             ) : isReady && !isAuthenticated ? (
               <>
-                <div className="h-4 w-px bg-ink/10 mx-1 hidden sm:block"></div>
-                <Link 
-                  href="/auth/login" 
-                  locale={locale} 
+                <div className="h-4 w-px bg-ink/10 mx-1 hidden sm:block" />
+                <Link
+                  href="/auth/login"
+                  locale={locale}
                   className="group flex items-center gap-2 rounded-full bg-transparent px-4 py-2 text-sm font-medium text-ink/70 transition-all hover:bg-black/5 hover:text-ink"
                 >
-                  <LogIn className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  <span className="hidden sm:inline">{t('login')}</span>
+                  <LogIn className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+                  <span>{t('login')}</span>
                 </Link>
-                <Link 
-                  href="/auth/register" 
-                  locale={locale} 
+                <Link
+                  href="/auth/register"
+                  locale={locale}
                   className="group flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-white transition-all hover:bg-ink/90 hover:shadow-md"
                 >
                   <UserPlus className="h-4 w-4 transition-transform group-hover:scale-110" />
-                  <span className="hidden sm:inline">{t('register')}</span>
+                  <span>{t('register')}</span>
                 </Link>
               </>
             ) : null}
@@ -294,40 +324,42 @@ export function SiteShell({
         </div>
       </header>
 
-      {/* Page Header (If not hidden inside floating navbar) */}
-      {(title || subtitle) && (
-        <div className="mb-8 px-4 sm:px-6 md:hidden">
-          {title ? <h1 className="text-2xl font-semibold text-ink sm:text-3xl">{title}</h1> : null}
-          {subtitle ? <p className="mt-2 text-sm leading-6 text-ink/70">{subtitle}</p> : null}
-        </div>
-      )}
+      {/* ── Page content — offset by header height ─────────────── */}
+      <div
+        style={{paddingTop: HEADER_H}}
+        className="mx-auto w-full max-w-6xl px-4 pb-28 sm:px-6 md:pb-8 lg:px-8"
+      >
+        {(title || subtitle) && (
+          <div className="mb-8 px-1 md:hidden">
+            {title && <h1 className="text-2xl font-semibold text-ink sm:text-3xl">{title}</h1>}
+            {subtitle && <p className="mt-2 text-sm leading-6 text-ink/70">{subtitle}</p>}
+          </div>
+        )}
 
-      {children}
+        {children}
+      </div>
 
-      {/* Fixed Bottom Navigation Bar (Mobile only) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[var(--border)] bg-white/95 pb-[env(safe-area-inset-bottom,16px)] pt-2 backdrop-blur-xl md:hidden">
+      {/* ── Fixed Bottom Navigation Bar (mobile only) ──────────── */}
+      <nav className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-around border-t border-[var(--border)] bg-white/95 pb-[env(safe-area-inset-bottom,12px)] pt-2 backdrop-blur-xl md:hidden">
         <Link
           href="/"
           locale={locale}
-          className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-            pathname === '/'
-              ? 'bg-teal/10 text-teal'
-              : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+          className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+            pathname === '/' ? 'text-teal' : 'text-[var(--text-3)]'
           }`}
         >
-          <Home className="h-5 w-5" />
+          <Home className={`h-5 w-5 ${pathname === '/' ? 'text-teal' : ''}`} />
           <span>{t('home')}</span>
         </Link>
+
         <Link
           href="/search"
           locale={locale}
-          className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-            pathname === '/search'
-              ? 'bg-teal/10 text-teal'
-              : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+          className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+            pathname === '/search' ? 'text-teal' : 'text-[var(--text-3)]'
           }`}
         >
-          <Search className="h-5 w-5" />
+          <Search className={`h-5 w-5 ${pathname === '/search' ? 'text-teal' : ''}`} />
           <span>{t('search')}</span>
         </Link>
 
@@ -337,14 +369,12 @@ export function SiteShell({
               <Link
                 href={dashboardHref}
                 locale={locale}
-                className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-                  pathname === dashboardHref
-                    ? 'bg-teal/10 text-teal'
-                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+                className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                  pathname === dashboardHref ? 'text-teal' : 'text-[var(--text-3)]'
                 }`}
               >
                 <LayoutDashboard className="h-5 w-5" />
-                <span>{user?.role === 'provider' ? t('providerDashboard') : t('dashboard')}</span>
+                <span>{user?.role === 'provider' ? t('provider') : t('dashboard')}</span>
               </Link>
             )}
 
@@ -352,10 +382,8 @@ export function SiteShell({
               <Link
                 href="/salesman"
                 locale={locale}
-                className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-                  pathname === '/salesman'
-                    ? 'bg-indigo-400/10 text-indigo-600'
-                    : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+                className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                  pathname === '/salesman' ? 'text-indigo-600' : 'text-[var(--text-3)]'
                 }`}
               >
                 <Sparkles className="h-5 w-5" />
@@ -366,10 +394,8 @@ export function SiteShell({
             <Link
               href="/profile"
               locale={locale}
-              className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-                pathname === '/profile'
-                  ? 'bg-teal/10 text-teal'
-                  : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+              className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                pathname === '/profile' ? 'text-teal' : 'text-[var(--text-3)]'
               }`}
             >
               <UserCircle className="h-5 w-5" />
@@ -381,18 +407,26 @@ export function SiteShell({
             <Link
               href="/auth/login"
               locale={locale}
-              className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
-                pathname === '/auth/login'
-                  ? 'bg-teal/10 text-teal'
-                  : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
+              className={`flex flex-col items-center gap-0.5 rounded-2xl px-4 py-2 text-xs font-semibold transition-all duration-fast ${
+                pathname === '/auth/login' ? 'text-teal' : 'text-[var(--text-3)]'
               }`}
             >
               <LogIn className="h-5 w-5" />
               <span>{t('login')}</span>
             </Link>
+            <Link
+              href="/auth/register"
+              locale={locale}
+              className={`flex flex-col items-center gap-0.5 rounded-2xl px-3 py-2 text-xs font-semibold transition-all duration-fast ${
+                pathname === '/auth/register' ? 'text-teal' : 'text-[var(--text-3)]'
+              }`}
+            >
+              <UserPlus className="h-5 w-5" />
+              <span>{t('register')}</span>
+            </Link>
           </>
         )}
       </nav>
-    </main>
+    </div>
   );
 }
