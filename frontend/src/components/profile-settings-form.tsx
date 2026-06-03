@@ -1,7 +1,8 @@
 'use client';
 
 import {useState} from 'react';
-import {useTranslations} from 'next-intl';
+import {useTranslations, useLocale} from 'next-intl';
+import {LogOut} from 'lucide-react';
 import {useSession} from '@/components/session-provider';
 import {ApiError} from '@/lib/api';
 
@@ -35,7 +36,9 @@ async function changePassword(body: any) {
 
 export function ProfileSettingsForm() {
   const t = useTranslations('ProfilePage');
-  const {user, isReady} = useSession();
+  const tNav = useTranslations('Navigation');
+  const locale = useLocale();
+  const {user, isReady, logout} = useSession();
   const [tab, setTab] = useState<Tab>('basic');
   
   const [nameAr, setNameAr] = useState(user?.name_ar ?? '');
@@ -94,6 +97,43 @@ export function ProfileSettingsForm() {
 
   return (
     <div className="mx-auto w-full max-w-2xl">
+
+      {/* ── Identity card ─────────────────────────────────────── */}
+      <div className="mb-6 flex items-center gap-4 rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-5 shadow-sm backdrop-blur">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-teal to-teal-400 text-xl font-bold text-white shadow">
+          {(locale === 'ar' ? user.name_ar : user.name_en)
+            ?.trim()
+            .split(/\s+/)
+            .map((p: string) => p[0])
+            .slice(0, 2)
+            .join('')}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate font-bold text-[var(--text-1)]">
+            {locale === 'ar' ? user.name_ar : user.name_en}
+          </p>
+          <p className="truncate text-sm text-[var(--text-3)]">{user.email || user.phone}</p>
+          <span
+            className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              user.role === 'admin'
+                ? 'border-amber-400/20 bg-amber-400/10 text-amber-600'
+                : user.role === 'salesman'
+                  ? 'border-indigo-400/20 bg-indigo-400/10 text-indigo-600'
+                  : user.role === 'provider'
+                    ? 'border-teal/20 bg-teal/10 text-teal'
+                    : 'border-emerald-400/20 bg-emerald-400/10 text-emerald-600'
+            }`}
+          >
+            {user.role === 'admin'
+              ? (locale === 'ar' ? 'مشرف' : 'Admin')
+              : user.role === 'salesman'
+                ? (locale === 'ar' ? 'مبيعات' : 'Sales')
+                : user.role === 'provider'
+                  ? (locale === 'ar' ? 'مقدم خدمة' : 'Provider')
+                  : (locale === 'ar' ? 'مريض' : 'Patient')}
+          </span>
+        </div>
+      </div>
       {/* Tabs */}
       <div className="mb-6 flex gap-2 rounded-2xl border border-black/10 bg-white/60 p-1.5 backdrop-blur-sm">
         <button
@@ -228,6 +268,26 @@ export function ProfileSettingsForm() {
           </button>
         </form>
       )}
+
+      {/* ── Sign out ──────────────────────────────────────────── */}
+      <div className="mt-6 rounded-[2rem] border border-rose-100 bg-rose-50/60 p-6 backdrop-blur">
+        <p className="mb-1 text-sm font-semibold text-rose-700">
+          {locale === 'ar' ? 'تسجيل الخروج' : 'Sign out'}
+        </p>
+        <p className="mb-4 text-xs text-rose-500">
+          {locale === 'ar'
+            ? 'ستنتهي جلستك الحالية على هذا الجهاز.'
+            : 'Your current session on this device will end.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => void logout()}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-3 text-sm font-semibold text-rose-600 shadow-sm transition hover:bg-rose-600 hover:text-white"
+        >
+          <LogOut className="h-4 w-4" />
+          {locale === 'ar' ? 'تسجيل الخروج' : 'Sign out of Khalas'}
+        </button>
+      </div>
     </div>
   );
 }
