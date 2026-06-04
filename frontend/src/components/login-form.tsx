@@ -199,6 +199,13 @@ export function LoginForm() {
                 </span>
               </button>
             </div>
+
+            <p className="pt-3 text-center text-sm text-ink/50">
+              {locale === 'ar' ? 'ليس لديك حساب؟' : "Don't have an account?"}{' '}
+              <a href={`/${locale}/auth/register`} className="font-semibold text-teal hover:underline">
+                {locale === 'ar' ? 'سجل الآن' : 'Register'}
+              </a>
+            </p>
           </form>
         ) : (
           <form className="space-y-5 animate-in slide-in-from-right-8 fade-in duration-500" onSubmit={handleVerifyOtp}>

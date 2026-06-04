@@ -57,12 +57,17 @@ export function AppointmentQRCode({appointmentId}: {appointmentId: string}) {
   const qrString = `${baseUrl}/admin/check-in?appointment=${payload.appointment_id}&sig=${encodeURIComponent(payload.signature)}`;
 
   return (
-    <div className="flex flex-col items-center space-y-4 rounded-2xl bg-white p-6 shadow-sm">
-      <div className="rounded-xl bg-white p-2">
-        <QRCode value={qrString} size={180} level="M" />
-      </div>
-      <p className="text-center text-xs text-ink/60">
+    <div className="flex flex-col items-center space-y-4 rounded-3xl bg-slate-950 p-6 shadow-lg w-full">
+      <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
         {t('instruction')}
+      </p>
+      <div className="rounded-2xl bg-white p-4 w-full max-w-[280px]">
+        <QRCode value={qrString} size={248} level="M" style={{width: '100%', height: 'auto'}} />
+      </div>
+      <p className="text-xs text-slate-400 text-center max-w-[240px]">
+        {typeof window !== 'undefined' && payload.appointment_id
+          ? `ID: ${payload.appointment_id.slice(-8).toUpperCase()}`
+          : ''}
       </p>
     </div>
   );

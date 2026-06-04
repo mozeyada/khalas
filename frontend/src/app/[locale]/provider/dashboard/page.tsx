@@ -166,11 +166,11 @@ export default function ProviderDashboardPage() {
     );
   }
 
-  const tabs: {id: Tab; label: string}[] = [
-    {id: 'venues', label: t('tabVenues')},
-    {id: 'staff', label: t('tabStaff')},
-    {id: 'services', label: t('tabServices')},
-    {id: 'team', label: t('tabTeam')},
+  const tabs: {id: Tab; label: string; short: string}[] = [
+    {id: 'venues',   label: t('tabVenues'),   short: locale === 'ar' ? 'العيادات' : 'Venues'},
+    {id: 'staff',    label: t('tabStaff'),    short: locale === 'ar' ? 'الأطباء' : 'Doctors'},
+    {id: 'services', label: t('tabServices'), short: locale === 'ar' ? 'الخدمات' : 'Services'},
+    {id: 'team',     label: t('tabTeam'),     short: locale === 'ar' ? 'الفريق' : 'Team'},
   ];
 
   return (
@@ -179,20 +179,21 @@ export default function ProviderDashboardPage() {
         <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
       ) : null}
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-2 overflow-x-auto rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-sm backdrop-blur-md">
+      {/* Tabs — short labels on mobile, full labels on sm+ */}
+      <div className="mb-6 flex gap-1 overflow-x-auto rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-sm backdrop-blur-md scrollbar-hide">
         {tabs.map((tabItem) => (
           <button
             key={tabItem.id}
             type="button"
             onClick={() => setTab(tabItem.id)}
-            className={`whitespace-nowrap rounded-2xl px-5 py-2.5 text-sm font-bold transition-all duration-fast ${
-              tab === tabItem.id 
-                ? 'bg-teal/10 text-teal' 
+            className={`whitespace-nowrap rounded-2xl px-3 py-2.5 text-sm font-bold transition-all duration-fast sm:px-5 ${
+              tab === tabItem.id
+                ? 'bg-teal/10 text-teal'
                 : 'text-[var(--text-3)] hover:text-[var(--text-2)] hover:bg-[var(--surface-2)]'
             }`}
           >
-            {tabItem.label}
+            <span className="sm:hidden">{tabItem.short}</span>
+            <span className="hidden sm:inline">{tabItem.label}</span>
           </button>
         ))}
       </div>
