@@ -2,7 +2,6 @@ import type {Metadata, Viewport} from 'next';
 import {ReactNode} from 'react';
 
 import '@/app/globals.css';
-import {ServiceWorkerRegistration} from '@/components/service-worker-registration';
 
 export const metadata: Metadata = {
   title: 'خلاص | Khalas',
@@ -25,8 +24,15 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({children}: RootLayoutProps) {
   return (
     <html lang="ar" suppressHydrationWarning>
+      <head>
+        {/* Inline SW registration so PWABuilder's HTML parser finds it immediately */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'})}`
+          }}
+        />
+      </head>
       <body>
-        <ServiceWorkerRegistration />
         {children}
       </body>
     </html>
