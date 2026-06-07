@@ -164,15 +164,15 @@ export function SiteShell({
       {/* ── Compact App Header ─────────────────────────────────── */}
       <header
         style={{height: HEADER_H, marginTop: impersonatingName ? '36px' : '0'}}
-        className="fixed inset-x-0 z-50 flex items-center justify-between bg-white border-b border-black/[0.06] px-4 sm:px-6 transition-all"
+        className="fixed inset-x-0 z-50 flex items-center justify-between bg-white/85 backdrop-blur-md border-b border-black/[0.04] px-4 sm:px-6 transition-all"
       >
         {/* Logo — minimal */}
         <Link
           href="/"
           locale={locale}
-          className="flex items-center gap-2 text-base font-bold text-[var(--text-1)]"
+          className="flex items-center gap-2 text-base font-bold text-[var(--text-1)] active:scale-95 transition-transform"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal text-white text-xs font-black">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--text-1)] text-white text-xs font-black shadow-sm">
             خ
           </div>
           <span className="hidden sm:inline">Khalas</span>
@@ -211,7 +211,7 @@ export function SiteShell({
               <button
                 type="button"
                 onClick={() => setMenuOpen(!menuOpen)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-teal text-white text-xs font-bold transition-transform active:scale-95"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--text-1)] text-white text-xs font-bold transition-transform active:scale-95 shadow-sm"
                 aria-expanded={menuOpen}
                 aria-haspopup="true"
               >
@@ -226,7 +226,7 @@ export function SiteShell({
                 >
                   {/* User info */}
                   <div className="flex items-center gap-3 border-b border-black/[0.05] pb-3 mb-2">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal text-white text-sm font-bold">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--text-1)] text-white text-sm font-bold shadow-sm">
                       {getUserInitials()}
                     </div>
                     <div className="min-w-0">
@@ -305,10 +305,8 @@ export function SiteShell({
       </main>
 
       {/* ── Bottom Tab Bar (mobile) ────────────────────────────── */}
-      <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden">
-        {/* Top border line */}
-        <div className="h-px bg-black/[0.08]" />
-        <div className="flex items-end justify-around bg-white pb-[env(safe-area-inset-bottom,8px)] pt-1.5">
+      <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/85 backdrop-blur-md border-t border-black/[0.04]">
+        <div className="flex items-end justify-around pb-[env(safe-area-inset-bottom,8px)] pt-1.5">
           {tabs.map((tab) => {
             const active = isTabActive(tab);
             const Icon = tab.icon;
@@ -317,16 +315,16 @@ export function SiteShell({
                 key={tab.href}
                 href={tab.href}
                 locale={locale}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] font-semibold transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] font-semibold transition-colors active:scale-95 ${
                   active
-                    ? 'text-teal'
+                    ? 'text-[var(--text-1)]'
                     : 'text-[var(--text-3)]'
                 }`}
               >
                 <div className="relative">
-                  <Icon className={`h-5 w-5 ${active ? 'text-teal' : ''}`} strokeWidth={active ? 2.5 : 1.8} />
+                  <Icon className={`h-5 w-5 ${active ? 'text-[var(--text-1)]' : ''}`} strokeWidth={active ? 2.5 : 1.8} />
                   {active && (
-                    <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-teal" />
+                    <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--text-1)]" />
                   )}
                 </div>
                 <span>{t(tab.labelKey)}</span>

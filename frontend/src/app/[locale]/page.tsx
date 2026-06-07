@@ -31,10 +31,10 @@ export default async function HomePage({params}: HomePageProps) {
           <Link
             href="/search"
             locale={params.locale}
-            className="flex items-center gap-3 rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm transition-all active:scale-[0.99]"
+            className="flex items-center gap-3 rounded-2xl border border-black/[0.04] bg-white p-4 shadow-float transition-all active:scale-[0.98] hover:shadow-lg"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal/10">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-teal" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -56,7 +56,7 @@ export default async function HomePage({params}: HomePageProps) {
                 key={cat.key}
                 href={`/search?category=${cat.key}`}
                 locale={params.locale}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-black/[0.06] bg-white px-4 py-2.5 text-sm font-medium text-[var(--text-1)] transition-all hover:border-teal/20 hover:bg-teal/[0.03] active:scale-95"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-black/[0.04] bg-white px-4 py-2.5 text-sm font-medium text-[var(--text-1)] shadow-card transition-all hover:border-black/20 hover:bg-black/[0.02] active:scale-95"
               >
                 <span className="text-lg">{cat.icon}</span>
                 <span>{t(`categories.${cat.key}`)}</span>
@@ -66,30 +66,30 @@ export default async function HomePage({params}: HomePageProps) {
         </section>
 
         {/* ── How It Works ────────────────────────────────────── */}
-        <section className="mt-8 rounded-2xl bg-[var(--text-1)] p-6">
+        <section className="mt-8 rounded-3xl bg-[var(--surface-dark)] p-6 shadow-overlay">
           <h2 className="text-sm font-bold text-white/60 uppercase tracking-wider mb-4">
             {t('ctaDemo')}
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal text-white text-sm font-bold">1</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-black text-sm font-black shadow-sm">1</div>
               <div>
                 <p className="font-semibold text-white text-sm">{t('steps.searchTitle')}</p>
-                <p className="text-xs text-white/50 mt-0.5">{t('steps.searchBody')}</p>
+                <p className="text-xs text-white/60 mt-0.5">{t('steps.searchBody')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal text-white text-sm font-bold">2</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-black text-sm font-black shadow-sm">2</div>
               <div>
                 <p className="font-semibold text-white text-sm">{t('steps.bookTitle')}</p>
-                <p className="text-xs text-white/50 mt-0.5">{t('steps.bookBody')}</p>
+                <p className="text-xs text-white/60 mt-0.5">{t('steps.bookBody')}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal text-white text-sm font-bold">3</div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-black text-sm font-black shadow-sm">3</div>
               <div>
                 <p className="font-semibold text-white text-sm">{t('steps.confirmTitle')}</p>
-                <p className="text-xs text-white/50 mt-0.5">{t('steps.confirmBody')}</p>
+                <p className="text-xs text-white/60 mt-0.5">{t('steps.confirmBody')}</p>
               </div>
             </div>
           </div>
@@ -97,8 +97,8 @@ export default async function HomePage({params}: HomePageProps) {
 
         {/* ── Value Props — compact cards ─────────────────────── */}
         <section className="mt-6 grid gap-3 sm:grid-cols-3 mb-4">
-          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.06] bg-white p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal/10 text-teal">
+          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.04] bg-white p-4 shadow-card">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black/5 text-black">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -109,7 +109,7 @@ export default async function HomePage({params}: HomePageProps) {
             </div>
           </article>
 
-          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.06] bg-white p-4">
+          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.04] bg-white p-4 shadow-card">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -121,7 +121,7 @@ export default async function HomePage({params}: HomePageProps) {
             </div>
           </article>
 
-          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.06] bg-white p-4">
+          <article className="flex items-start gap-3 rounded-2xl border border-black/[0.04] bg-white p-4 shadow-card">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
