@@ -22,6 +22,10 @@ from app.core.security import (
     verify_password,
 )
 from app.repositories.users import UserRepository
+from app.repositories.venues import VenueRepository
+from app.repositories.staff import StaffRepository
+from app.repositories.services import ServiceRepository
+from app.repositories.availability import AvailabilityRepository
 from app.schemas.auth import (
     AuthTokensData, 
     OtpChallengeData, 
@@ -77,7 +81,92 @@ class AuthService:
             "reset_token_expires_at": None,
         }
         try:
-            await self.user_repository.create(document)
+            created_user = await self.user_repository.create(document)
+            
+            # Auto-provision clinic ecosystem if role is provider
+            if request.role == "provider":
+                venue_repo = VenueRepository()
+                staff_repo = StaffRepository()
+                service_repo = ServiceRepository()
+                availability_repo = AvailabilityRepository()
+                
+                # 1. Create Venue
+                # Strip out "Dr." or "د." prefix for slug if present
+                clean_name = request.name_en.replace("Dr. ", "").replace("Dr.", "").strip()
+                import re
+                slug_base = re.sub(r'[^a-z0-9]', '-', clean_name.lower())
+                slug_base = re.sub(r'-+', '-', slug_base).strip('-')
+                if not slug_base:
+                    slug_base = "clinic"
+                
+                # Ensure unique slug
+                existing_venues = await venue_repo.collection.count_documents({"slug": {"$regex": f"^{slug_base}"}})
+                final_slug = slug_base if existing_venues == 0 else f"{slug_base}-{existing_venues+1}"
+                
+                venue_doc = {
+                    "owner_id": str(created_user["_id"]),
+                    "name_ar": request.name_ar,
+                    "name_en": request.name_en,
+                    "slug": final_slug,
+                    "address_ar": "العنوان غير محدد",
+                    "address_en": "Address not specified",
+                    "phone": request.phone,
+                    "governorate": "Cairo",
+                    "area": "Nasr City",
+                    "category": "clinic",
+                    "is_approved": True,  # Approved by default for instant onboarding
+                    "subscription_status": "trial",
+                    "staff_users": [str(created_user["_id"])],
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                }
+                created_venue = await venue_repo.create(venue_doc)
+                
+                # 2. Create Staff
+                staff_doc = {
+                    "venue_id": str(created_venue["_id"]),
+                    "name_ar": request.name_ar,
+                    "name_en": request.name_en,
+                    "title_ar": "طبيب",
+                    "title_en": "Doctor",
+                    "specialty_ar": "عام",
+                    "specialty_en": "General",
+                    "is_active": True,
+                    "is_bookable": True,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                }
+                created_staff = await staff_repo.create(staff_doc)
+                
+                # 3. Create Service
+                service_doc = {
+                    "staff_id": str(created_staff["_id"]),
+                    "venue_id": str(created_venue["_id"]),
+                    "category": "clinic",
+                    "name_ar": "كشف طبي",
+                    "name_en": "Consultation",
+                    "duration_minutes": 30,
+                    "price": 50000, # 500 EGP in piasters
+                    "is_active": True,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                }
+                await service_repo.create(service_doc)
+                
+                # 4. Create Availability
+                availability_rows = []
+                for day in range(7):
+                    availability_rows.append({
+                        "staff_id": str(created_staff["_id"]),
+                        "day_of_week": day,
+                        "start_time": "09:00",
+                        "end_time": "17:00",
+                        "is_active": True,
+                        "created_at": timestamp,
+                        "updated_at": timestamp,
+                    })
+                await availability_repo.replace_for_staff(str(created_staff["_id"]), availability_rows)
+                
         except DuplicateKeyError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.") from exc
         

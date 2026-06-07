@@ -245,6 +245,21 @@ async def admin_seed_test_users(
     ]
 
     created_count = 0
+    
+    from app.repositories.staff import StaffRepository
+    from app.repositories.services import ServiceRepository
+    from app.repositories.availability import AvailabilityRepository
+    import re
+    
+    staff_repo = StaffRepository()
+    service_repo = ServiceRepository()
+    availability_repo = AvailabilityRepository()
+    
+    # Optional: Clear out test staff/services/availability before seeding
+    await staff_repo.collection.delete_many({})
+    await service_repo.collection.delete_many({})
+    await availability_repo.collection.delete_many({})
+
     for u in users_to_create:
         doc = {
             "name_en": u["name_en"],
@@ -259,7 +274,79 @@ async def admin_seed_test_users(
             "created_at": timestamp,
             "updated_at": timestamp,
         }
-        await user_repo.create(doc)
+        created_user = await user_repo.create(doc)
         created_count += 1
+        
+        # Auto-provision clinic ecosystem if role is provider
+        if u["role"] == "provider":
+            clean_name = u["name_en"].replace("Dr. ", "").replace("Dr.", "").strip()
+            slug_base = re.sub(r'[^a-z0-9]', '-', clean_name.lower())
+            slug_base = re.sub(r'-+', '-', slug_base).strip('-')
+            if not slug_base:
+                slug_base = "clinic"
+                
+            existing_venues = await venue_repo.collection.count_documents({"slug": {"$regex": f"^{slug_base}"}})
+            final_slug = slug_base if existing_venues == 0 else f"{slug_base}-{existing_venues+1}"
+            
+            venue_doc = {
+                "owner_id": str(created_user["_id"]),
+                "name_ar": u["name_ar"],
+                "name_en": u["name_en"],
+                "slug": final_slug,
+                "address_ar": "العنوان غير محدد",
+                "address_en": "Address not specified",
+                "phone": u["phone"],
+                "governorate": "Cairo",
+                "area": "Nasr City",
+                "category": "clinic",
+                "is_approved": True,
+                "subscription_status": "trial",
+                "staff_users": [str(created_user["_id"])],
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            }
+            created_venue = await venue_repo.create(venue_doc)
+            
+            staff_doc = {
+                "venue_id": str(created_venue["_id"]),
+                "name_ar": u["name_ar"],
+                "name_en": u["name_en"],
+                "title_ar": "طبيب",
+                "title_en": "Doctor",
+                "specialty_ar": "عام",
+                "specialty_en": "General",
+                "is_active": True,
+                "is_bookable": True,
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            }
+            created_staff = await staff_repo.create(staff_doc)
+            
+            service_doc = {
+                "staff_id": str(created_staff["_id"]),
+                "venue_id": str(created_venue["_id"]),
+                "category": "clinic",
+                "name_ar": "كشف طبي",
+                "name_en": "Consultation",
+                "duration_minutes": 30,
+                "price": 50000, # 500 EGP
+                "is_active": True,
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            }
+            await service_repo.create(service_doc)
+            
+            availability_rows = []
+            for day in range(7):
+                availability_rows.append({
+                    "staff_id": str(created_staff["_id"]),
+                    "day_of_week": day,
+                    "start_time": "09:00",
+                    "end_time": "17:00",
+                    "is_active": True,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                })
+            await availability_repo.replace_for_staff(str(created_staff["_id"]), availability_rows)
 
-    return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with password 'Password123!'."})
+    return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with their clinics. Password is 'Password123!'."})
