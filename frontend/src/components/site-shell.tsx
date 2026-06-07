@@ -243,7 +243,7 @@ export function SiteShell({
         {/* Desktop sidebar */}
         <aside
           style={{width: sidebarW}}
-          className={`relative flex shrink-0 flex-col border-e border-[var(--border)] bg-white transition-all duration-300 ${isRTL ? 'border-s border-e-0 order-last' : ''}`}
+          className={`relative flex shrink-0 flex-col border-e border-[var(--border)] bg-white transition-all duration-300 ${isRTL ? 'border-s border-e-0' : ''}`}
         >
           {/* Sticky inner */}
           <div className="sticky top-0 h-screen overflow-hidden">
@@ -270,7 +270,7 @@ export function SiteShell({
               {subtitle && <p className="mt-0.5 text-sm text-[var(--text-3)]">{subtitle}</p>}
             </div>
           )}
-          <div className="px-8 py-6 max-w-3xl">
+          <div className="px-8 py-6 max-w-7xl mx-auto">
             {children}
           </div>
         </main>
