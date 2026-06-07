@@ -3,81 +3,26 @@
 import {useEffect, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
+import {Link} from '@/i18n/navigation';
+import {Calendar, Clock, CheckCircle2, XCircle, FileText, ArrowRight, TrendingUp, Users, PlusCircle, Settings} from 'lucide-react';
+
 import {useSession} from '@/components/session-provider';
-import {ApiError} from '@/lib/api';
+import {WalkInModal} from '@/components/walkin-modal';
 import {SiteShell} from '@/components/site-shell';
-
-type Venue = {
-  _id: string; slug: string; name_ar: string; name_en: string;
-  category: string; governorate: string; area: string;
-  address_ar: string; address_en: string; phone: string;
-  is_approved: boolean; subscription_status: string;
-};
-type Staff = {
-  _id: string; venue_id: string; name_ar: string; name_en: string;
-  title_ar?: string; title_en?: string; is_active: boolean; is_bookable: boolean;
-};
-type Service = {
-  _id: string; staff_id: string; venue_id: string; name_ar: string; name_en: string;
-  duration_minutes: number; price: number; is_active: boolean;
-};
-type UserProfile = {
-  _id: string; phone: string; name_ar: string; name_en: string; role: string;
-};
-
-async function bffGet<T>(path: string): Promise<T> {
-  const proxyPath = path.replace(/^\/api\/v1\//, '');
-  const res = await fetch(`/api/proxy/${proxyPath}`, {cache: 'no-store'});
-  if (!res.ok) {
-    const body = (await res.json()) as {error?: string};
-    throw new ApiError(body.error ?? 'Request failed.', res.status);
-  }
-  const data = (await res.json()) as {data: T};
-  return data.data;
-}
-
-async function bffPost<T>(path: string, body: unknown): Promise<T> {
-  const proxyPath = path.replace(/^\/api\/v1\//, '');
-  const res = await fetch(`/api/proxy/${proxyPath}`, {
-    method: 'POST', cache: 'no-store',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const errBody = (await res.json()) as {error?: string};
-    throw new ApiError(errBody.error ?? 'Request failed.', res.status);
-  }
-  const data = (await res.json()) as {data: T};
-  return data.data;
-}
-
-type Tab = 'venues' | 'staff' | 'services' | 'team';
+import {ApiError, getProviderAppointments, updateProviderAppointmentStatus} from '@/lib/api';
+import {formatPrice} from '@/lib/format';
+import {Appointment} from '@/lib/types';
 
 export default function ProviderDashboardPage() {
   const t = useTranslations('ProviderDashboardPage');
   const locale = useLocale();
   const router = useRouter();
   const {isAuthenticated, isReady, user} = useSession();
-  const [tab, setTab] = useState<Tab>('venues');
-
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [staff, setStaff] = useState<Staff[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [team, setTeam] = useState<UserProfile[]>([]);
-  const [selectedVenueId, setSelectedVenueId] = useState<string>('');
-  const [selectedStaffId, setSelectedStaffId] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // New venue form
-  const [showVenueForm, setShowVenueForm] = useState(false);
-  const [venueForm, setVenueForm] = useState({
-    slug: '', name_ar: '', name_en: '', category: 'clinic',
-    governorate: 'القاهرة', area: '', address_ar: '', address_en: '', phone: '',
-  });
-
-  const [invitePhone, setInvitePhone] = useState('');
-  const [isInviting, setIsInviting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
@@ -85,79 +30,39 @@ export default function ProviderDashboardPage() {
       router.push(`/${locale}/auth/login`);
       return;
     }
-    void bffGet<Venue[]>('/api/v1/provider/venues')
-      .then(setVenues)
-      .catch((e) => setError(e instanceof ApiError ? e.message : t('genericError')))
-      .finally(() => setIsLoading(false));
-  }, [isAuthenticated, isReady, locale, router, t, user?.role]);
+    loadAppointments();
+  }, [isAuthenticated, isReady, locale, router, user?.role]);
 
-  async function loadStaff(venueId: string) {
-    setSelectedVenueId(venueId);
-    setStaff([]);
-    try {
-      const allStaff = await bffGet<Staff[]>(`/api/v1/provider/venues/${venueId}/staff` as `/api/v1/provider/venues/${string}/staff`);
-      setStaff(allStaff);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('genericError'));
-    }
+  function loadAppointments() {
+    setIsLoading(true);
+    getProviderAppointments()
+      .then((response) => {
+        setAppointments(response);
+        setError(null);
+      })
+      .catch((caught) => {
+        setError(caught instanceof ApiError ? caught.message : t('genericError'));
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }
 
-  async function loadTeam(venueId: string) {
-    setSelectedVenueId(venueId);
-    setTeam([]);
+  async function handleStatusChange(appointmentId: string, status: 'confirmed' | 'cancelled') {
     try {
-      const allTeam = await bffGet<UserProfile[]>(`/api/v1/provider/venues/${venueId}/team` as `/api/v1/provider/venues/${string}/team`);
-      setTeam(allTeam);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('genericError'));
-    }
-  }
-
-  async function loadServices(staffId: string) {
-    setSelectedStaffId(staffId);
-    setServices([]);
-    try {
-      const svc = await bffGet<Service[]>(`/api/v1/staff/${staffId}/services` as `/api/v1/staff/${string}/services`);
-      setServices(svc);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('genericError'));
-    }
-  }
-
-  async function handleCreateVenue(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      const created = await bffPost<Venue>('/api/v1/provider/venues', venueForm);
-      setVenues((prev) => [...prev, created]);
-      setShowVenueForm(false);
-      setVenueForm({slug: '', name_ar: '', name_en: '', category: 'clinic', governorate: 'القاهرة', area: '', address_ar: '', address_en: '', phone: ''});
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('genericError'));
-    }
-  }
-
-  async function handleInviteTeam(e: React.FormEvent) {
-    e.preventDefault();
-    if (!selectedVenueId) return;
-    setIsInviting(true);
-    setError(null);
-    try {
-      const updatedTeam = await bffPost<UserProfile[]>(
-        `/api/v1/provider/venues/${selectedVenueId}/team`,
-        { phone: invitePhone }
-      );
-      setTeam(updatedTeam);
-      setInvitePhone('');
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : t('genericError'));
-    } finally {
-      setIsInviting(false);
+      const updated = await updateProviderAppointmentStatus(appointmentId, {
+        status,
+        cancellation_reason: status === 'cancelled' ? 'Provider cancelled' : undefined
+      });
+      setAppointments((current) => current.map((item) => (item._id === updated._id ? updated : item)));
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : t('genericError'));
     }
   }
 
   if (!isReady || isLoading) {
     return (
-      <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
+      <SiteShell title="Dashboard">
         <div className="flex flex-col items-center justify-center py-12">
           <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-teal/30 border-t-teal" />
           <p className="text-sm font-medium text-[var(--text-3)]">{t('loading')}</p>
@@ -166,258 +71,192 @@ export default function ProviderDashboardPage() {
     );
   }
 
-  const tabs: {id: Tab; label: string; short: string}[] = [
-    {id: 'venues',   label: t('tabVenues'),   short: locale === 'ar' ? 'العيادات' : 'Venues'},
-    {id: 'staff',    label: t('tabStaff'),    short: locale === 'ar' ? 'الأطباء' : 'Doctors'},
-    {id: 'services', label: t('tabServices'), short: locale === 'ar' ? 'الخدمات' : 'Services'},
-    {id: 'team',     label: t('tabTeam'),     short: locale === 'ar' ? 'الفريق' : 'Team'},
-  ];
+  // Calculate stats
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as start
+
+  const todaysAppointments = appointments.filter(app => {
+    const d = new Date(app.slot_datetime);
+    return d >= today && d < tomorrow;
+  }).sort((a, b) => new Date(a.slot_datetime).getTime() - new Date(b.slot_datetime).getTime());
+
+  const thisWeekAppointments = appointments.filter(app => {
+    const d = new Date(app.slot_datetime);
+    return d >= startOfWeek;
+  });
+
+  const revenueThisWeek = thisWeekAppointments
+    .filter(a => a.status === 'confirmed' || a.status === 'completed')
+    .reduce((sum, a) => sum + a.price_at_booking, 0);
 
   return (
-    <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
-      {error ? (
-        <p className="mb-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
-      ) : null}
+    <SiteShell title={locale === 'ar' ? 'لوحة التحكم' : 'Dashboard'}>
+      {error && (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
 
-      {/* Tabs — short labels on mobile, full labels on sm+ */}
-      <div className="mb-6 flex gap-1 overflow-x-auto rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-1.5 shadow-sm backdrop-blur-md scrollbar-hide">
-        {tabs.map((tabItem) => (
-          <button
-            key={tabItem.id}
-            type="button"
-            onClick={() => setTab(tabItem.id)}
-            className={`whitespace-nowrap rounded-2xl px-3 py-2.5 text-sm font-bold transition-all duration-fast sm:px-5 ${
-              tab === tabItem.id
-                ? 'bg-teal/10 text-teal'
-                : 'text-[var(--text-3)] hover:text-[var(--text-2)] hover:bg-[var(--surface-2)]'
-            }`}
-          >
-            <span className="sm:hidden">{tabItem.short}</span>
-            <span className="hidden sm:inline">{tabItem.label}</span>
-          </button>
-        ))}
+      {/* ── Quick Actions ──────────────────────────────────────── */}
+      <div className="mb-6 grid grid-cols-3 gap-2">
+        <button
+          onClick={() => setIsWalkInModalOpen(true)}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-teal/10 py-3 text-teal transition hover:bg-teal/20"
+        >
+          <PlusCircle className="h-6 w-6" />
+          <span className="text-xs font-semibold">{locale === 'ar' ? 'إضافة موعد' : 'Add Walk-in'}</span>
+        </button>
+        <Link
+          href="/provider/appointments"
+          locale={locale}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-black/[0.03] py-3 text-[var(--text-2)] transition hover:bg-black/[0.06]"
+        >
+          <Calendar className="h-6 w-6 text-[var(--text-3)]" />
+          <span className="text-xs font-semibold">{locale === 'ar' ? 'كل المواعيد' : 'All Appts'}</span>
+        </Link>
+        <Link
+          href="/provider/settings"
+          locale={locale}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-black/[0.03] py-3 text-[var(--text-2)] transition hover:bg-black/[0.06]"
+        >
+          <Settings className="h-6 w-6 text-[var(--text-3)]" />
+          <span className="text-xs font-semibold">{locale === 'ar' ? 'الإعدادات' : 'Settings'}</span>
+        </Link>
       </div>
 
-      {/* Venues tab */}
-      {tab === 'venues' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => setShowVenueForm(true)}
-              className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-medium text-white hover:bg-teal/90"
-            >
-              + {t('createVenue')}
-            </button>
+      {/* ── Stats Strip ────────────────────────────────────────── */}
+      <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm">
+          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+            <Users className="h-4 w-4" />
           </div>
-
-          {showVenueForm && (
-            <form
-              onSubmit={handleCreateVenue}
-              className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-float backdrop-blur-md"
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                {[
-                  {key: 'slug', label: 'Slug (URL)', placeholder: 'my-clinic'},
-                  {key: 'name_ar', label: 'الاسم بالعربية', placeholder: 'عيادة النور'},
-                  {key: 'name_en', label: 'Name (English)', placeholder: 'Al Noor Clinic'},
-                  {key: 'area', label: 'Area / منطقة', placeholder: 'Nasr City'},
-                  {key: 'address_ar', label: 'العنوان بالعربية', placeholder: ''},
-                  {key: 'address_en', label: 'Address (English)', placeholder: ''},
-                  {key: 'phone', label: 'Phone / الهاتف', placeholder: '+201000000000'},
-                ].map(({key, label, placeholder}) => (
-                  <label key={key} className="block">
-                    <span className="mb-1 block text-xs font-medium text-ink/70">{label}</span>
-                    <input
-                      required
-                      value={(venueForm as Record<string, string>)[key]}
-                      onChange={(e) => setVenueForm((prev) => ({...prev, [key]: e.target.value}))}
-                      placeholder={placeholder}
-                      className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-teal"
-                    />
-                  </label>
-                ))}
-                <label className="block">
-                  <span className="mb-1 block text-xs font-medium text-ink/70">Category</span>
-                  <select
-                    value={venueForm.category}
-                    onChange={(e) => setVenueForm((prev) => ({...prev, category: e.target.value}))}
-                    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm outline-none focus:border-teal"
-                  >
-                    {['clinic', 'beauty', 'fitness', 'physiotherapy', 'legal', 'dental'].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="mt-4 flex gap-3">
-                <button type="submit" className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-medium text-white hover:bg-teal/90">
-                  {t('save')}
-                </button>
-                <button type="button" onClick={() => setShowVenueForm(false)} className="rounded-2xl border border-black/10 px-5 py-2.5 text-sm font-medium text-ink hover:bg-black/5">
-                  {t('cancel')}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {venues.length === 0 ? (
-            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
-              {t('noVenues')}
-            </p>
-          ) : (
-            venues.map((venue) => (
-              <article key={venue._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal">{venue.category}</p>
-                    <h2 className="mt-1 text-lg font-semibold text-ink">
-                      {locale === 'ar' ? venue.name_ar : venue.name_en}
-                    </h2>
-                    <p className="text-sm text-ink/60">{venue.governorate} · {venue.area}</p>
-                    <div className="mt-2 flex gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${venue.is_approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                        {venue.is_approved ? 'Approved' : 'Pending'}
-                      </span>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                        {venue.subscription_status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => { setTab('staff'); void loadStaff(venue._id); }}
-                      className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
-                    >
-                      {t('tabStaff')} →
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setTab('team'); void loadTeam(venue._id); }}
-                      className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
-                    >
-                      Team →
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))
-          )}
+          <p className="text-2xl font-bold text-[var(--text-1)]">{todaysAppointments.length}</p>
+          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'مواعيد اليوم' : 'Today\'s Appts'}</p>
         </div>
-      )}
-
-      {/* Staff tab */}
-      {tab === 'staff' && (
-        <div className="space-y-4">
-          {!selectedVenueId ? (
-            <p className="text-sm text-[var(--text-3)]">{t('selectVenueForStaff')}</p>
-          ) : staff.length === 0 ? (
-            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
-              {t('noStaff')}
-            </p>
-          ) : (
-            staff.map((member) => (
-              <article key={member._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <h2 className="font-semibold text-ink">{locale === 'ar' ? member.name_ar : member.name_en}</h2>
-                    <p className="text-sm text-ink/60">{locale === 'ar' ? member.title_ar : member.title_en}</p>
-                    <div className="mt-1 flex gap-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${member.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
-                        {member.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs ${member.is_bookable ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>
-                        {member.is_bookable ? 'Bookable' : 'Not bookable'}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => { setTab('services'); void loadServices(member._id); }}
-                    className="shrink-0 rounded-2xl border border-black/10 px-4 py-2 text-sm font-medium hover:bg-black/5"
-                  >
-                    {t('tabServices')} →
-                  </button>
-                </div>
-              </article>
-            ))
-          )}
+        <div className="rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm">
+          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <TrendingUp className="h-4 w-4" />
+          </div>
+          <p className="text-2xl font-bold text-[var(--text-1)]">
+            {formatPrice(revenueThisWeek, locale)}
+          </p>
+          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'إيرادات الأسبوع' : 'Week Revenue'}</p>
         </div>
-      )}
-
-      {/* Services tab */}
-      {tab === 'services' && (
-        <div className="space-y-4">
-          {!selectedStaffId ? (
-            <p className="text-sm text-[var(--text-3)]">{t('selectStaffForServices')}</p>
-          ) : services.length === 0 ? (
-            <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
-              {t('noServices')}
-            </p>
-          ) : (
-            services.map((service) => (
-              <article key={service._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
-                <h2 className="font-semibold text-ink">{locale === 'ar' ? service.name_ar : service.name_en}</h2>
-                <p className="mt-1 text-sm text-ink/60">
-                  {service.duration_minutes} min · {(service.price / 100).toFixed(2)} EGP
-                </p>
-                <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-xs ${service.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
-                  {service.is_active ? 'Active' : 'Inactive'}
-                </span>
-              </article>
-            ))
-          )}
+        <div className="hidden sm:block rounded-2xl border border-black/[0.06] bg-white p-4 shadow-sm">
+          <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+            <Calendar className="h-4 w-4" />
+          </div>
+          <p className="text-2xl font-bold text-[var(--text-1)]">{thisWeekAppointments.length}</p>
+          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'مواعيد الأسبوع' : 'Week Appts'}</p>
         </div>
-      )}
+      </div>
 
-      {/* Team tab */}
-      {tab === 'team' && (
-        <div className="space-y-4">
-          {!selectedVenueId ? (
-            <p className="text-sm text-[var(--text-3)]">{t('selectVenueForTeam')}</p>
-          ) : (
-            <>
-              <form onSubmit={handleInviteTeam} className="flex gap-2">
-                <input
-                  type="tel"
-                  dir="ltr"
-                  required
-                  value={invitePhone}
-                  onChange={(e) => setInvitePhone(e.target.value)}
-                  placeholder={t('invitePhonePlaceholder')}
-                  className="w-full rounded-2xl border border-black/10 bg-white px-4 py-2.5 text-sm text-left outline-none focus:border-teal"
-                />
-                <button
-                  type="submit"
-                  disabled={isInviting}
-                  className="rounded-2xl bg-teal px-5 py-2.5 text-sm font-bold text-white hover:bg-teal/90 disabled:opacity-50 transition-all"
+      {/* ── Today's Queue ──────────────────────────────────────── */}
+      <div>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-[var(--text-1)]">{locale === 'ar' ? 'قائمة اليوم' : 'Today\'s Queue'}</h2>
+          <Link
+            href="/provider/appointments"
+            locale={locale}
+            className="text-sm font-semibold text-teal flex items-center gap-1"
+          >
+            {locale === 'ar' ? 'عرض الكل' : 'View all'}
+            <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+          </Link>
+        </div>
+
+        {todaysAppointments.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-[2rem] border border-black/[0.06] bg-white py-12 text-center shadow-sm">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-black/[0.03]">
+              <Calendar className="h-8 w-8 text-black/20" />
+            </div>
+            <p className="text-base font-semibold text-[var(--text-1)]">{locale === 'ar' ? 'لا توجد مواعيد اليوم' : 'No appointments today'}</p>
+            <p className="mt-1 text-sm text-[var(--text-3)]">{locale === 'ar' ? 'استمتع بوقتك!' : 'Enjoy your day!'}</p>
+          </div>
+        ) : (
+          <div className="grid gap-3">
+            {todaysAppointments.map((appointment) => {
+              const dateObj = new Date(appointment.slot_datetime);
+              const timeStr = new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(dateObj);
+              const isConfirmed = appointment.status === 'confirmed';
+              const isCancelled = appointment.status === 'cancelled';
+
+              return (
+                <article
+                  key={appointment._id}
+                  className="relative flex items-center justify-between gap-4 overflow-hidden rounded-[1.5rem] border border-black/[0.06] bg-white p-4 shadow-sm transition hover:border-black/10"
                 >
-                  {t('inviteButton')}
-                </button>
-              </form>
+                  <div className="flex items-center gap-4">
+                    {/* Time block */}
+                    <div className="flex flex-col items-center justify-center rounded-xl bg-[var(--surface-0)] px-3 py-2 text-center min-w-[70px]">
+                      <span className="text-sm font-bold text-[var(--text-1)]">{timeStr.split(' ')[0]}</span>
+                      <span className="text-[10px] font-semibold uppercase text-[var(--text-3)]">{timeStr.split(' ')[1]}</span>
+                    </div>
 
-              {team.length === 0 ? (
-                <p className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 text-sm text-[var(--text-3)] shadow-sm backdrop-blur-md">
-                  {t('noTeam')}
-                </p>
-              ) : (
-                team.map((userObj) => (
-                  <article key={userObj._id} className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-float hover:border-[var(--border-accent)]">
-                    <h2 className="font-semibold text-ink">{locale === 'ar' ? userObj.name_ar : userObj.name_en}</h2>
-                    <p className="mt-1 text-sm text-ink/60" dir="ltr" style={{textAlign: locale === 'ar' ? 'right' : 'left'}}>
-                      {userObj.phone}
-                    </p>
-                    <span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                      {userObj.role}
-                    </span>
-                  </article>
-                ))
-              )}
-            </>
-          )}
-        </div>
-      )}
+                    {/* Info */}
+                    <div>
+                      <h3 className="text-base font-bold text-[var(--text-1)]">
+                        {appointment.patient_name || (locale === 'ar' ? 'حجز إلكتروني' : 'Online Booking')}
+                      </h3>
+                      <div className="mt-0.5 flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+                          isConfirmed ? 'bg-emerald-100/50 text-emerald-700' : 
+                          isCancelled ? 'bg-rose-100/50 text-rose-700' : 
+                          'bg-amber-100/50 text-amber-700'
+                        }`}>
+                          {appointment.status}
+                        </span>
+                        {appointment.notes && (
+                          <span className="flex items-center gap-1 text-[11px] text-[var(--text-3)]">
+                            <FileText className="h-3 w-3" />
+                            Note
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row">
+                    {appointment.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => void handleStatusChange(appointment._id, 'confirmed')}
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition hover:bg-emerald-500 hover:text-white"
+                          title="Confirm"
+                        >
+                          <CheckCircle2 className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => void handleStatusChange(appointment._id, 'cancelled')}
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-600 transition hover:bg-rose-500 hover:text-white"
+                          title="Cancel"
+                        >
+                          <XCircle className="h-5 w-5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <WalkInModal 
+        isOpen={isWalkInModalOpen} 
+        onClose={() => setIsWalkInModalOpen(false)} 
+        onSuccess={() => {
+          setIsWalkInModalOpen(false);
+          loadAppointments();
+        }} 
+      />
     </SiteShell>
   );
 }
