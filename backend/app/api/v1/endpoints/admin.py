@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
+from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -319,6 +320,7 @@ async def admin_seed_test_users(
                 "category": "clinic",
                 "is_approved": True,
                 "subscription_status": "trial",
+                "trial_ends_at": timestamp + timedelta(days=30),
                 "staff_users": [str(created_user["_id"])],
                 "created_at": timestamp,
                 "updated_at": timestamp,

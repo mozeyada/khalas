@@ -50,7 +50,7 @@ def serialize_venue(document: dict) -> VenueResponse:
         "photos": document.get("photos", []),
         "is_approved": document["is_approved"],
         "subscription_status": document["subscription_status"],
-        "trial_ends_at": document["trial_ends_at"],
+        "trial_ends_at": document.get("trial_ends_at", document["created_at"]),
         "billing_notes": document.get("billing_notes"),
         "owner_id": document["owner_id"],
         "staff_users": document.get("staff_users", []),
