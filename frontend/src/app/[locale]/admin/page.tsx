@@ -125,6 +125,23 @@ export default function AdminPage() {
     }
   }
 
+  async function handleSeedTestUsers() {
+    if (!confirm('Are you sure? This will wipe all other users and venues, and seed the test accounts.')) return;
+    try {
+      const res = await fetch('/api/proxy/admin/seed-test-users', {
+        method: 'POST',
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to seed users.');
+      }
+      alert('Database seeded successfully! Please refresh the page.');
+      window.location.reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('genericError'));
+    }
+  }
+
   if (!isReady || isLoading) {
     return (
       <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
@@ -194,26 +211,35 @@ export default function AdminPage() {
 
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Tabs */}
-        <div className="flex gap-2 rounded-full border border-black/[0.06] bg-white p-1.5 shadow-sm">
-          {tabs.map((tabItem) => (
-            <button
-              key={tabItem.id}
-              type="button"
-              onClick={() => setTab(tabItem.id)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-                tab === tabItem.id 
-                  ? 'bg-teal text-white shadow-sm' 
-                  : 'text-[var(--text-2)] hover:bg-black/5'
-              }`}
-            >
-              {tabItem.label}
-              {tabItem.id === 'venues' && pendingApprovalsCount > 0 && (
-                <span className="ms-2 inline-flex items-center justify-center rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-slate-900">
-                  {pendingApprovalsCount}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex gap-2 rounded-full border border-black/[0.06] bg-white p-1.5 shadow-sm">
+            {tabs.map((tabItem) => (
+              <button
+                key={tabItem.id}
+                type="button"
+                onClick={() => setTab(tabItem.id)}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                  tab === tabItem.id 
+                    ? 'bg-teal text-white shadow-sm' 
+                    : 'text-[var(--text-2)] hover:bg-black/5'
+                }`}
+              >
+                {tabItem.label}
+                {tabItem.id === 'venues' && pendingApprovalsCount > 0 && (
+                  <span className="ms-2 inline-flex items-center justify-center rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-slate-900">
+                    {pendingApprovalsCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          
+          <button
+            onClick={handleSeedTestUsers}
+            className="rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-4 py-2 text-sm font-semibold transition-all shadow-sm"
+          >
+            {locale === 'ar' ? 'تهيئة الحسابات التجريبية' : 'Seed Test Accounts'}
+          </button>
         </div>
 
         {/* Search */}

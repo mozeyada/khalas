@@ -167,3 +167,81 @@ async def admin_impersonate_user(
         user=serialize_user(user)
     )
     return ApiResponse(data=tokens_data)
+
+
+@router.post("/seed-test-users", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+async def admin_seed_test_users(
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> ApiResponse[dict]:
+    """Wipe current users and seed the specific test accounts requested."""
+    # Since dropping collections dynamically in motor can be tricky during requests,
+    # we'll just delete all users and venues to ensure a clean slate for the test.
+    from app.repositories.users import UserRepository
+    from app.repositories.venues import VenueRepository
+    from app.core.security import get_password_hash, utc_now
+
+    user_repo = UserRepository()
+    venue_repo = VenueRepository()
+    
+    # 1. Delete all non-admin users except the current admin executing this
+    await user_repo.collection.delete_many({"_id": {"$ne": current_user["_id"]}})
+    
+    # 2. Optionally delete all venues
+    await venue_repo.collection.delete_many({})
+
+    timestamp = utc_now()
+    default_pwd_hash = get_password_hash("Password123!")
+
+    # 3. Create requested users
+    users_to_create = [
+        # Admin's Clinic
+        {
+            "name_en": "Mahmoud Clinic", "name_ar": "عيادة محمود",
+            "email": "m.zeyada91+clinic@gmail.com", "phone": "+201000000002",
+            "role": "provider", "provider_type": "clinic"
+        },
+        # Admin's Patient
+        {
+            "name_en": "Mahmoud Patient", "name_ar": "محمود مريض",
+            "email": "m.zeyada91+patient@gmail.com", "phone": "+201000000003",
+            "role": "patient"
+        },
+        # Salesman
+        {
+            "name_en": "Salesman", "name_ar": "رجل مبيعات",
+            "email": "sales@khalas.com", "phone": "+201100000001",
+            "role": "salesman"
+        },
+        # Salesman's Clinic
+        {
+            "name_en": "Salesman Clinic", "name_ar": "عيادة المبيعات",
+            "email": "sales+clinic@khalas.com", "phone": "+201100000002",
+            "role": "provider", "provider_type": "clinic"
+        },
+        # Salesman's Patient
+        {
+            "name_en": "Salesman Patient", "name_ar": "مريض المبيعات",
+            "email": "sales+patient@khalas.com", "phone": "+201100000003",
+            "role": "patient"
+        }
+    ]
+
+    created_count = 0
+    for u in users_to_create:
+        doc = {
+            "name_en": u["name_en"],
+            "name_ar": u["name_ar"],
+            "email": u["email"],
+            "phone": u["phone"],
+            "role": u["role"],
+            "provider_type": u.get("provider_type"),
+            "is_active": True,
+            "hashed_password": default_pwd_hash,
+            "preferred_channel": "whatsapp",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+        }
+        await user_repo.create(doc)
+        created_count += 1
+
+    return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with password 'Password123!'."})
