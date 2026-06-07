@@ -23,7 +23,27 @@
     "ctaPrimary": "احجز موعدك الآن",
     "ctaSecondary": "سجل كعيادة",
     "ctaSearch": "ابحث عن طبيب",
+    "searchHint": "ابحث بالاسم أو التخصص أو المنطقة",
     "ctaDemo": "كيف يعمل خلاص؟",
+    "categoriesTitle": "تصفح حسب التخصص",
+    "categories": {
+      "dentistry": "أسنان",
+      "dermatology": "جلدية",
+      "cardiology": "قلب",
+      "eye": "عيون",
+      "pediatrics": "أطفال",
+      "orthopedics": "عظام",
+      "neurology": "مخ وأعصاب",
+      "general": "عام"
+    },
+    "steps": {
+      "searchTitle": "ابحث",
+      "searchBody": "ابحث عن طبيب بالتخصص أو المنطقة",
+      "bookTitle": "احجز",
+      "bookBody": "اختر الموعد المناسب لك",
+      "confirmTitle": "خلاص",
+      "confirmBody": "تأكيد فوري على واتساب"
+    },
     "cards": {
       "verifiedTitle": "أطباء وعيادات معتمدة",
       "verifiedBody": "يتم التحقق من جميع العيادات والأطباء على منصة خلاص لضمان حصولك على أعلى مستويات الرعاية الصحية.",

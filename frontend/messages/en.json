@@ -23,7 +23,27 @@
     "ctaPrimary": "Book an appointment",
     "ctaSecondary": "Register as a clinic",
     "ctaSearch": "Find a doctor",
+    "searchHint": "Search by name, specialty, or area",
     "ctaDemo": "How it works",
+    "categoriesTitle": "Browse by specialty",
+    "categories": {
+      "dentistry": "Dentistry",
+      "dermatology": "Dermatology",
+      "cardiology": "Cardiology",
+      "eye": "Eye Care",
+      "pediatrics": "Pediatrics",
+      "orthopedics": "Orthopedics",
+      "neurology": "Neurology",
+      "general": "General"
+    },
+    "steps": {
+      "searchTitle": "Search",
+      "searchBody": "Find a doctor by specialty or area",
+      "bookTitle": "Book",
+      "bookBody": "Pick a time slot that works for you",
+      "confirmTitle": "Done",
+      "confirmBody": "Get instant confirmation on WhatsApp"
+    },
     "cards": {
       "verifiedTitle": "Verified Providers",
       "verifiedBody": "Every clinic and practitioner on Khalas is vetted so you receive quality care.",
