@@ -60,3 +60,40 @@ async def get_appointment_qr(
         slot_datetime=slot_str,
         signature=signature,
     )
+
+
+@router.post(
+    "/appointments/{appointment_id}/check-in",
+    response_model=dict,
+    status_code=status.HTTP_200_OK,
+)
+async def check_in_appointment(
+    appointment_id: str,
+    payload: QRPayload,
+    current_user: Annotated[dict, Depends(require_role("provider"))],
+) -> dict:
+    """Verify QR signature and check the patient in."""
+    if payload.appointment_id != appointment_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Appointment ID mismatch.")
+        
+    repository = AppointmentRepository()
+    appointment = await repository.find_by_id(appointment_id)
+    if appointment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found.")
+        
+    # Verify signature
+    slot_str = appointment["slot_datetime"].isoformat()
+    message = f"{appointment_id}:{appointment['patient_id']}:{slot_str}".encode()
+    mac = hmac.new(_QR_SECRET, message, hashlib.sha256)
+    expected_signature = mac.hexdigest()
+    
+    if not hmac.compare_digest(expected_signature, payload.signature):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid QR signature.")
+
+    if appointment["status"] not in ["scheduled", "confirmed"]:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"Cannot check in appointment with status {appointment['status']}.")
+        
+    from app.core.security import utc_now
+    await repository.update(appointment_id, {"status": "arrived", "updated_at": utc_now()})
+    
+    return {"message": "Check-in successful", "patient_id": appointment["patient_id"]}

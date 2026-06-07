@@ -54,7 +54,7 @@ export function AppointmentQRCode({appointmentId}: {appointmentId: string}) {
   }
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://khalas.app';
-  const qrString = `${baseUrl}/admin/check-in?appointment=${payload.appointment_id}&sig=${encodeURIComponent(payload.signature)}`;
+  const qrString = `${baseUrl}/ar/provider/check-in?appointment=${payload.appointment_id}&patient=${payload.patient_id}&slot=${payload.slot_datetime}&sig=${encodeURIComponent(payload.signature)}`;
 
   return (
     <div className="flex flex-col items-center space-y-4 rounded-3xl bg-slate-950 p-6 shadow-lg w-full">
