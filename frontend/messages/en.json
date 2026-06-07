@@ -13,6 +13,7 @@
     "profile": "Profile",
     "bookings": "Bookings",
     "appointments": "Appointments",
+    "settings": "Settings",
     "logout": "Logout"
   },
   "HomePage": {
