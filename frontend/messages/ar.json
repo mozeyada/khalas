@@ -11,6 +11,8 @@
     "admin": "لوحة الإدارة",
     "sales": "المبيعات",
     "profile": "الملف الشخصي",
+    "bookings": "حجوزاتي",
+    "appointments": "المواعيد",
     "logout": "تسجيل الخروج"
   },
   "HomePage": {

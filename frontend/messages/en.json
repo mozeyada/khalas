@@ -11,6 +11,8 @@
     "admin": "Admin",
     "sales": "Sales",
     "profile": "Profile",
+    "bookings": "Bookings",
+    "appointments": "Appointments",
     "logout": "Logout"
   },
   "HomePage": {
