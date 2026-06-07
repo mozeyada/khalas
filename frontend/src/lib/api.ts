@@ -197,6 +197,10 @@ export async function getProviderAppointments(): Promise<Appointment[]> {
   return bffFetch<Appointment[]>('/api/v1/provider/appointments');
 }
 
+export async function getProviderVenues(): Promise<PublicVenue[]> {
+  return bffFetch<PublicVenue[]>('/api/v1/provider/venues');
+}
+
 export async function updateProviderAppointmentStatus(
   appointmentId: string,
   input: {status: 'confirmed' | 'cancelled' | 'completed' | 'no_show'; cancellation_reason?: string}

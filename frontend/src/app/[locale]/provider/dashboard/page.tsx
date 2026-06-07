@@ -4,10 +4,11 @@ import {useEffect, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 import {Link} from '@/i18n/navigation';
-import {Calendar, Clock, CheckCircle2, XCircle, FileText, ArrowRight, TrendingUp, Users, PlusCircle, Settings} from 'lucide-react';
+import {Calendar, Clock, CheckCircle2, XCircle, FileText, ArrowRight, TrendingUp, Users, PlusCircle, Settings, QrCode} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
 import {WalkInModal} from '@/components/walkin-modal';
+import {VenueQrModal} from '@/components/venue-qr-modal';
 import {SiteShell} from '@/components/site-shell';
 import {ApiError, getProviderAppointments, updateProviderAppointmentStatus} from '@/lib/api';
 import {formatPrice} from '@/lib/format';
@@ -23,6 +24,7 @@ export default function ProviderDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
@@ -103,13 +105,20 @@ export default function ProviderDashboardPage() {
       )}
 
       {/* ── Quick Actions ──────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-3 gap-2">
+      <div className="mb-6 grid grid-cols-4 gap-2">
         <button
           onClick={() => setIsWalkInModalOpen(true)}
           className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-teal/10 py-3 text-teal transition hover:bg-teal/20"
         >
           <PlusCircle className="h-6 w-6" />
           <span className="text-xs font-semibold">{locale === 'ar' ? 'إضافة موعد' : 'Add Walk-in'}</span>
+        </button>
+        <button
+          onClick={() => setIsQrModalOpen(true)}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--text-1)] py-3 text-white transition hover:bg-black/80"
+        >
+          <QrCode className="h-6 w-6" />
+          <span className="text-xs font-semibold">{locale === 'ar' ? 'رمز QR' : 'Print QR'}</span>
         </button>
         <Link
           href="/provider/appointments"
@@ -256,6 +265,10 @@ export default function ProviderDashboardPage() {
           setIsWalkInModalOpen(false);
           loadAppointments();
         }} 
+      />
+      <VenueQrModal
+        isOpen={isQrModalOpen}
+        onClose={() => setIsQrModalOpen(false)}
       />
     </SiteShell>
   );
