@@ -279,6 +279,8 @@ async def admin_seed_test_users(
     await service_repo.collection.delete_many({})
     await availability_repo.collection.delete_many({})
 
+    users_map = {}
+    
     for u in users_to_create:
         doc = {
             "name_en": u["name_en"],
@@ -294,10 +296,24 @@ async def admin_seed_test_users(
             "updated_at": timestamp,
         }
         created_user = await user_repo.create(doc)
+        users_map[u["email"]] = str(created_user["_id"])
         created_count += 1
         
         # Auto-provision clinic ecosystem if role is provider
         if u["role"] == "provider":
+            email = u["email"]
+            
+            # Determine created_by salesman ID if applicable
+            salesman_email = None
+            if email == "m.sakr+clinic@khalas.com":
+                salesman_email = "m.sakr@khalas.com"
+            elif email == "ehab+clinic@khalas.com":
+                salesman_email = "ehab@khalas.com"
+            elif email == "sales+clinic@khalas.com":
+                salesman_email = "sales@khalas.com"
+                
+            created_by_id = users_map.get(salesman_email) if salesman_email else None
+            
             clean_name = u["name_en"].replace("Dr. ", "").replace("Dr.", "").strip()
             slug_base = re.sub(r'[^a-z0-9]', '-', clean_name.lower())
             slug_base = re.sub(r'-+', '-', slug_base).strip('-')
@@ -309,6 +325,7 @@ async def admin_seed_test_users(
             
             venue_doc = {
                 "owner_id": str(created_user["_id"]),
+                "created_by": created_by_id,
                 "name_ar": u["name_ar"],
                 "name_en": u["name_en"],
                 "slug": final_slug,
@@ -327,46 +344,74 @@ async def admin_seed_test_users(
             }
             created_venue = await venue_repo.create(venue_doc)
             
-            staff_doc = {
-                "venue_id": str(created_venue["_id"]),
-                "name_ar": u["name_ar"],
-                "name_en": u["name_en"],
-                "title_ar": "طبيب",
-                "title_en": "Doctor",
-                "specialty_ar": "عام",
-                "specialty_en": "General",
-                "is_active": True,
-                "is_bookable": True,
-                "created_at": timestamp,
-                "updated_at": timestamp,
-            }
-            created_staff = await staff_repo.create(staff_doc)
-            
-            service_doc = {
-                "staff_id": str(created_staff["_id"]),
-                "venue_id": str(created_venue["_id"]),
-                "category": "clinic",
-                "name_ar": "كشف طبي",
-                "name_en": "Consultation",
-                "duration_minutes": 30,
-                "price": 50000, # 500 EGP
-                "is_active": True,
-                "created_at": timestamp,
-                "updated_at": timestamp,
-            }
-            await service_repo.create(service_doc)
-            
-            availability_rows = []
-            for day in range(7):
-                availability_rows.append({
-                    "staff_id": str(created_staff["_id"]),
-                    "day_of_week": day,
-                    "start_time": "09:00",
-                    "end_time": "17:00",
+            # Helper to create staff and availability
+            async def make_staff(name_en, name_ar, title_en, title_ar, spec_en, spec_ar):
+                staff_doc = {
+                    "venue_id": str(created_venue["_id"]),
+                    "name_ar": name_ar,
+                    "name_en": name_en,
+                    "title_ar": title_ar,
+                    "title_en": title_en,
+                    "specialty_ar": spec_ar,
+                    "specialty_en": spec_en,
+                    "is_active": True,
+                    "is_bookable": True,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                }
+                staff = await staff_repo.create(staff_doc)
+                availability_rows = []
+                for day in range(7):
+                    availability_rows.append({
+                        "staff_id": str(staff["_id"]),
+                        "day_of_week": day,
+                        "start_time": "09:00",
+                        "end_time": "17:00",
+                        "is_active": True,
+                        "created_at": timestamp,
+                        "updated_at": timestamp,
+                    })
+                await availability_repo.replace_for_staff(str(staff["_id"]), availability_rows)
+                return staff
+                
+            # Helper to create service
+            async def make_service(staff_id, name_en, name_ar, duration, price):
+                service_doc = {
+                    "staff_id": str(staff_id),
+                    "venue_id": str(created_venue["_id"]),
+                    "category": "clinic",
+                    "name_ar": name_ar,
+                    "name_en": name_en,
+                    "duration_minutes": duration,
+                    "price": price,
                     "is_active": True,
                     "created_at": timestamp,
                     "updated_at": timestamp,
-                })
-            await availability_repo.replace_for_staff(str(created_staff["_id"]), availability_rows)
+                }
+                await service_repo.create(service_doc)
+
+            # SCENARIO 1: Streamlined Clinic (1 Doctor, 1 Service)
+            if email == "m.zeyada91+clinic@gmail.com" or email == "sales+clinic@khalas.com":
+                staff = await make_staff(u["name_en"], u["name_ar"], "Doctor", "طبيب", "General", "عام")
+                await make_service(staff["_id"], "Consultation", "كشف طبي", 30, 50000)
+                
+            # SCENARIO 2: Multi-Service Clinic (1 Doctor, 3 Services)
+            elif email == "m.sakr+clinic@khalas.com":
+                staff = await make_staff(u["name_en"], u["name_ar"], "Consultant", "استشاري", "Internal Medicine", "باطنة")
+                await make_service(staff["_id"], "Regular Consultation", "كشف عادي", 30, 60000)
+                await make_service(staff["_id"], "Follow-up", "استشارة", 15, 20000)
+                await make_service(staff["_id"], "Video Consultation", "كشف أونلاين", 30, 50000)
+                
+            # SCENARIO 3: Polyclinic (3 Doctors, Each with their own service)
+            elif email == "ehab+clinic@khalas.com":
+                s1 = await make_staff("Dr. Ehab Ortho", "د. إيهاب (تقويم)", "Consultant", "استشاري", "Orthodontics", "تقويم أسنان")
+                await make_service(s1["_id"], "Braces Consultation", "كشف تقويم", 45, 100000)
+                
+                s2 = await make_staff("Dr. Ahmed Dental", "د. أحمد (أسنان)", "Specialist", "أخصائي", "Dentistry", "طب أسنان عام")
+                await make_service(s2["_id"], "Dental Checkup", "كشف أسنان", 30, 40000)
+                await make_service(s2["_id"], "Cleaning", "تنظيف جير", 45, 60000)
+                
+                s3 = await make_staff("Dr. Sarah Peds", "د. سارة (أطفال)", "Specialist", "أخصائي", "Pediatric Dentistry", "أسنان أطفال")
+                await make_service(s3["_id"], "Pediatric Checkup", "كشف أطفال", 30, 45000)
 
     return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with their clinics. Password is 'Password123!'."})
