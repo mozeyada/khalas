@@ -241,6 +241,24 @@ async def admin_seed_test_users(
             "name_en": "Sakr Patient", "name_ar": "المريض صقر",
             "email": "m.sakr+patient@khalas.com", "phone": "+201200000003",
             "role": "patient"
+        },
+        # Ehab (Salesman)
+        {
+            "name_en": "Ehab", "name_ar": "إيهاب",
+            "email": "ehab@khalas.com", "phone": "+201300000001",
+            "role": "salesman"
+        },
+        # Ehab's Clinic
+        {
+            "name_en": "Ehab Clinic", "name_ar": "عيادة إيهاب",
+            "email": "ehab+clinic@khalas.com", "phone": "+201300000002",
+            "role": "provider", "provider_type": "clinic"
+        },
+        # Ehab's Patient
+        {
+            "name_en": "Ehab Patient", "name_ar": "مريض إيهاب",
+            "email": "ehab+patient@khalas.com", "phone": "+201300000003",
+            "role": "patient"
         }
     ]
 
