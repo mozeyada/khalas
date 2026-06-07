@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.khalas.twa",
+        "sha256_cert_fingerprints": ["F9:B7:3F:A1:29:2F:84:2C:0E:0B:BA:C9:2F:A8:61:26:3C:A8:1C:CB:1A:C4:E7:B3:E6:A3:44:5B:B0:9A:A5:33"]
+      }
+    }]
