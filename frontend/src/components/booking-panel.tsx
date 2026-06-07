@@ -2,7 +2,7 @@
 
 import {useEffect, useMemo, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams, usePathname} from 'next/navigation';
 import {
   MapPin, Clock, Sparkles, UserCircle2, ArrowRight,
   Loader2, CheckCircle2, ChevronDown, ChevronRight,
@@ -44,12 +44,18 @@ export function BookingPanel({
 }) {
   const t = useTranslations('StaffPage');
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const {user} = useSession();
   const activeLocale = useLocale();
 
-  const [selectedServiceId, setSelectedServiceId] = useState<string>('');
+  // Initialize from searchParams if present to restore progress
+  const initialServiceId = searchParams?.get('serviceId') || '';
+  const initialSlot = searchParams?.get('slot') || '';
+
+  const [selectedServiceId, setSelectedServiceId] = useState<string>(initialServiceId);
   const [slots, setSlots] = useState<Slot[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<string>('');
+  const [selectedSlot, setSelectedSlot] = useState<string>(initialSlot);
   const [notes, setNotes] = useState('');
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,7 +63,15 @@ export function BookingPanel({
   const [error, setError] = useState<string | null>(null);
 
   /* Mobile stepper: which step is expanded */
-  const [mobileStep, setMobileStep] = useState<1 | 2 | 3>(1);
+  const [mobileStep, setMobileStep] = useState<1 | 2 | 3>(initialSlot ? 3 : initialServiceId ? 2 : 1);
+
+  useEffect(() => {
+    // Auto-select if there is exactly 1 service and nothing is selected
+    if (!selectedServiceId && services.length === 1) {
+      setSelectedServiceId(services[0]._id);
+      setMobileStep(2);
+    }
+  }, [services, selectedServiceId]);
 
   useEffect(() => {
     if (selectedServiceId) {
@@ -176,7 +190,10 @@ export function BookingPanel({
       return (
         <button
           type="button"
-          onClick={() => router.push(`/${locale}/auth/login`)}
+          onClick={() => {
+            const redirectUrl = encodeURIComponent(`${pathname}?serviceId=${selectedServiceId}&slot=${selectedSlot}`);
+            router.push(`/${locale}/auth/login?redirect=${redirectUrl}`);
+          }}
           className={`${base} bg-amber-400 text-slate-950 hover:bg-amber-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)]`}
         >
           {t('loginToBook')}

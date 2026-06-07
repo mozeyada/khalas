@@ -11,12 +11,24 @@ type VenuePageProps = {
   };
 };
 
+import {notFound, redirect} from 'next/navigation';
+
 export default async function VenuePage({params}: VenuePageProps) {
-  const [t, venue, staff] = await Promise.all([
-    getTranslations({locale: params.locale, namespace: 'VenuePage'}),
-    getPublicVenue(params.slug),
-    getVenueStaff(params.slug)
-  ]);
+  let t, venue, staff;
+  try {
+    [t, venue, staff] = await Promise.all([
+      getTranslations({locale: params.locale, namespace: 'VenuePage'}),
+      getPublicVenue(params.slug),
+      getVenueStaff(params.slug)
+    ]);
+  } catch (e) {
+    notFound();
+  }
+
+  // Auto-skip venue page if there is exactly 1 staff member
+  if (staff.length === 1) {
+    redirect(`/${params.locale}/${params.slug}/${staff[0]._id}`);
+  }
 
   return (
     <SiteShell

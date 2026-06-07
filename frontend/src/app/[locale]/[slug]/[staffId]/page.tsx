@@ -13,13 +13,21 @@ type StaffPageProps = {
   };
 };
 
+import {notFound} from 'next/navigation';
+
 export default async function StaffPage({params}: StaffPageProps) {
-  const [t, venue, staff, services] = await Promise.all([
-    getTranslations({locale: params.locale, namespace: 'StaffPage'}),
-    getPublicVenue(params.slug),
-    getStaffProfile(params.staffId),
-    getStaffServices(params.staffId)
-  ]);
+  let t, venue, staff, services;
+  try {
+    [t, venue, staff, services] = await Promise.all([
+      getTranslations({locale: params.locale, namespace: 'StaffPage'}),
+      getPublicVenue(params.slug),
+      getStaffProfile(params.staffId),
+      getStaffServices(params.staffId)
+    ]);
+  } catch (e) {
+    notFound();
+  }
+
 
   return (
     <SiteShell
