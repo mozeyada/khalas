@@ -39,12 +39,38 @@ export default function SalesmanPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // New state for My Created Clinics
+  const [myClinics, setMyClinics] = useState<any[]>([]);
+  const [isLoadingClinics, setIsLoadingClinics] = useState(true);
+
+  // Fetch clinics when ready
+  const loadClinics = async () => {
+    try {
+      const res = await fetch('/api/proxy/salesman/clinics');
+      if (res.ok) {
+        const body = await res.json();
+        setMyClinics(body.data || []);
+      }
+    } catch (e) {
+      console.error('Failed to load clinics', e);
+    } finally {
+      setIsLoadingClinics(false);
+    }
+  };
+
   if (!isReady) {
     return (
       <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
-        <p className="text-sm text-ink/60">Loading...</p>
+        <div className="flex h-40 items-center justify-center">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal border-t-transparent" />
+        </div>
       </SiteShell>
     );
+  }
+
+  // Load clinics if salesman
+  if (isReady && isAuthenticated && (user?.role === 'salesman' || user?.role === 'admin') && isLoadingClinics) {
+    void loadClinics();
   }
 
   if (!isAuthenticated || (user?.role !== 'salesman' && user?.role !== 'admin')) {
@@ -83,9 +109,18 @@ export default function SalesmanPage() {
         throw new Error(body.error ?? 'Failed to setup demo clinic');
       }
 
-      const data = await res.json();
-      // Redirect to the created venue page so the salesman can show the doctor!
-      router.push(`/${locale}/${data.data.slug}`);
+      // Reload clinics
+      await loadClinics();
+      
+      // Reset form
+      setClinicName('');
+      setSpecialty('');
+      setGovernorate('');
+      setDoctorPhone('');
+      
+      // Optionally redirect
+      // const data = await res.json();
+      // router.push(`/${locale}/${data.data.slug}`);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -95,10 +130,10 @@ export default function SalesmanPage() {
 
   return (
     <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
-      <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
         
         {/* Left Column: Form */}
-        <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
+        <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8 h-fit">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal/10 text-teal">
               <Sparkles className="h-5 w-5" />
@@ -208,7 +243,7 @@ export default function SalesmanPage() {
             </label>
 
             {error && (
-              <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
+               <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
             )}
 
             <button
@@ -221,40 +256,93 @@ export default function SalesmanPage() {
           </form>
         </section>
 
-        {/* Right Column: Instructions */}
-        <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8">
-          <h3 className="mb-4 text-lg font-semibold text-emerald-300">{t('instructionsTitle')}</h3>
-          <ul className="space-y-4 text-sm leading-relaxed text-slate-300">
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">1</span>
-              <div>
-                <strong className="block text-white">{t('steps.step1Title')}</strong>
-                <p>{t('steps.step1Body')}</p>
+        {/* Right Column: List of created clinics */}
+        <div className="space-y-6">
+          <section className="rounded-[2rem] border border-white/70 bg-[var(--surface-1)] p-6 shadow-soft sm:p-8">
+            <h3 className="mb-4 text-lg font-bold text-[var(--text-1)]">
+              {locale === 'ar' ? 'العيادات التي أنشأتها' : 'My Created Clinics'}
+            </h3>
+            
+            {isLoadingClinics ? (
+              <div className="flex justify-center py-8">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal border-t-transparent" />
               </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">2</span>
-              <div>
-                <strong className="block text-white">{t('steps.step2Title')}</strong>
-                <p>{t('steps.step2Body')}</p>
+            ) : myClinics.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-black/[0.06] bg-white py-10 px-4 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-black/[0.03]">
+                  <Building2 className="h-6 w-6 text-black/20" />
+                </div>
+                <p className="text-sm font-semibold text-[var(--text-1)]">
+                  {locale === 'ar' ? 'لم تنشئ أي عيادات بعد' : 'No clinics created yet'}
+                </p>
               </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">3</span>
-              <div>
-                <strong className="block text-white">{t('steps.step3Title')}</strong>
-                <p>{t('steps.step3Body')}</p>
+            ) : (
+              <div className="grid gap-3 max-h-[400px] overflow-y-auto pr-2">
+                {myClinics.map((clinic: any) => (
+                  <article key={clinic._id} className="flex items-center justify-between rounded-xl border border-black/[0.06] bg-white p-4 shadow-sm transition hover:border-teal/20">
+                    <div>
+                      <h4 className="font-semibold text-ink">{locale === 'ar' ? clinic.name_ar : clinic.name_en}</h4>
+                      <p className="text-xs text-ink/60">{clinic.category} · {clinic.governorate}</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+                          clinic.is_approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {clinic.is_approved ? 'Approved' : 'Pending'}
+                        </span>
+                        <span className="text-xs font-mono text-ink/50" dir="ltr">{clinic.phone}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/${locale}/${clinic.slug}`)}
+                      className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.03] text-teal hover:bg-teal hover:text-white transition"
+                      title={locale === 'ar' ? 'عرض العيادة' : 'View Clinic'}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 rtl:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </article>
+                ))}
               </div>
-            </li>
-            <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-bold text-white">4</span>
-              <div>
-                <strong className="block text-white">{t('steps.step4Title')}</strong>
-                <p>{t('steps.step4Body')}</p>
-              </div>
-            </li>
-          </ul>
-        </section>
+            )}
+          </section>
+
+          {/* Instructions moved below */}
+          <section className="rounded-[2rem] border border-white/70 bg-slate-950 p-6 text-slate-50 shadow-soft sm:p-8">
+            <h3 className="mb-4 text-sm font-semibold text-emerald-300">{t('instructionsTitle')}</h3>
+            <ul className="space-y-3 text-xs leading-relaxed text-slate-300">
+              <li className="flex gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold text-white">1</span>
+                <div>
+                  <strong className="block text-white">{t('steps.step1Title')}</strong>
+                  <p>{t('steps.step1Body')}</p>
+                </div>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold text-white">2</span>
+                <div>
+                  <strong className="block text-white">{t('steps.step2Title')}</strong>
+                  <p>{t('steps.step2Body')}</p>
+                </div>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold text-white">3</span>
+                <div>
+                  <strong className="block text-white">{t('steps.step3Title')}</strong>
+                  <p>{t('steps.step3Body')}</p>
+                </div>
+              </li>
+              <li className="flex gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10 font-bold text-white">4</span>
+                <div>
+                  <strong className="block text-white">{t('steps.step4Title')}</strong>
+                  <p>{t('steps.step4Body')}</p>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </div>
 
       </div>
     </SiteShell>

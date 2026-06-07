@@ -86,6 +86,25 @@ export function SiteShell({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [impersonatingName, setImpersonatingName] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if we are impersonating
+    const name = localStorage.getItem('khalas_impersonating');
+    if (name) {
+      setImpersonatingName(name);
+    }
+  }, []);
+
+  const handleExitImpersonation = async () => {
+    try {
+      await logout();
+      localStorage.removeItem('khalas_impersonating');
+      window.location.href = `/${locale}/auth/login`;
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -127,11 +146,25 @@ export function SiteShell({
 
   return (
     <div className="min-h-screen w-full bg-[var(--surface-0)]">
+      {/* Impersonation Banner */}
+      {impersonatingName && (
+        <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-center gap-4 bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-md">
+          <span>
+            {locale === 'ar' ? 'أنت تستخدم النظام كـ' : 'You are impersonating'}: {impersonatingName}
+          </span>
+          <button
+            onClick={handleExitImpersonation}
+            className="rounded-full bg-white/20 px-3 py-1 text-xs hover:bg-white/30 transition-colors"
+          >
+            {locale === 'ar' ? 'خروج من الحساب' : 'Exit Impersonation'}
+          </button>
+        </div>
+      )}
 
       {/* ── Compact App Header ─────────────────────────────────── */}
       <header
-        style={{height: HEADER_H}}
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white border-b border-black/[0.06] px-4 sm:px-6"
+        style={{height: HEADER_H, marginTop: impersonatingName ? '36px' : '0'}}
+        className="fixed inset-x-0 z-50 flex items-center justify-between bg-white border-b border-black/[0.06] px-4 sm:px-6 transition-all"
       >
         {/* Logo — minimal */}
         <Link
@@ -242,10 +275,13 @@ export function SiteShell({
         </div>
       </header>
 
-      {/* ── Page content ───────────────────────────────────────── */}
-      <div
-        style={{paddingTop: HEADER_H}}
-        className="mx-auto w-full max-w-6xl pb-24 md:pb-8"
+      {/* ── Main Content Area ──────────────────────────────────── */}
+      <main
+        style={{
+          paddingTop: impersonatingName ? HEADER_H + 36 : HEADER_H,
+          paddingBottom: '80px', // Extra padding for bottom nav
+        }}
+        className="mx-auto w-full max-w-screen-md px-4 py-6 sm:px-6 relative"
       >
         {/* Page title — shown on mobile below header */}
         {(title || subtitle) && (
@@ -266,7 +302,7 @@ export function SiteShell({
         <div className="px-4 sm:px-6 lg:px-8">
           {children}
         </div>
-      </div>
+      </main>
 
       {/* ── Bottom Tab Bar (mobile) ────────────────────────────── */}
       <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden">

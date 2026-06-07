@@ -96,6 +96,7 @@ async def create_demo_clinic(
         "trial_ends_at": timestamp,
         "billing_notes": "Created via Demo Setup",
         "owner_id": str(provider_user["_id"]),
+        "created_by": str(current_user["_id"]),
         "created_at": timestamp,
         "updated_at": timestamp,
     }
@@ -155,3 +156,18 @@ async def create_demo_clinic(
     await AvailabilityRepository().replace_for_staff(str(staff["_id"]), availability_rows)
 
     return ApiResponse(data=serialize_venue(venue))
+
+@router.get("/clinics", response_model=ApiResponse[list[VenueResponse]])
+async def get_salesman_clinics(
+    current_user: Annotated[dict, Depends(require_role("salesman", "admin"))],
+) -> ApiResponse[list[VenueResponse]]:
+    """Get all clinics created by this salesman."""
+    user_id = str(current_user["_id"])
+    repo = VenueRepository()
+    
+    # We need a custom query here or a new method in VenueRepository
+    # Since we are using standard PyMongo we can directly query
+    cursor = repo.collection.find({"created_by": user_id}).sort("created_at", -1)
+    venues = await cursor.to_list(length=100)
+    
+    return ApiResponse(data=[serialize_venue(v) for v in venues])
