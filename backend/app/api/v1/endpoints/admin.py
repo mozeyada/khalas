@@ -223,6 +223,24 @@ async def admin_seed_test_users(
             "name_en": "Salesman Patient", "name_ar": "مريض المبيعات",
             "email": "sales+patient@khalas.com", "phone": "+201100000003",
             "role": "patient"
+        },
+        # Mohamed Sakr (Salesman)
+        {
+            "name_en": "Mohamed Sakr", "name_ar": "محمد صقر",
+            "email": "m.sakr@khalas.com", "phone": "+201200000001",
+            "role": "salesman"
+        },
+        # Mohamed Sakr's Clinic
+        {
+            "name_en": "Sakr Clinic", "name_ar": "عيادة صقر",
+            "email": "m.sakr+clinic@khalas.com", "phone": "+201200000002",
+            "role": "provider", "provider_type": "clinic"
+        },
+        # Mohamed Sakr's Patient
+        {
+            "name_en": "Sakr Patient", "name_ar": "المريض صقر",
+            "email": "m.sakr+patient@khalas.com", "phone": "+201200000003",
+            "role": "patient"
         }
     ]
 
