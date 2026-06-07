@@ -170,7 +170,7 @@
     "selectServiceFirst": "Select a service to load available slots.",
     "loadingSlots": "Loading slots",
     "loadSlots": "Load available slots",
-    "slotMeta": "{duration} min + {buffer} min buffer",
+    "slotMeta": "Available slots",
     "noSlots": "No available slots were found in the current window.",
     "notesLabel": "Notes for the doctor / clinic",
     "notesPlaceholder": "Add any booking note you want to include",
