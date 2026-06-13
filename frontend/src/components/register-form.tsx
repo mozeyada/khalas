@@ -11,6 +11,7 @@ import {ApiError} from '@/lib/api';
 function normalizePhone(phone: string): string {
   const westernised = phone.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
   let cleaned = westernised.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('00')) cleaned = '+' + cleaned.slice(2);
   if (cleaned.startsWith('+201') && cleaned.length === 13) return cleaned;
   if (cleaned.startsWith('01') && cleaned.length === 11) return '+2' + cleaned;
   return cleaned;
@@ -19,9 +20,10 @@ function normalizePhone(phone: string): string {
 function isValidPhone(phone: string): boolean {
   if (!phone) return false;
   const westernised = phone.replace(/[٠-٩]/g, d => '0123456789'['٠١٢٣٤٥٦٧٨٩'.indexOf(d)]);
-  const cleaned = westernised.replace(/[^\d+]/g, '');
-  return (cleaned.startsWith('+201') && cleaned.length === 13) || 
-         (cleaned.startsWith('01') && cleaned.length === 11);
+  let cleaned = westernised.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('00')) cleaned = '+' + cleaned.slice(2);
+  if (cleaned.startsWith('01') && cleaned.length === 11) return true;
+  return /^\+\d{10,15}$/.test(cleaned);
 }
 
 export function RegisterForm() {

@@ -36,9 +36,17 @@ class RegisterRequest(APIModel):
     @field_validator("phone")
     @classmethod
     def validate_phone(cls, value: str | None) -> str | None:
-        """Validate the phone number format."""
-        if value is not None and re.fullmatch(r"\+20\d{10}", value) is None:
-            raise ValueError("Phone must be in +20XXXXXXXXXX format.")
+        """Validate and normalize the phone number format."""
+        if value is not None:
+            # Normalize 00 to +
+            if value.startswith("00"):
+                value = "+" + value[2:]
+            # Normalize local Egyptian to +20
+            if value.startswith("01") and len(value) == 11:
+                value = "+2" + value
+            # Validate international format
+            if re.fullmatch(r"\+\d{10,15}", value) is None:
+                raise ValueError("Phone must be in international format (e.g., +2010... or 00971...) or local Egyptian (010...).")
         return value
 
 
