@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState, useCallback} from 'react';
+import {useEffect, useState, useCallback, useRef} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 import {useSession} from '@/components/session-provider';
@@ -9,7 +9,8 @@ import {SiteShell} from '@/components/site-shell';
 import {
   Building2, Plus, Sparkles, TrendingUp, Users, Calendar,
   CheckCircle2, Clock, ArrowRight, ExternalLink, Copy, Phone,
-  QrCode, BarChart3, Zap, AlertCircle, ChevronRight
+  BarChart3, Zap, AlertCircle, ChevronRight, LayoutDashboard,
+  Presentation, MoreVertical, Send, ShieldCheck, Check
 } from 'lucide-react';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -36,33 +37,51 @@ function generateSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 }
 
+// ─── hook for outside click ──────────────────────────────────────────────────
+function useOutsideClick(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        handler();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [ref, handler]);
+}
+
 // ─── component ───────────────────────────────────────────────────────────────
 
+type Tab = 'overview' | 'demo' | 'portfolio';
+
 export default function SalesmanPage() {
-  const nav = useTranslations('Navigation');
   const t = useTranslations('SalesmanPage');
   const locale = useLocale();
   const router = useRouter();
   const { isAuthenticated, isReady, user } = useSession();
 
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [myClinics, setMyClinics] = useState<any[]>([]);
   const [isLoadingClinics, setIsLoadingClinics] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-
-  // Welcome Modal State
-  const [welcomeModalClinic, setWelcomeModalClinic] = useState<any>(null);
-  const [welcomeLang, setWelcomeLang] = useState<'ar' | 'en'>('ar');
-  const [welcomePassword, setWelcomePassword] = useState('');
-  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
-
-  // form state
+  
+  // Demo Hub State
   const [clinicName, setClinicName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [governorate, setGovernorate] = useState('');
   const [doctorPhone, setDoctorPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newlyCreatedClinic, setNewlyCreatedClinic] = useState<any | null>(null);
+
+  // Portfolio State
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  
+  // Welcome Modal State
+  const [welcomeModalClinic, setWelcomeModalClinic] = useState<any>(null);
+  const [welcomeLang, setWelcomeLang] = useState<'ar' | 'en'>('ar');
+  const [welcomePassword, setWelcomePassword] = useState('');
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
 
   const loadClinics = useCallback(async () => {
     try {
@@ -105,9 +124,10 @@ export default function SalesmanPage() {
         const body = (await res.json()) as { error?: string };
         throw new Error(body.error ?? 'Failed to setup demo clinic');
       }
+      const newClinic = (await res.json()).data;
+      setNewlyCreatedClinic(newClinic);
       await loadClinics();
       setClinicName(''); setSpecialty(''); setGovernorate(''); setDoctorPhone('');
-      setShowForm(false);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -119,6 +139,7 @@ export default function SalesmanPage() {
     const link = `${window.location.origin}/${locale}/${slug}`;
     navigator.clipboard.writeText(link);
     setCopiedSlug(slug);
+    setActiveDropdown(null);
     setTimeout(() => setCopiedSlug(null), 2000);
   }
 
@@ -147,7 +168,7 @@ export default function SalesmanPage() {
 
   if (!isReady || isLoadingClinics) {
     return (
-      <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
+      <SiteShell title={locale === 'ar' ? 'لوحة المبيعات' : 'Sales Command Center'}>
         <div className="flex h-40 items-center justify-center">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--text-1)] border-t-transparent" />
         </div>
@@ -155,9 +176,7 @@ export default function SalesmanPage() {
     );
   }
 
-  if (!isAuthenticated || (user?.role !== 'salesman' && user?.role !== 'admin')) {
-    return null;
-  }
+  if (!isAuthenticated || (user?.role !== 'salesman' && user?.role !== 'admin')) return null;
 
   const hour = new Date().getHours();
   const greeting = locale === 'ar'
@@ -168,303 +187,423 @@ export default function SalesmanPage() {
   const pendingClinics = myClinics.filter(c => !c.is_approved);
 
   return (
-    <SiteShell title={locale === 'ar' ? 'لوحة التحكم' : 'Command Center'}>
-      {/* ── Greeting ────────────────────────────────────────────── */}
-      <div className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-3)]">
-          {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
-        </p>
-        <h1 className="mt-1 text-2xl font-black text-[var(--text-1)]">
-          {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''} 👋
+    <SiteShell title={locale === 'ar' ? 'مركز القيادة' : 'Command Center'}>
+      {/* ── Top Header ────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">
+          {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''}
         </h1>
-        <p className="mt-1 text-sm text-[var(--text-3)]">
-          {locale === 'ar' ? 'هنا ملخص شامل لعملك ومحفظة العيادات التي تديرها.' : 'Here is a full overview of your work and the clinic portfolio you manage.'}
+        <p className="mt-2 text-sm text-[var(--text-3)] max-w-xl">
+          {locale === 'ar' 
+            ? 'مرحباً بك في مركز قيادة المبيعات الخاص بك. يمكنك من هنا إنشاء روابط تجريبية للعملاء وإدارة محفظتك.' 
+            : 'Welcome to your premium Sales Command Center. Generate instant demos and manage your portfolio with ease.'}
         </p>
       </div>
 
-      {/* ── Stats Strip ─────────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* ── Navigation Tabs ──────────────────────────────────────── */}
+      <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
         {[
-          {
-            icon: <Building2 className="h-5 w-5" />,
-            value: myClinics.length,
-            label: locale === 'ar' ? 'إجمالي العيادات' : 'Total Clinics',
-            accent: 'bg-black text-white',
-            iconBg: 'bg-white/20',
-          },
-          {
-            icon: <CheckCircle2 className="h-5 w-5" />,
-            value: approvedClinics.length,
-            label: locale === 'ar' ? 'معتمدة' : 'Approved',
-            accent: 'bg-emerald-500 text-white',
-            iconBg: 'bg-white/20',
-          },
-          {
-            icon: <Clock className="h-5 w-5" />,
-            value: pendingClinics.length,
-            label: locale === 'ar' ? 'في الانتظار' : 'Pending',
-            accent: 'bg-amber-400 text-white',
-            iconBg: 'bg-white/20',
-          },
-          {
-            icon: <Zap className="h-5 w-5" />,
-            value: myClinics.reduce((sum, c) => sum + (c.appointment_count || 0), 0),
-            label: locale === 'ar' ? 'إجمالي الحجوزات' : 'Total Bookings',
-            accent: 'bg-[var(--surface-1)] text-[var(--text-1)] border border-[var(--border)]',
-            iconBg: 'bg-[var(--text-1)]/10',
-          },
-        ].map((stat, i) => (
-          <div key={i} className={`rounded-2xl p-4 shadow-sm ${stat.accent}`}>
-            <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${stat.iconBg}`}>
-              {stat.icon}
-            </div>
-            <p className="text-2xl font-black">{stat.value}</p>
-            <p className="text-xs font-medium opacity-80">{stat.label}</p>
-          </div>
+          { id: 'overview', icon: <LayoutDashboard className="h-4 w-4" />, label: locale === 'ar' ? 'نظرة عامة' : 'Overview' },
+          { id: 'demo', icon: <Presentation className="h-4 w-4" />, label: locale === 'ar' ? 'محطة العروض التجريبية' : 'Demo Hub' },
+          { id: 'portfolio', icon: <Building2 className="h-4 w-4" />, label: locale === 'ar' ? 'محفظة العيادات' : 'Portfolio' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as Tab)}
+            className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold transition-all shadow-sm border ${
+              activeTab === tab.id
+                ? 'bg-[var(--text-1)] text-white border-[var(--text-1)]'
+                : 'bg-white text-[var(--text-2)] border-[var(--border)] hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]'
+            }`}
+          >
+            {tab.icon}
+            {tab.label}
+          </button>
         ))}
       </div>
 
-      {/* ── Primary Action ──────────────────────────────────────── */}
-      <button
-        onClick={() => setShowForm(f => !f)}
-        className="mb-6 flex w-full items-center justify-between rounded-[1.75rem] bg-[var(--text-1)] px-6 py-4 text-white shadow-float transition-transform hover:scale-[1.01] active:scale-[0.99]"
-      >
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
-            <Plus className="h-6 w-6" />
-          </div>
-          <div className="text-start">
-            <p className="text-base font-bold">{locale === 'ar' ? 'إضافة عيادة جديدة' : 'Onboard New Clinic'}</p>
-            <p className="text-xs text-white/60">{locale === 'ar' ? 'إنشاء لينك تجريبي فوري وشرح للعميل' : 'Create an instant demo link and present to client'}</p>
-          </div>
-        </div>
-        <ChevronRight className={`h-5 w-5 transition-transform ${showForm ? 'rotate-90' : ''}`} />
-      </button>
-
-      {/* ── Onboarding Form ─────────────────────────────────────── */}
-      {showForm && (
-        <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-200 rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] p-6 shadow-card">
-          <div className="mb-4 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[var(--text-3)]" />
-            <h2 className="text-sm font-bold text-[var(--text-1)]">
-              {locale === 'ar' ? 'بيانات العيادة الجديدة' : 'New Clinic Details'}
-            </h2>
-          </div>
-
-          <form onSubmit={handleDemoSubmit} className="space-y-3">
-            <input
-              value={clinicName}
-              onChange={e => setClinicName(e.target.value)}
-              required
-              className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-[var(--text-1)] focus:ring-2 focus:ring-[var(--text-1)]/10"
-              placeholder={locale === 'ar' ? 'اسم العيادة' : 'Clinic name (e.g. Nour Medical Center)'}
-            />
-
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                list="specialties-list"
-                value={specialty}
-                onChange={e => setSpecialty(e.target.value)}
-                required
-                className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-[var(--text-1)]"
-                placeholder={locale === 'ar' ? 'التخصص' : 'Specialty'}
-              />
-              <datalist id="specialties-list">
-                {['Cardiology','Dentistry','Dermatology','Orthopedics','Pediatrics','Internal Medicine','Ophthalmology','Neurology','Psychiatry','General Surgery'].map(s => <option key={s} value={s} />)}
-              </datalist>
-
-              <input
-                list="governorates-list"
-                value={governorate}
-                onChange={e => setGovernorate(e.target.value)}
-                required
-                className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-[var(--text-1)]"
-                placeholder={locale === 'ar' ? 'المحافظة' : 'Governorate'}
-              />
-              <datalist id="governorates-list">
-                {['Cairo','Giza','Alexandria','Dakahlia','Beheira','Fayoum','Gharbia','Ismailia','Menofia','Minya','Qalyubia','Suez','Aswan','Assiut','Beni Suef','Port Said','Damietta','Sharkia','Luxor','Qena','Sohag'].map(g => <option key={g} value={g} />)}
-              </datalist>
+      {/* ── OVERVIEW TAB ────────────────────────────────────────── */}
+      {activeTab === 'overview' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-teal-500/10 transition-transform group-hover:scale-150" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <p className="text-3xl font-black text-[var(--text-1)]">{myClinics.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'إجمالي العيادات' : 'Total Clinics'}</p>
+            </div>
+            
+            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/10 transition-transform group-hover:scale-150" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <p className="text-3xl font-black text-[var(--text-1)]">{approvedClinics.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'عيادات مفعلة' : 'Active Partners'}</p>
             </div>
 
+            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-500/10 transition-transform group-hover:scale-150" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <Clock className="h-5 w-5" />
+              </div>
+              <p className="text-3xl font-black text-[var(--text-1)]">{pendingClinics.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'في الانتظار' : 'Pending Approval'}</p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--text-1)] p-5 shadow-float relative overflow-hidden group text-white">
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-white">
+                <Zap className="h-5 w-5" />
+              </div>
+              <p className="text-3xl font-black">{myClinics.reduce((sum, c) => sum + (c.appointment_count || 0), 0)}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-white/60">{locale === 'ar' ? 'إجمالي الحجوزات' : 'Total Bookings Driven'}</p>
+            </div>
+          </div>
+
+          {/* Quick Action Prompt */}
+          <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-[2rem] border border-[var(--border)] bg-[var(--surface-0)] p-6 sm:flex-row sm:px-8">
             <div>
-              <input
-                dir="ltr"
-                value={doctorPhone}
-                onChange={e => setDoctorPhone(e.target.value)}
-                required
-                className={`w-full rounded-2xl border px-4 py-3 text-sm text-left outline-none transition focus:ring-2 ${
-                  doctorPhone.length > 0
-                    ? isValidPhone(doctorPhone)
-                      ? 'border-emerald-400 bg-emerald-50/50 focus:ring-emerald-500/10'
-                      : 'border-rose-400 bg-rose-50/50 focus:ring-rose-500/10'
-                    : 'border-[var(--border)] bg-white focus:border-[var(--text-1)] focus:ring-[var(--text-1)]/10'
-                }`}
-                placeholder={locale === 'ar' ? 'رقم الطبيب (01xxxxxxxxx)' : "Doctor's phone (01xxxxxxxxx)"}
-              />
-              <p className="mt-1 px-1 text-[11px] text-[var(--text-3)]">
-                {locale === 'ar' ? 'سيتلقى الطبيب رسالة واتساب لإعداد حسابه.' : 'The doctor will receive a WhatsApp message to set up their account.'}
+              <h3 className="text-lg font-bold text-[var(--text-1)]">
+                {locale === 'ar' ? 'هل أنت في اجتماع مع عميل الآن؟' : 'In a meeting with a prospect?'}
+              </h3>
+              <p className="text-sm text-[var(--text-3)]">
+                {locale === 'ar' ? 'أنشئ عيادة تجريبية في ثوانٍ وأبهر العميل بالتجربة.' : 'Generate an instant demo clinic and wow them on the spot.'}
               </p>
             </div>
-
-            {error && (
-              <div className="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="flex-1 rounded-full border border-[var(--border)] bg-white py-3 text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
-              >
-                {locale === 'ar' ? 'إلغاء' : 'Cancel'}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
-              >
-                {isSubmitting ? (locale === 'ar' ? 'جاري الإنشاء…' : 'Creating…') : (locale === 'ar' ? 'إنشاء العيادة' : 'Create Clinic')}
-              </button>
-            </div>
-          </form>
+            <button
+              onClick={() => setActiveTab('demo')}
+              className="flex shrink-0 items-center gap-2 rounded-full bg-[var(--text-1)] px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+            >
+              <Sparkles className="h-4 w-4" />
+              {locale === 'ar' ? 'بدء تجربة جديدة' : 'Start New Demo'}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* ── Portfolio ───────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-[var(--text-1)]">
-            {locale === 'ar' ? 'محفظة العيادات' : 'Clinic Portfolio'}
-          </h2>
-          {myClinics.length > 0 && (
-            <span className="rounded-full bg-[var(--surface-1)] border border-[var(--border)] px-3 py-1 text-xs font-bold text-[var(--text-2)]">
-              {myClinics.length}
-            </span>
-          )}
-        </div>
+      {/* ── DEMO HUB TAB ────────────────────────────────────────── */}
+      {activeTab === 'demo' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          {!newlyCreatedClinic ? (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Form Side */}
+              <div className="rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-sm sm:p-8">
+                <div className="mb-6">
+                  <div className="mb-3 inline-flex items-center justify-center rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600">
+                    {locale === 'ar' ? 'منشئ العروض' : 'Demo Generator'}
+                  </div>
+                  <h2 className="text-2xl font-black tracking-tight text-[var(--text-1)]">
+                    {locale === 'ar' ? 'إعداد عيادة العميل' : 'Setup Prospect Clinic'}
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--text-3)]">
+                    {locale === 'ar' ? 'أدخل بيانات العميل الأساسية وسنقوم بتجهيز كل شيء فوراً.' : 'Enter the basic details and we will spin up a fully functional booking platform instantly.'}
+                  </p>
+                </div>
 
-        {isLoadingClinics ? (
-          <div className="flex justify-center py-12">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--text-1)] border-t-transparent" />
-          </div>
-        ) : myClinics.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-[var(--border)] py-16 px-6 text-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--surface-1)]">
-              <Building2 className="h-8 w-8 text-[var(--text-3)]" />
-            </div>
-            <p className="text-base font-bold text-[var(--text-1)]">
-              {locale === 'ar' ? 'لم تُضف أي عيادة بعد' : 'No clinics yet'}
-            </p>
-            <p className="mt-1 text-sm text-[var(--text-3)]">
-              {locale === 'ar' ? 'أضف أول عيادة باستخدام الزر أعلاه' : 'Add your first clinic using the button above'}
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {myClinics.map((clinic: any) => (
-              <article
-                key={clinic._id}
-                className="group relative overflow-hidden rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-card transition-all hover:-translate-y-0.5 hover:shadow-float"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Status indicator */}
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${clinic.is_approved ? 'bg-black text-white' : 'bg-amber-100 text-amber-700'}`}>
-                    <Building2 className="h-6 w-6" />
+                <form onSubmit={handleDemoSubmit} className="space-y-4">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
+                      {locale === 'ar' ? 'اسم العيادة' : 'Clinic Name'}
+                    </label>
+                    <input
+                      value={clinicName}
+                      onChange={e => setClinicName(e.target.value)}
+                      required
+                      className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+                      placeholder={locale === 'ar' ? 'مثال: عيادة النور' : 'e.g. Al Nour Clinic'}
+                    />
                   </div>
 
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-base font-bold text-[var(--text-1)]">
-                      {locale === 'ar' ? clinic.name_ar : clinic.name_en}
-                    </h3>
-                    <div className="mt-1 flex items-center gap-2 flex-wrap">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
-                        clinic.is_approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {clinic.is_approved ? (locale === 'ar' ? 'معتمدة' : 'Approved') : (locale === 'ar' ? 'انتظار' : 'Pending')}
-                      </span>
-                      <span className="text-xs text-[var(--text-3)]">{clinic.category}</span>
-                      <span className="text-[var(--text-3)]">·</span>
-                      <span className="text-xs text-[var(--text-3)]">{clinic.governorate}</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
+                        {locale === 'ar' ? 'التخصص' : 'Specialty'}
+                      </label>
+                      <input
+                        list="specialties-list"
+                        value={specialty}
+                        onChange={e => setSpecialty(e.target.value)}
+                        required
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+                        placeholder={locale === 'ar' ? 'مثال: أسنان' : 'e.g. Dentistry'}
+                      />
+                      <datalist id="specialties-list">
+                        {['Cardiology','Dentistry','Dermatology','Orthopedics','Pediatrics','Internal Medicine','Ophthalmology','Neurology','Psychiatry','General Surgery'].map(s => <option key={s} value={s} />)}
+                      </datalist>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
+                        {locale === 'ar' ? 'المحافظة' : 'Governorate'}
+                      </label>
+                      <input
+                        list="governorates-list"
+                        value={governorate}
+                        onChange={e => setGovernorate(e.target.value)}
+                        required
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
+                        placeholder={locale === 'ar' ? 'القاهرة' : 'Cairo'}
+                      />
+                      <datalist id="governorates-list">
+                        {['Cairo','Giza','Alexandria','Dakahlia','Beheira','Fayoum','Gharbia','Ismailia','Menofia','Minya','Qalyubia','Suez','Aswan','Assiut','Beni Suef','Port Said','Damietta','Sharkia','Luxor','Qena','Sohag'].map(g => <option key={g} value={g} />)}
+                      </datalist>
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      onClick={() => setWelcomeModalClinic(clinic)}
-                      title={locale === 'ar' ? 'رسالة ترحيب' : 'Send Welcome'}
-                      className="flex h-9 w-9 items-center justify-center rounded-full transition bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-600"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleCopyLink(clinic.slug)}
-                      title={locale === 'ar' ? 'نسخ الرابط' : 'Copy link'}
-                      className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[var(--surface-0)] text-[var(--text-3)] hover:text-[var(--text-1)]"
-                    >
-                      {copiedSlug === clinic.slug
-                        ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        : <Copy className="h-4 w-4" />
-                      }
-                    </button>
-                    <button
-                      onClick={() => router.push(`/${locale}/${clinic.slug}`)}
-                      title={locale === 'ar' ? 'عرض العيادة' : 'View clinic'}
-                      className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[var(--surface-0)] text-[var(--text-3)] hover:text-[var(--text-1)]"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </button>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
+                      {locale === 'ar' ? 'رقم هاتف العميل (للتسجيل)' : "Prospect's Phone Number"}
+                    </label>
+                    <input
+                      dir="ltr"
+                      value={doctorPhone}
+                      onChange={e => setDoctorPhone(e.target.value)}
+                      required
+                      className={`w-full rounded-2xl border px-4 py-3 text-sm text-left outline-none transition focus:ring-4 ${
+                        doctorPhone.length > 0
+                          ? isValidPhone(doctorPhone)
+                            ? 'border-emerald-400 bg-emerald-50/30 focus:bg-white focus:ring-emerald-500/10'
+                            : 'border-rose-400 bg-rose-50/30 focus:bg-white focus:ring-rose-500/10'
+                          : 'border-[var(--border)] bg-[var(--surface-0)] focus:border-indigo-500 focus:bg-white focus:ring-indigo-500/10'
+                      }`}
+                      placeholder={locale === 'ar' ? '01xxxxxxxxx' : "01xxxxxxxxx"}
+                    />
                   </div>
-                </div>
 
-                {/* Quick link preview */}
-                {clinic.slug && (
-                  <div className="mt-3 flex items-center gap-2 rounded-xl bg-[var(--surface-0)] px-3 py-2">
-                    <span className="text-[11px] font-mono text-[var(--text-3)] truncate" dir="ltr">
-                      khalas.app/{locale}/{clinic.slug}
-                    </span>
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
+                  {error && (
+                    <div className="flex items-center gap-2 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {error}
+                    </div>
+                  )}
 
-      {/* ── How It Works ────────────────────────────────────────── */}
-      {myClinics.length === 0 && (
-        <div className="mt-6 rounded-[2rem] bg-[var(--text-1)] p-6 text-white">
-          <h3 className="mb-4 text-sm font-bold text-white/60 uppercase tracking-widest">
-            {locale === 'ar' ? 'كيف يعمل خلاص؟' : 'How Khalas Works'}
-          </h3>
-          <div className="space-y-4">
-            {[
-              { n: '01', title: locale === 'ar' ? 'أنشئ صفحة العيادة' : 'Create the clinic page', body: locale === 'ar' ? 'أدخل بيانات العيادة واحصل على رابط تجريبي فوري.' : 'Enter clinic details and get an instant shareable demo link.' },
-              { n: '02', title: locale === 'ar' ? 'أظهر للطبيب النتيجة' : 'Show the doctor live', body: locale === 'ar' ? 'أعرض الصفحة الحية على الطبيب مباشرة من هاتفك.' : 'Present the live booking page directly from your phone.' },
-              { n: '03', title: locale === 'ar' ? 'الطبيب يوافق ويُفعّل' : 'Doctor activates', body: locale === 'ar' ? 'يتلقى الطبيب رسالة واتساب ويُكمل إعداد حسابه.' : 'The doctor gets a WhatsApp message and completes setup.' },
-              { n: '04', title: locale === 'ar' ? 'المرضى يحجزون' : 'Patients start booking', body: locale === 'ar' ? 'العيادة تظهر في البحث ويبدأ المرضى بالحجز مباشرة.' : 'The clinic appears in search and patients book instantly.' },
-            ].map(step => (
-              <div key={step.n} className="flex gap-4">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs font-black text-white/80">{step.n}</span>
-                <div>
-                  <p className="text-sm font-bold text-white">{step.title}</p>
-                  <p className="text-xs text-white/50 leading-relaxed">{step.body}</p>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[var(--text-1)] py-4 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/20 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        {locale === 'ar' ? 'توليد العرض التجريبي' : 'Generate Demo Now'}
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Instructions Side */}
+              <div className="hidden flex-col justify-center rounded-[2rem] bg-[var(--surface-0)] p-8 lg:flex">
+                <h3 className="mb-6 text-xl font-black tracking-tight text-[var(--text-1)]">
+                  {locale === 'ar' ? 'خطوات العرض المثالي' : 'The Perfect Pitch Playbook'}
+                </h3>
+                <div className="space-y-6">
+                  {[
+                    { n: '01', title: locale === 'ar' ? 'استلم الرابط' : 'Get the Link', body: locale === 'ar' ? 'املأ النموذج وسنقوم فوراً بإنشاء صفحة حجز متكاملة للعميل.' : 'Fill out the form and we will instantly spin up a full booking page.' },
+                    { n: '02', title: locale === 'ar' ? 'اعرض تجربة المريض' : 'Show the Patient Flow', body: locale === 'ar' ? 'افتح الرابط أمام العميل ودعه يرى مدى سهولة حجز موعد.' : 'Open the link in front of the prospect and let them see how easy it is to book.' },
+                    { n: '03', title: locale === 'ar' ? 'أرسل رسالة الترحيب' : 'Send the Welcome Packet', body: locale === 'ar' ? 'من محفظتك، اضغط على زر الترحيب لترسل للعميل بيانات دخوله كطبيب على الواتساب.' : 'From your portfolio, hit the Welcome button to send them their doctor login via WhatsApp.' }
+                  ].map(step => (
+                    <div key={step.n} className="flex gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm">
+                        <span className="text-sm font-black text-indigo-600">{step.n}</span>
+                      </div>
+                      <div>
+                        <p className="text-base font-bold text-[var(--text-1)]">{step.title}</p>
+                        <p className="mt-1 text-sm text-[var(--text-3)] leading-relaxed">{step.body}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            /* Success State */
+            <div className="mx-auto max-w-2xl rounded-[2.5rem] border border-[var(--border)] bg-white p-8 text-center shadow-2xl animate-in zoom-in-95 duration-500">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+                <ShieldCheck className="h-10 w-10" />
+              </div>
+              <h2 className="mb-2 text-3xl font-black text-[var(--text-1)]">
+                {locale === 'ar' ? 'تم تجهيز العيادة بنجاح! 🎉' : 'Demo Clinic is Ready! 🎉'}
+              </h2>
+              <p className="mb-8 text-[var(--text-2)]">
+                {locale === 'ar' 
+                  ? `عيادة ${newlyCreatedClinic.name_ar} جاهزة الآن لاستقبال الحجوزات.` 
+                  : `${newlyCreatedClinic.name_en} is now live and ready for bookings.`}
+              </p>
+
+              <div className="mb-8 flex flex-col gap-4 sm:flex-row">
+                <button
+                  onClick={() => window.open(`/${locale}/${newlyCreatedClinic.slug}`, '_blank')}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--text-1)] py-4 font-bold text-white shadow-float transition hover:-translate-y-1 hover:shadow-xl"
+                >
+                  <ExternalLink className="h-5 w-5" />
+                  {locale === 'ar' ? 'عرض صفحة المريض' : 'Open Patient View'}
+                </button>
+                <button
+                  onClick={() => handleCopyLink(newlyCreatedClinic.slug)}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--border)] bg-white py-4 font-bold text-[var(--text-1)] shadow-sm transition hover:bg-[var(--surface-0)]"
+                >
+                  {copiedSlug === newlyCreatedClinic.slug ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5" />}
+                  {copiedSlug === newlyCreatedClinic.slug 
+                    ? (locale === 'ar' ? 'تم النسخ!' : 'Copied!') 
+                    : (locale === 'ar' ? 'نسخ الرابط' : 'Copy Link')}
+                </button>
+              </div>
+
+              <div className="rounded-2xl bg-[var(--surface-0)] p-4 text-sm text-[var(--text-3)] border border-[var(--border)] border-dashed">
+                <p>
+                  {locale === 'ar' 
+                    ? 'الخطوة التالية: اذهب إلى "محفظة العيادات" لإرسال رسالة الترحيب للطبيب ليتمكن من الدخول إلى حسابه.'
+                    : 'Next step: Head to your "Portfolio" tab to send the welcome message so the doctor can log into their dashboard.'}
+                </p>
+              </div>
+
+              <button
+                onClick={() => { setNewlyCreatedClinic(null); setActiveTab('portfolio'); }}
+                className="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
+              >
+                {locale === 'ar' ? 'الذهاب لمحفظة العيادات ←' : 'Go to Portfolio ←'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Welcome Modal */}
+      {/* ── PORTFOLIO TAB ───────────────────────────────────────── */}
+      {activeTab === 'portfolio' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-black text-[var(--text-1)]">
+              {locale === 'ar' ? 'إدارة المحفظة' : 'Portfolio Management'}
+            </h2>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[var(--surface-0)] border border-[var(--border)] px-3 py-1 text-xs font-bold text-[var(--text-2)]">
+                {myClinics.length} {locale === 'ar' ? 'عيادة' : 'Clinics'}
+              </span>
+            </div>
+          </div>
+
+          {myClinics.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-[var(--border)] bg-white py-20 px-6 text-center shadow-sm">
+              <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface-0)]">
+                <Building2 className="h-10 w-10 text-[var(--text-3)]" />
+              </div>
+              <p className="text-xl font-black text-[var(--text-1)]">
+                {locale === 'ar' ? 'المحفظة فارغة' : 'Empty Portfolio'}
+              </p>
+              <p className="mt-2 text-sm text-[var(--text-3)] max-w-sm">
+                {locale === 'ar' ? 'ابدأ في تكوين محفظتك عن طريق إنشاء عرض تجريبي لأول عميل لك من محطة العروض.' : 'Start building your portfolio by generating your first demo clinic in the Demo Hub.'}
+              </p>
+              <button
+                onClick={() => setActiveTab('demo')}
+                className="mt-6 rounded-full bg-[var(--text-1)] px-8 py-3 text-sm font-bold text-white transition hover:opacity-90"
+              >
+                {locale === 'ar' ? 'الذهاب لمحطة العروض' : 'Go to Demo Hub'}
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {myClinics.map((clinic: any) => (
+                <div key={clinic._id} className="group relative flex flex-col justify-between rounded-[1.75rem] border border-[var(--border)] bg-white p-5 shadow-sm transition hover:border-[var(--text-3)] hover:shadow-md">
+                  
+                  {/* Status & Menu Row */}
+                  <div className="mb-4 flex items-start justify-between">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
+                      clinic.is_approved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}>
+                      {clinic.is_approved ? (locale === 'ar' ? 'معتمدة' : 'Approved') : (locale === 'ar' ? 'انتظار' : 'Pending')}
+                    </span>
+                    
+                    <div className="relative">
+                      <button 
+                        onClick={() => setActiveDropdown(activeDropdown === clinic._id ? null : clinic._id)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-3)] transition hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </button>
+                      
+                      {activeDropdown === clinic._id && (
+                        <div className="absolute right-0 top-full mt-1 w-48 z-10 rounded-2xl border border-[var(--border)] bg-white p-2 shadow-xl animate-in zoom-in-95">
+                          <button
+                            onClick={() => { setWelcomeModalClinic(clinic); setActiveDropdown(null); }}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                          >
+                            <Send className="h-4 w-4" />
+                            {locale === 'ar' ? 'إرسال رسالة ترحيب' : 'Send Welcome'}
+                          </button>
+                          <button
+                            onClick={() => handleCopyLink(clinic.slug)}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]"
+                          >
+                            <Copy className="h-4 w-4" />
+                            {locale === 'ar' ? 'نسخ رابط العيادة' : 'Copy Clinic Link'}
+                          </button>
+                          <div className="my-1 border-t border-[var(--border)]" />
+                          <button
+                            onClick={() => window.open(`/${locale}/${clinic.slug}`, '_blank')}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            {locale === 'ar' ? 'عرض صفحة المريض' : 'View Patient Portal'}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div>
+                    <h3 className="text-lg font-black leading-tight text-[var(--text-1)] line-clamp-1">
+                      {locale === 'ar' ? clinic.name_ar : clinic.name_en}
+                    </h3>
+                    <p className="mt-1 text-sm text-[var(--text-3)] line-clamp-1 flex items-center gap-1.5">
+                      {clinic.category} <span className="text-[10px] opacity-50">•</span> {clinic.governorate}
+                    </p>
+                    <p className="mt-2 text-xs font-mono text-[var(--text-3)] flex items-center gap-1" dir="ltr">
+                      <Phone className="h-3 w-3" /> {clinic.phone}
+                    </p>
+                  </div>
+                  
+                  {/* Bottom Stats */}
+                  <div className="mt-5 border-t border-[var(--border)] pt-4 flex items-center justify-between">
+                    <div className="text-start">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-3)]">
+                        {locale === 'ar' ? 'الحجوزات' : 'Bookings'}
+                      </p>
+                      <p className="text-base font-black text-[var(--text-1)]">
+                        {clinic.appointment_count || 0}
+                      </p>
+                    </div>
+                    <div className="text-end">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-3)]">
+                        {locale === 'ar' ? 'الخطة' : 'Plan'}
+                      </p>
+                      <p className="text-base font-black text-[var(--text-1)] capitalize">
+                        {clinic.subscription_status}
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Welcome Modal Overlay ─────────────────────────────────────── */}
       {welcomeModalClinic && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-3xl bg-white p-6 shadow-2xl">
-            <h3 className="mb-1 text-lg font-bold text-[var(--text-1)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-[2.5rem] bg-white p-8 shadow-2xl">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
+              <Send className="h-8 w-8" />
+            </div>
+            <h3 className="mb-2 text-xl font-black text-[var(--text-1)]">
               {locale === 'ar' ? `ترحيب لـ ${welcomeModalClinic.name_ar}` : `Welcome for ${welcomeModalClinic.name_en}`}
             </h3>
             <p className="mb-6 text-sm text-[var(--text-3)]">
@@ -473,21 +612,21 @@ export default function SalesmanPage() {
                 : 'A WhatsApp message with account details and login link will be sent to the doctor.'}
             </p>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
                   {locale === 'ar' ? 'لغة الرسالة' : 'Message Language'}
                 </label>
-                <div className="flex gap-2 rounded-xl border border-[var(--border)] p-1">
+                <div className="flex gap-2 rounded-2xl border border-[var(--border)] p-1.5 bg-[var(--surface-0)]">
                   <button
                     onClick={() => setWelcomeLang('ar')}
-                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'ar' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-[var(--surface-0)]'}`}
+                    className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition shadow-sm ${welcomeLang === 'ar' ? 'bg-white text-[var(--text-1)]' : 'text-[var(--text-2)] hover:bg-black/5'}`}
                   >
                     العربية
                   </button>
                   <button
                     onClick={() => setWelcomeLang('en')}
-                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'en' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-[var(--surface-0)]'}`}
+                    className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition shadow-sm ${welcomeLang === 'en' ? 'bg-white text-[var(--text-1)]' : 'text-[var(--text-2)] hover:bg-black/5'}`}
                   >
                     English
                   </button>
@@ -495,7 +634,7 @@ export default function SalesmanPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
                   {locale === 'ar' ? 'كلمة المرور المؤقتة (اختياري)' : 'Temporary Password (Optional)'}
                 </label>
                 <input
@@ -503,22 +642,22 @@ export default function SalesmanPage() {
                   value={welcomePassword}
                   onChange={(e) => setWelcomePassword(e.target.value)}
                   placeholder={locale === 'ar' ? 'إذا تركته فارغاً، سيفعل الحساب بـ OTP' : 'If left empty, OTP will be required'}
-                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-[var(--text-1)] focus:ring-1 focus:ring-[var(--text-1)]"
+                  className="w-full rounded-2xl border border-[var(--border)] bg-white px-4 py-3.5 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm"
                 />
               </div>
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <div className="mt-8 flex gap-3">
               <button
                 onClick={() => setWelcomeModalClinic(null)}
-                className="flex-1 rounded-full border border-[var(--border)] py-3 text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
+                className="flex-1 rounded-full border border-[var(--border)] py-4 text-sm font-bold text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
               >
                 {locale === 'ar' ? 'إلغاء' : 'Cancel'}
               </button>
               <button
                 onClick={handleSendWelcome}
                 disabled={isSendingWelcome}
-                className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+                className="flex-1 rounded-full bg-[var(--text-1)] py-4 text-sm font-bold text-white shadow-lg transition hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
               >
                 {isSendingWelcome ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send Message')}
               </button>
