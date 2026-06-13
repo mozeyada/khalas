@@ -114,7 +114,7 @@ export function PatientDashboard() {
       {nextAppt ? (
         <div className={`relative overflow-hidden rounded-lg p-6 ${
           isSoon(nextAppt.slot_datetime) 
-            ? 'bg-ink text-white' 
+            ? 'bg-brand text-white' 
             : 'bg-white border border-zinc-200 shadow-sm'
         }`}>
           {isSoon(nextAppt.slot_datetime) && (
@@ -183,7 +183,7 @@ export function PatientDashboard() {
           <p className="mb-8 max-w-sm text-sm text-zinc-500 leading-relaxed">{t('empty')}</p>
           <button
             onClick={() => router.push(`/${locale}/search`)}
-            className="group flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 active:scale-95"
+            className="group flex items-center gap-2 rounded-md bg-brand px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-95"
           >
             <Search className="h-4 w-4" />
             {t('bookNow')}
@@ -199,7 +199,7 @@ export function PatientDashboard() {
           className="group flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-white px-5 py-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md active:scale-[0.99]"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-ink text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-brand text-white">
               <Search className="h-5 w-5" />
             </div>
             <div className="text-start">

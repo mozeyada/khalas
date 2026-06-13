@@ -11,6 +11,12 @@ const config: Config = {
       // ── Brand colours (semantic mappings) ──
       colors: {
         ink:   '#0A0A0A',
+        brand: {
+          DEFAULT: 'var(--brand-primary)',
+          hover: 'var(--brand-hover)',
+          light: 'var(--brand-light)',
+          border: 'var(--brand-border)',
+        },
         // Semantic surface tokens — map to CSS vars
         surface: {
           0: 'var(--surface-0)',

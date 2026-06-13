@@ -246,7 +246,7 @@ export function ProfileSettingsForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-8 w-full rounded-md bg-ink px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
+            className="mt-8 w-full rounded-md bg-brand px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-95 disabled:opacity-50"
           >
             {isLoading ? '...' : t('actions.save')}
           </button>
@@ -287,7 +287,7 @@ export function ProfileSettingsForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-8 w-full rounded-md bg-ink px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
+            className="mt-8 w-full rounded-md bg-brand px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-95 disabled:opacity-50"
           >
             {isLoading ? '...' : t('actions.save')}
           </button>

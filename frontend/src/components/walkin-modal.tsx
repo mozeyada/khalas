@@ -196,7 +196,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                   type="button"
                   disabled={!selectedSlot}
                   onClick={() => setStep(2)}
-                  className="rounded-md bg-ink px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
+                  className="rounded-md bg-brand px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-brand-hover active:scale-95 disabled:opacity-50"
                 >
                   Next Details
                 </button>
@@ -256,7 +256,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting || !patientName}
-                  className="flex items-center gap-2 rounded-md bg-ink px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-md bg-brand px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-brand-hover active:scale-95 disabled:opacity-50"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   Confirm Booking

@@ -109,7 +109,7 @@ export function ProviderAppointments() {
         </h2>
         <button
           onClick={() => setIsWalkInModalOpen(true)}
-          className="flex items-center justify-center gap-2 rounded-md bg-ink px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-95"
+          className="flex items-center justify-center gap-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-hover active:scale-95"
         >
           <Calendar className="h-4 w-4" />
           {locale === 'ar' ? 'إضافة موعد مباشر' : 'New Walk-In'}
@@ -129,7 +129,7 @@ export function ProviderAppointments() {
             onClick={() => setFilter(f.id as FilterType)}
             className={`shrink-0 rounded-sm px-4 py-2 text-sm font-semibold transition-all ${
               filter === f.id
-                ? 'bg-ink text-white'
+                ? 'bg-brand text-white'
                 : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
             }`}
           >

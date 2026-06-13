@@ -13,11 +13,17 @@
   --surface-2:    #FAFAFA;       /* Barely-there fill on inputs */
   --surface-dark: #000000;       /* Pitch black panels */
 
-  /* Brand / Action */
-  --accent:       #09090B;       /* Near-black primary buttons */
-  --accent-light: rgba(9, 9, 11, 0.05); /* Very subtle hover fill */
-  --accent-hover: #18181B;       /* Hover state */
-  --gold:         #000000;       /* Keeping variable name but mapping to black for now */
+  /* Brand / Action (Dynamic Role-based) */
+  --brand-primary: #0284c7;      /* Default: sky-600 (Patient) */
+  --brand-hover:   #0369a1;      /* Default: sky-700 */
+  --brand-light:   #f0f9ff;      /* Default: sky-50 */
+  --brand-border:  #bae6fd;      /* Default: sky-200 */
+
+  /* Legacy Action (Keep for fallback) */
+  --accent:       #09090B;       
+  --accent-light: rgba(9, 9, 11, 0.05); 
+  --accent-hover: #18181B;       
+  --gold:         #000000;       
   --gold-light:   rgba(0, 0, 0, 0.10);
 
   /* Borders */
@@ -57,6 +63,35 @@
   --radius-md:  6px;       /* 6px */
   --radius-lg:  8px;       /* 8px */
   --radius-xl:  12px;      /* 12px */
+}
+
+/* ─── Role Themes ────────────────────────────────────────────── */
+[data-theme="patient"] {
+  --brand-primary: #0284c7;      /* sky-600 */
+  --brand-hover:   #0369a1;      /* sky-700 */
+  --brand-light:   #f0f9ff;      /* sky-50 */
+  --brand-border:  #bae6fd;      /* sky-200 */
+}
+
+[data-theme="provider"] {
+  --brand-primary: #10b981;      /* emerald-500 */
+  --brand-hover:   #059669;      /* emerald-600 */
+  --brand-light:   #ecfdf5;      /* emerald-50 */
+  --brand-border:  #a7f3d0;      /* emerald-200 */
+}
+
+[data-theme="salesman"] {
+  --brand-primary: #4f46e5;      /* indigo-600 */
+  --brand-hover:   #4338ca;      /* indigo-700 */
+  --brand-light:   #eef2ff;      /* indigo-50 */
+  --brand-border:  #c7d2fe;      /* indigo-200 */
+}
+
+[data-theme="admin"] {
+  --brand-primary: #8b5cf6;      /* violet-500 */
+  --brand-hover:   #7c3aed;      /* violet-600 */
+  --brand-light:   #f5f3ff;      /* violet-50 */
+  --brand-border:  #ddd6fe;      /* violet-200 */
 }
 
 /* ─── Reset & Base ───────────────────────────────────────────── */

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { CalendarSearch, Loader2, CalendarX2 } from 'lucide-react';
+import { CalendarSearch, Loader2, CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Slot } from '@/lib/types';
 
 type SlotPickerProps = {
@@ -13,6 +13,13 @@ type SlotPickerProps = {
   locale: string;
 };
 
+// Helper to check if two dates are the same day
+function isSameDay(d1: Date, d2: Date) {
+  return d1.getFullYear() === d2.getFullYear() &&
+         d1.getMonth() === d2.getMonth() &&
+         d1.getDate() === d2.getDate();
+}
+
 export function SlotPicker({
   slots,
   isLoading,
@@ -22,6 +29,7 @@ export function SlotPicker({
 }: SlotPickerProps) {
   const t = useTranslations('StaffPage'); 
 
+  // Group slots by date string YYYY-MM-DD
   const groupedSlots = useMemo(() => {
     const groups: Record<string, Slot[]> = {};
     for (const slot of slots) {
@@ -35,114 +43,193 @@ export function SlotPicker({
   }, [slots]);
 
   const availableDates = Object.keys(groupedSlots).sort();
-  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedDateStr, setSelectedDateStr] = useState<string>('');
+  
+  // Calendar View State
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
 
   useEffect(() => {
     if (availableDates.length > 0) {
-      if (!availableDates.includes(selectedDate)) {
-        setSelectedDate(availableDates[0]);
+      if (!availableDates.includes(selectedDateStr)) {
+        setSelectedDateStr(availableDates[0]);
+        setCurrentMonth(new Date(availableDates[0]));
       }
     } else {
-      setSelectedDate('');
+      setSelectedDateStr('');
     }
-  }, [availableDates, selectedDate]);
+  }, [availableDates, selectedDateStr]);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-md border border-dashed border-white/10 bg-white/5">
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-zinc-200 bg-zinc-50">
         <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-        <p className="text-sm font-semibold text-zinc-400 animate-pulse">{t('loadingSlots')}</p>
+        <p className="text-sm font-semibold text-zinc-500 animate-pulse">{t('loadingSlots')}</p>
       </div>
     );
   }
 
   if (slots.length === 0) {
     return (
-      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-md border border-dashed border-white/10 bg-white/5">
-        <CalendarX2 className="h-8 w-8 text-zinc-500" />
-        <p className="text-sm font-semibold text-zinc-400">{t('noSlots')}</p>
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-zinc-200 bg-zinc-50">
+        <CalendarX2 className="h-8 w-8 text-zinc-400" />
+        <p className="text-sm font-semibold text-zinc-500">{t('noSlots')}</p>
       </div>
     );
   }
 
-  const activeSlots = selectedDate ? groupedSlots[selectedDate] : [];
+  // --- Calendar Logic ---
+  const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+  const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+  const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday
+  
+  const monthName = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(currentMonth);
 
-  return (
-    <div className="space-y-6">
-      {/* Date Carousel */}
-      <div className="relative">
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-sm font-semibold text-slate-200">{t('loadSlots')}</p>
-          {!selectedDate && (
-            <span className="flex items-center gap-1.5 text-xs text-emerald-400 animate-pulse">
-              <CalendarSearch className="h-3 w-3" />
-              {t('loadingSlots')}
-            </span>
-          )}
-        </div>
-        
-        {/* Horizontal scroll fade effect */}
-        
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide relative z-0">
-          {availableDates.map((date) => {
-            const isSelected = selectedDate === date;
-            const dateObj = new Date(date);
-            const dayName = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dateObj);
-            const dayNumber = new Intl.DateTimeFormat(locale, { day: 'numeric' }).format(dateObj);
-            const monthName = new Intl.DateTimeFormat(locale, { month: 'short' }).format(dateObj);
+  const prevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+  const nextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  // --- Time Block Logic ---
+  const activeSlots = selectedDateStr ? groupedSlots[selectedDateStr] : [];
+  
+  const morningSlots = activeSlots.filter(s => {
+    const h = new Date(s.slot_datetime).getHours();
+    return h < 12;
+  });
+  const afternoonSlots = activeSlots.filter(s => {
+    const h = new Date(s.slot_datetime).getHours();
+    return h >= 12 && h < 17;
+  });
+  const eveningSlots = activeSlots.filter(s => {
+    const h = new Date(s.slot_datetime).getHours();
+    return h >= 17;
+  });
+
+  const renderTimeBlock = (title: string, blockSlots: Slot[]) => {
+    if (blockSlots.length === 0) return null;
+    return (
+      <div className="mb-6 last:mb-0">
+        <h4 className="mb-3 text-sm font-bold text-zinc-500">{title}</h4>
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {blockSlots.map((slot, index) => {
+            const isSelected = selectedSlot === slot.slot_datetime;
+            const timeObj = new Date(slot.slot_datetime);
+            const timeStr = new Intl.DateTimeFormat(locale, {
+              hour: 'numeric',
+              minute: '2-digit',
+            }).format(timeObj);
 
             return (
               <button
-                key={date}
+                key={slot.slot_datetime}
                 type="button"
-                onClick={() => setSelectedDate(date)}
-                className={`group relative flex min-w-[5rem] flex-col items-center justify-center overflow-hidden rounded-md border p-3 transition-all duration-300 active:scale-95 ${
+                onClick={() => onSelectSlot(slot.slot_datetime)}
+                className={`animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden rounded-md border py-2.5 text-center text-sm font-semibold transition-all hover:border-brand hover:text-brand active:scale-95 ${
                   isSelected
-                    ? 'border-white bg-white text-ink shadow-sm'
-                    : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10 hover:text-slate-200'
+                    ? 'border-brand bg-brand text-white shadow-sm hover:text-white hover:bg-brand-hover'
+                    : 'border-zinc-200 bg-white text-zinc-700'
+                }`}
+                style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'both' }}
+              >
+                {timeStr}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const weekdays = locale === 'ar' 
+    ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
+    : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
+  return (
+    <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+      {/* Calendar Section */}
+      <div className="w-full lg:w-[320px] shrink-0 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
+          <button onClick={prevMonth} type="button" className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <span className="text-sm font-bold text-zinc-800 capitalize">{monthName}</span>
+          <button onClick={nextMonth} type="button" className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {weekdays.map(day => (
+            <div key={day} className="text-center text-xs font-semibold text-zinc-400 py-1">
+              {day}
+            </div>
+          ))}
+        </div>
+        
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: startingDayOfWeek }).map((_, i) => (
+            <div key={`empty-${i}`} className="h-9 w-full" />
+          ))}
+          
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const dayNumber = i + 1;
+            const dateObj = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dayNumber);
+            // Format to YYYY-MM-DD locally to match availableDates
+            const dateStr = [
+              dateObj.getFullYear(),
+              String(dateObj.getMonth() + 1).padStart(2, '0'),
+              String(dateObj.getDate()).padStart(2, '0')
+            ].join('-');
+            
+            const isAvailable = availableDates.includes(dateStr);
+            const isSelected = selectedDateStr === dateStr;
+            const isToday = isSameDay(dateObj, new Date());
+
+            return (
+              <button
+                key={dateStr}
+                type="button"
+                disabled={!isAvailable}
+                onClick={() => isAvailable && setSelectedDateStr(dateStr)}
+                className={`relative flex h-9 w-full items-center justify-center rounded-md text-sm font-medium transition-all ${
+                  isSelected
+                    ? 'bg-brand text-white font-bold shadow-sm'
+                    : isAvailable
+                      ? 'text-zinc-700 hover:bg-brand-light hover:text-brand'
+                      : 'text-zinc-300 cursor-not-allowed'
                 }`}
               >
-                <span className="relative z-10 text-xs uppercase font-semibold tracking-wider opacity-80 mb-1">{dayName}</span>
-                <span className="relative z-10 text-2xl font-bold leading-none">{dayNumber}</span>
-                <span className="relative z-10 text-[10px] uppercase font-bold tracking-widest opacity-80 mt-1">{monthName}</span>
+                {dayNumber}
+                {isToday && !isSelected && (
+                  <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-brand" />
+                )}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Time Grid with Predictive Cascading Entry */}
-      {selectedDate && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <p className="mb-3 text-sm font-semibold text-slate-200">{t('slotMeta')}</p>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-            {activeSlots.map((slot, index) => {
-              const isSelected = selectedSlot === slot.slot_datetime;
-              const timeObj = new Date(slot.slot_datetime);
-              const timeStr = new Intl.DateTimeFormat(locale, {
-                hour: 'numeric',
-                minute: '2-digit',
-              }).format(timeObj);
-
-              return (
-                <button
-                  key={slot.slot_datetime}
-                  type="button"
-                  onClick={() => onSelectSlot(slot.slot_datetime)}
-                  className={`animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden rounded-sm border py-3 text-center text-sm font-semibold transition-all duration-300 active:scale-95 ${
-                    isSelected
-                      ? 'border-white bg-white text-ink scale-[1.02]'
-                      : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
-                  }`}
-                  style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
-                >
-                  {timeStr}
-                </button>
-              );
-            })}
+      {/* Time Slots Section */}
+      <div className="flex-1 min-w-0">
+        {!selectedDateStr ? (
+          <div className="flex h-full min-h-[15rem] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center">
+            <CalendarSearch className="mb-3 h-8 w-8 text-zinc-400" />
+            <p className="text-sm font-semibold text-zinc-500">{t('loadSlots')}</p>
           </div>
-        </div>
-      )}
+        ) : activeSlots.length === 0 ? (
+          <div className="flex h-full min-h-[15rem] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center">
+            <p className="text-sm font-semibold text-zinc-500">{t('noSlots')}</p>
+          </div>
+        ) : (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {renderTimeBlock(locale === 'ar' ? 'الصباح' : 'Morning', morningSlots)}
+            {renderTimeBlock(locale === 'ar' ? 'بعد الظهر' : 'Afternoon', afternoonSlots)}
+            {renderTimeBlock(locale === 'ar' ? 'المساء' : 'Evening', eveningSlots)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

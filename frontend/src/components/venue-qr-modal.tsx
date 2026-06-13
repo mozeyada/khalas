@@ -110,7 +110,7 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                 <div id="printable-qr-section" className="flex flex-col items-center w-full">
                   {/* Brand header for the printed page */}
                   <div className="mb-6 hidden print:flex items-center justify-center w-full">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-ink text-white text-xl font-bold">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-brand text-white text-xl font-bold">
                       خ
                     </div>
                   </div>
@@ -134,7 +134,7 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                 <div className="mt-8 grid w-full gap-3 print-hide">
                   <button
                     onClick={handlePrint}
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 shadow-sm"
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-brand-hover active:scale-95 shadow-sm"
                   >
                     <Printer className="h-4 w-4" />
                     {locale === 'ar' ? 'طباعة الرمز' : 'Print QR Code'}

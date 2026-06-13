@@ -137,12 +137,12 @@ export function SiteShell({
       {isReady && isAuthenticated && user && (
         <div className={`mx-3 mb-4 ${collapsed ? 'flex justify-center' : ''}`}>
           {collapsed ? (
-            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-ink text-white text-xs font-bold">
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-brand text-white text-xs font-bold">
               {getUserInitials()}
             </div>
           ) : (
             <div className="flex items-center gap-2.5 px-1 py-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-ink text-white text-xs font-bold">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-brand text-white text-xs font-bold">
                 {getUserInitials()}
               </div>
               <div className="min-w-0">
@@ -192,8 +192,8 @@ export function SiteShell({
       <div className="space-y-1 px-2 pb-4 pt-2 border-t border-zinc-200 mt-2">
         {/* Language toggle */}
         <div className={`mb-2 flex rounded-md border border-zinc-200 p-0.5 ${collapsed ? 'flex-col gap-0.5' : ''}`}>
-          <Link href={pathname} locale="ar" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-ink text-white' : 'text-zinc-500 hover:text-ink'}`}>ع</Link>
-          <Link href={pathname} locale="en" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-ink text-white' : 'text-zinc-500 hover:text-ink'}`}>En</Link>
+          <Link href={pathname} locale="ar" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-brand'}`}>ع</Link>
+          <Link href={pathname} locale="en" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-brand'}`}>En</Link>
         </div>
 
         {isReady && isAuthenticated ? (
@@ -210,7 +210,7 @@ export function SiteShell({
             href="/auth/login"
             locale={locale}
             onClick={onClose}
-            className={`flex w-full items-center gap-2.5 rounded-md bg-ink px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 ${collapsed ? 'justify-center px-0' : ''}`}
+            className={`flex w-full items-center gap-2.5 rounded-md bg-brand px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover ${collapsed ? 'justify-center px-0' : ''}`}
           >
             <LogIn className="h-5 w-5 shrink-0" />
             {!collapsed && t('login')}
@@ -294,7 +294,7 @@ export function SiteShell({
           </button>
 
           <Link href="/" locale={locale} className="flex items-center gap-2 font-black text-ink tracking-tight">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ink text-white text-xs font-black">خ</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand text-white text-xs font-black">خ</div>
             <span>Khalas</span>
           </Link>
 
@@ -318,7 +318,7 @@ export function SiteShell({
             >
               <div className="flex items-center justify-between p-4 border-b border-zinc-200">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ink text-white text-xs font-black">خ</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand text-white text-xs font-black">خ</div>
                   <span className="font-black text-ink tracking-tight">Khalas</span>
                 </div>
                 <button

@@ -292,7 +292,7 @@ export function RegisterForm() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group relative w-full overflow-hidden rounded-md bg-ink px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 active:scale-95"
+              className="group relative w-full overflow-hidden rounded-md bg-brand px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60 active:scale-95"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 {otpSent ? t('actions.verify') : t('actions.submit')}

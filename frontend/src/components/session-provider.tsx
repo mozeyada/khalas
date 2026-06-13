@@ -46,6 +46,13 @@ export function SessionProvider({children}: {children: ReactNode}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Sync role to HTML root for CSS theme switching
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', user ? user.role : 'patient');
+    }
+  }, [user]);
+
   /**
    * On mount, attempt to fetch the current user via the BFF /me route.
    * If the HttpOnly cookie is present and valid, the user is restored.

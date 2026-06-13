@@ -16,7 +16,7 @@ export function LocaleSwitcher() {
         href={pathname}
         locale="ar"
         className={`rounded-full px-3 py-2 transition ${
-          locale === 'ar' ? 'bg-ink text-white' : 'text-ink/70 hover:bg-black/5'
+          locale === 'ar' ? 'bg-brand text-white' : 'text-ink/70 hover:bg-black/5'
         }`}
       >
         {t('arabic')}
@@ -25,7 +25,7 @@ export function LocaleSwitcher() {
         href={pathname}
         locale="en"
         className={`rounded-full px-3 py-2 transition ${
-          locale === 'en' ? 'bg-ink text-white' : 'text-ink/70 hover:bg-black/5'
+          locale === 'en' ? 'bg-brand text-white' : 'text-ink/70 hover:bg-black/5'
         }`}
       >
         {t('english')}

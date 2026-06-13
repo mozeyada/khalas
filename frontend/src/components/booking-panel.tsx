@@ -154,7 +154,7 @@ export function BookingPanel({
                 : 'border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300'
             }`}
           >
-            {isSelected && <div className="absolute left-0 top-0 h-full w-1 rounded-l-md bg-ink" />}
+            {isSelected && <div className="absolute left-0 top-0 h-full w-1 rounded-l-md bg-brand" />}
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className={`font-semibold transition-colors ${isSelected ? 'text-ink' : 'text-zinc-700'}`}>
@@ -212,7 +212,7 @@ export function BookingPanel({
             ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
             : dark
               ? 'bg-white text-ink hover:bg-zinc-100'
-              : 'bg-ink text-white hover:bg-zinc-800'
+              : 'bg-brand text-white hover:bg-brand-hover'
         }`}
       >
         {isSubmitting ? (

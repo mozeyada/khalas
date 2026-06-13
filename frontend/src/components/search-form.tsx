@@ -26,7 +26,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const CATEGORY_COLORS_ACTIVE: Record<string, string> = {
-  clinic:          'bg-ink text-white border-ink',
+  clinic:          'bg-brand text-white border-brand',
   dental:          'bg-blue-600 text-white border-blue-600',
   beauty:          'bg-rose-600 text-white border-rose-600',
   fitness:         'bg-amber-600 text-white border-amber-600',
@@ -85,7 +85,7 @@ export function SearchForm({
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-md bg-ink px-6 py-2.5 text-sm font-semibold text-white transition-all duration-fast hover:bg-zinc-800 active:scale-95 disabled:opacity-60"
+          className="shrink-0 rounded-md bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-all duration-fast hover:bg-brand-hover active:scale-95 disabled:opacity-60"
         >
           {isPending ? t('loading') : t('searchButton')}
         </button>
@@ -119,7 +119,7 @@ export function SearchForm({
             onClick={() => setCategory('')}
             className={`rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-fast ${
               category === ''
-                ? 'bg-ink text-white border-ink'
+                ? 'bg-brand text-white border-brand'
                 : 'bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50 hover:text-ink'
             }`}
           >
