@@ -17,21 +17,21 @@ const CATEGORIES = ['clinic', 'dental', 'beauty', 'fitness', 'physiotherapy', 'l
 
 // Category colour map for chips
 const CATEGORY_COLORS: Record<string, string> = {
-  clinic:          'bg-zinc-50 text-ink border-zinc-200 hover:bg-zinc-100',
-  dental:          'bg-zinc-50 text-blue-700 border-zinc-200 hover:bg-blue-50',
-  beauty:          'bg-zinc-50 text-rose-600 border-zinc-200 hover:bg-rose-50',
-  fitness:         'bg-zinc-50 text-amber-700 border-zinc-200 hover:bg-amber-50',
-  physiotherapy:   'bg-zinc-50 text-violet-700 border-zinc-200 hover:bg-violet-50',
-  legal:           'bg-zinc-50 text-slate-700 border-zinc-200 hover:bg-slate-100',
+  clinic:          'bg-zinc-50 text-zinc-700 border-zinc-200/80 hover:bg-zinc-100',
+  dental:          'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100',
+  beauty:          'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100',
+  fitness:         'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100',
+  physiotherapy:   'bg-violet-50 text-violet-700 border-violet-100 hover:bg-violet-100',
+  legal:           'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100',
 };
 
 const CATEGORY_COLORS_ACTIVE: Record<string, string> = {
-  clinic:          'bg-brand text-white border-brand',
-  dental:          'bg-blue-600 text-white border-blue-600',
-  beauty:          'bg-rose-600 text-white border-rose-600',
-  fitness:         'bg-amber-600 text-white border-amber-600',
-  physiotherapy:   'bg-violet-600 text-white border-violet-600',
-  legal:           'bg-slate-700 text-white border-slate-700',
+  clinic:          'bg-brand text-white border-brand shadow-sm',
+  dental:          'bg-blue-600 text-white border-blue-600 shadow-sm',
+  beauty:          'bg-rose-600 text-white border-rose-600 shadow-sm',
+  fitness:         'bg-amber-600 text-white border-amber-600 shadow-sm',
+  physiotherapy:   'bg-violet-600 text-white border-violet-600 shadow-sm',
+  legal:           'bg-slate-700 text-white border-slate-700 shadow-sm',
 };
 
 type SearchFormProps = {
@@ -69,38 +69,38 @@ export function SearchForm({
   return (
     <form
       onSubmit={handleSearch}
-      className="mb-8 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+      className="mb-8 overflow-hidden rounded-3xl border border-zinc-200/80 bg-white/80 backdrop-blur-xl shadow-sm transition-shadow duration-300 hover:shadow-md animate-in fade-in slide-in-from-bottom-4"
     >
       {/* Main search row */}
-      <div className="flex items-center gap-3 border-b border-zinc-200 px-5 py-4">
-        <Search className="h-5 w-5 shrink-0 text-zinc-400" />
+      <div className="flex items-center gap-3 border-b border-zinc-200/80 px-6 py-5">
+        <Search className="h-6 w-6 shrink-0 text-brand" />
         <input
           id="search-query"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('placeholder')}
-          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-zinc-400"
+          className="min-w-0 flex-1 bg-transparent text-lg font-bold text-zinc-900 outline-none placeholder:text-zinc-400"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-md bg-brand px-6 py-2.5 text-sm font-semibold text-white transition-all duration-fast hover:bg-brand-hover active:scale-95 disabled:opacity-60"
+          className="shrink-0 rounded-2xl bg-brand px-8 py-3 text-sm font-bold text-white shadow-sm transition-all duration-300 hover:bg-brand-hover hover:shadow-md active:scale-95 disabled:opacity-60"
         >
           {isPending ? t('loading') : t('searchButton')}
         </button>
       </div>
 
       {/* Filters row */}
-      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-5">
+      <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-6 bg-white/50">
         {/* Governorate select */}
-        <label className="flex shrink-0 items-center gap-2">
-          <MapPin className="h-4 w-4 text-zinc-400" />
+        <label className="flex shrink-0 items-center gap-2 rounded-xl bg-zinc-50 px-4 py-2 border border-zinc-200/80 transition-colors hover:bg-zinc-100">
+          <MapPin className="h-4 w-4 text-brand" />
           <select
             id="search-governorate"
             value={governorate}
             onChange={(e) => setGovernorate(e.target.value)}
-            className="border-0 bg-transparent text-sm font-semibold text-zinc-600 outline-none focus:text-ink cursor-pointer"
+            className="border-0 bg-transparent text-sm font-bold text-zinc-700 outline-none focus:text-ink cursor-pointer"
           >
             <option value="">{t('allGovernorates')}</option>
             {EGYPT_GOVERNORATES.map((g) => (
@@ -109,18 +109,18 @@ export function SearchForm({
           </select>
         </label>
 
-        <div className="h-px bg-zinc-200 sm:h-6 sm:w-px" />
+        <div className="hidden h-8 w-px bg-zinc-200/80 sm:block" />
 
         {/* Category chips */}
         <div className="flex flex-wrap items-center gap-2">
-          <Stethoscope className="h-4 w-4 shrink-0 text-zinc-400" />
+          <Stethoscope className="h-4 w-4 shrink-0 text-zinc-400 mr-2" />
           <button
             type="button"
             onClick={() => setCategory('')}
-            className={`rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-fast ${
+            className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all duration-300 ${
               category === ''
-                ? 'bg-brand text-white border-brand'
-                : 'bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50 hover:text-ink'
+                ? 'bg-brand text-white border-brand shadow-sm'
+                : 'bg-zinc-50 text-zinc-600 border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-900'
             }`}
           >
             {t('allCategories')}
@@ -130,7 +130,7 @@ export function SearchForm({
               key={c}
               type="button"
               onClick={() => setCategory(c === category ? '' : c)}
-              className={`rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-fast ${
+              className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all duration-300 ${
                 category === c
                   ? CATEGORY_COLORS_ACTIVE[c]
                   : CATEGORY_COLORS[c]

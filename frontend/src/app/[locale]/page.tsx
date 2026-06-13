@@ -70,10 +70,10 @@ export default async function HomePage({params}: HomePageProps) {
         </section>
 
         {/* ── How It Works (Deep Sleek Gradient) ────────────────────────────────────── */}
-        <section className="mt-12 relative overflow-hidden rounded-[2rem] bg-zinc-950 p-8 sm:p-10 shadow-2xl animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 fill-mode-both">
+        <section className="mt-12 relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 p-8 sm:p-10 shadow-2xl animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 fill-mode-both border border-zinc-800">
           {/* Subtle glowing orbs in background */}
-          <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-blue-500/20 blur-[80px]" />
-          <div className="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-[80px]" />
+          <div className="absolute -left-10 -top-10 h-64 w-64 rounded-full bg-blue-500/30 blur-[60px]" />
+          <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-emerald-500/30 blur-[60px]" />
 
           <h2 className="relative text-xs font-black text-white/50 uppercase tracking-[0.2em] mb-8">
             {t('ctaDemo')}

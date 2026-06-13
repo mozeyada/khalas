@@ -223,7 +223,13 @@ export function SiteShell({
   const sidebarW = sidebarCollapsed ? 64 : 220;
 
   return (
-    <div className="min-h-screen bg-[var(--surface-0)]" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-[var(--surface-0)] relative" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* ── Background Mesh ─────────────────────────── */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -left-[10%] -top-[10%] h-[40%] w-[50%] rounded-full bg-brand-border opacity-40 blur-[120px]" />
+        <div className="absolute -right-[5%] top-[20%] h-[30%] w-[30%] rounded-full bg-brand-light opacity-60 blur-[100px]" />
+      </div>
+
       {/* ── Impersonation Banner ─────────────────────────── */}
       {impersonatingName && (
         <div className="fixed inset-x-0 top-0 z-[70] flex items-center justify-center gap-4 bg-rose-600 px-4 py-2 text-sm font-semibold text-white">
@@ -237,7 +243,7 @@ export function SiteShell({
       {/* ── DESKTOP LAYOUT: flex row ──────────────────────── */}
       {/* Sidebar + Main sit as siblings, sidebar is sticky full height */}
       <div
-        className="hidden md:flex min-h-screen"
+        className="hidden md:flex min-h-screen relative z-10"
         style={{paddingTop: impersonatingName ? 36 : 0}}
       >
         {/* Desktop sidebar */}
@@ -277,7 +283,7 @@ export function SiteShell({
       </div>
 
       {/* ── MOBILE LAYOUT ────────────────────────────────── */}
-      <div className="md:hidden">
+      <div className="md:hidden relative z-10">
         {/* Mobile top header */}
         <header
           className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white border-b border-zinc-200 px-4"
