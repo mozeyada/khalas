@@ -112,25 +112,25 @@ export function PatientDashboard() {
 
       {/* ── Next Appointment Hero ────────────────────────────────── */}
       {nextAppt ? (
-        <div className={`relative overflow-hidden rounded-[2.5rem] p-6 ${
+        <div className={`relative overflow-hidden rounded-lg p-6 ${
           isSoon(nextAppt.slot_datetime) 
-            ? 'bg-[var(--text-1)] text-white' 
-            : 'bg-[var(--surface-1)] border border-[var(--border)] shadow-card'
+            ? 'bg-ink text-white' 
+            : 'bg-white border border-zinc-200 shadow-sm'
         }`}>
           {isSoon(nextAppt.slot_datetime) && (
-            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1">
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-sm bg-white/20 px-3 py-1">
               <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
               <span className="text-[11px] font-bold text-white uppercase tracking-widest">
                 {locale === 'ar' ? 'قريباً' : 'Soon'}
               </span>
             </div>
           )}
-          <p className={`text-xs font-bold uppercase tracking-widest ${isSoon(nextAppt.slot_datetime) ? 'text-white/60' : 'text-[var(--text-3)]'}`}>
+          <p className={`text-xs font-bold uppercase tracking-widest ${isSoon(nextAppt.slot_datetime) ? 'text-white/60' : 'text-zinc-500'}`}>
             {locale === 'ar' ? 'موعدك القادم' : 'Next Appointment'}
           </p>
 
           <div className="mt-3 flex items-center gap-4">
-            <div className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl ${isSoon(nextAppt.slot_datetime) ? 'bg-white/10' : 'bg-[var(--text-1)] text-white'}`}>
+            <div className={`flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-md ${isSoon(nextAppt.slot_datetime) ? 'bg-white/10' : 'bg-zinc-100 text-ink'}`}>
               <span className="text-xl font-black leading-none">
                 {new Date(nextAppt.slot_datetime).getDate()}
               </span>
@@ -139,13 +139,13 @@ export function PatientDashboard() {
               </span>
             </div>
             <div className="min-w-0">
-              <h2 className={`text-lg font-black ${isSoon(nextAppt.slot_datetime) ? 'text-white' : 'text-[var(--text-1)]'}`}>
+              <h2 className={`text-lg font-black tracking-tight ${isSoon(nextAppt.slot_datetime) ? 'text-white' : 'text-ink'}`}>
                 {new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(new Date(nextAppt.slot_datetime))}
               </h2>
-              <p className={`text-sm ${isSoon(nextAppt.slot_datetime) ? 'text-white/70' : 'text-[var(--text-2)]'}`}>
+              <p className={`text-sm ${isSoon(nextAppt.slot_datetime) ? 'text-white/70' : 'text-zinc-600'}`}>
                 {(nextAppt as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
               </p>
-              <p className={`text-xs font-bold ${isSoon(nextAppt.slot_datetime) ? 'text-white/50' : 'text-[var(--text-3)]'}`}>
+              <p className={`text-xs font-bold mt-0.5 ${isSoon(nextAppt.slot_datetime) ? 'text-white/50' : 'text-zinc-400'}`}>
                 {formatPrice(nextAppt.price_at_booking, locale)}
               </p>
             </div>
@@ -155,7 +155,7 @@ export function PatientDashboard() {
             {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
               <button
                 onClick={() => void handleCancel(nextAppt._id)}
-                className={`flex-1 rounded-full py-2.5 text-sm font-semibold transition active:scale-95 ${
+                className={`flex-1 rounded-sm py-2.5 text-sm font-semibold transition active:scale-95 ${
                   isSoon(nextAppt.slot_datetime)
                     ? 'bg-white/10 text-white hover:bg-white/20'
                     : 'border border-rose-200 text-rose-600 hover:bg-rose-50'
@@ -164,10 +164,10 @@ export function PatientDashboard() {
                 {t('cancel')}
               </button>
             )}
-            <span className={`inline-flex flex-1 items-center justify-center rounded-full py-2.5 text-sm font-bold uppercase tracking-widest ${
+            <span className={`inline-flex flex-1 items-center justify-center rounded-sm py-2.5 text-xs font-bold uppercase tracking-widest ${
               nextAppt.status === 'confirmed' 
-                ? (isSoon(nextAppt.slot_datetime) ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-700')
-                : (isSoon(nextAppt.slot_datetime) ? 'bg-white/10 text-white/70' : 'bg-amber-100 text-amber-700')
+                ? (isSoon(nextAppt.slot_datetime) ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-100')
+                : (isSoon(nextAppt.slot_datetime) ? 'bg-white/10 text-white/70' : 'bg-amber-50 text-amber-700 border border-amber-100')
             }`}>
               {nextAppt.status}
             </span>
@@ -175,15 +175,15 @@ export function PatientDashboard() {
         </div>
       ) : (
         /* ── No Upcoming ── */
-        <div className="flex flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-[var(--border)] py-16 px-6 text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface-1)]">
-            <CalendarX className="h-10 w-10 text-[var(--text-3)]" />
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 py-16 px-6 text-center">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm border border-zinc-200">
+            <CalendarX className="h-6 w-6 text-zinc-400" />
           </div>
-          <h3 className="mb-2 text-xl font-bold text-[var(--text-1)]">{t('noAppointments')}</h3>
-          <p className="mb-8 max-w-sm text-sm text-[var(--text-3)] leading-relaxed">{t('empty')}</p>
+          <h3 className="mb-2 text-xl font-bold tracking-tight text-ink">{t('noAppointments')}</h3>
+          <p className="mb-8 max-w-sm text-sm text-zinc-500 leading-relaxed">{t('empty')}</p>
           <button
             onClick={() => router.push(`/${locale}/search`)}
-            className="group flex items-center gap-2 rounded-full bg-[var(--text-1)] px-6 py-3.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-95"
+            className="group flex items-center gap-2 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 active:scale-95"
           >
             <Search className="h-4 w-4" />
             {t('bookNow')}
@@ -196,22 +196,22 @@ export function PatientDashboard() {
       {nextAppt && (
         <button
           onClick={() => router.push(`/${locale}/search`)}
-          className="group flex w-full items-center justify-between rounded-[1.75rem] border border-[var(--border)] bg-[var(--surface-1)] px-5 py-4 shadow-sm transition hover:shadow-float hover:-translate-y-0.5 active:scale-[0.99]"
+          className="group flex w-full items-center justify-between rounded-lg border border-zinc-200 bg-white px-5 py-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md active:scale-[0.99]"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--text-1)] text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-ink text-white">
               <Search className="h-5 w-5" />
             </div>
             <div className="text-start">
-              <p className="text-sm font-bold text-[var(--text-1)]">
+              <p className="text-sm font-bold text-ink">
                 {locale === 'ar' ? 'احجز موعداً جديداً' : 'Book a New Appointment'}
               </p>
-              <p className="text-xs text-[var(--text-3)]">
+              <p className="text-xs text-zinc-500">
                 {locale === 'ar' ? 'ابحث عن عيادة أو طبيب' : 'Find a clinic or doctor near you'}
               </p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-[var(--text-3)] transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
+          <ChevronRight className="h-5 w-5 text-zinc-400 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
         </button>
       )}
 
@@ -234,24 +234,24 @@ export function PatientDashboard() {
               return (
                 <article
                   key={appointment._id}
-                  className="flex items-center gap-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm"
+                  className="flex items-center gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm transition-colors hover:border-zinc-300"
                 >
-                  <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--surface-0)] text-center">
-                    <span className="text-sm font-black leading-none text-[var(--text-1)]">{dateObj.getDate()}</span>
-                    <span className="text-[9px] font-bold uppercase text-[var(--text-3)]">
+                  <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-md bg-zinc-50 border border-zinc-100 text-center">
+                    <span className="text-base font-black leading-none text-ink">{dateObj.getDate()}</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 mt-0.5">
                       {new Intl.DateTimeFormat(locale, { month: 'short' }).format(dateObj)}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--text-1)]">
+                    <p className="truncate text-sm font-semibold text-ink">
                       {(appointment as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
                     </p>
-                    <p className="text-xs text-[var(--text-3)]">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                    appointment.status === 'completed' ? 'bg-emerald-100 text-emerald-700'
-                    : appointment.status === 'cancelled' ? 'bg-rose-100 text-rose-700'
-                    : 'bg-slate-100 text-slate-600'
+                  <span className={`shrink-0 rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${
+                    appointment.status === 'completed' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700'
+                    : appointment.status === 'cancelled' ? 'bg-rose-50 border border-rose-100 text-rose-700'
+                    : 'bg-zinc-100 border border-zinc-200 text-zinc-600'
                   }`}>
                     {appointment.status}
                   </span>
@@ -282,29 +282,29 @@ export function PatientDashboard() {
               return (
                 <article
                   key={appointment._id}
-                  className="group flex items-center gap-4 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm transition hover:shadow-float"
+                  className="group flex items-center gap-4 rounded-lg border border-zinc-200 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-zinc-300"
                 >
-                  <div className="flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--surface-0)] text-center">
-                    <span className="text-sm font-black leading-none text-[var(--text-1)]">{dateObj.getDate()}</span>
-                    <span className="text-[9px] font-bold uppercase text-[var(--text-3)]">
+                  <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-md bg-zinc-50 border border-zinc-100 text-center">
+                    <span className="text-base font-black leading-none text-ink">{dateObj.getDate()}</span>
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 mt-0.5">
                       {new Intl.DateTimeFormat(locale, { month: 'short' }).format(dateObj)}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-semibold text-[var(--text-1)]">
+                    <p className="truncate text-sm font-semibold text-ink">
                       {(appointment as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
                     </p>
-                    <p className="text-xs text-[var(--text-3)]">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                    appointment.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  <span className={`shrink-0 rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${
+                    appointment.status === 'confirmed' ? 'bg-emerald-50 border border-emerald-100 text-emerald-700' : 'bg-amber-50 border border-amber-100 text-amber-700'
                   }`}>
                     {appointment.status}
                   </span>
                   {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
                     <button
                       onClick={() => void handleCancel(appointment._id)}
-                      className="shrink-0 rounded-full border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 active:scale-95"
+                      className="shrink-0 rounded-sm border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 active:scale-95"
                     >
                       {t('cancel')}
                     </button>

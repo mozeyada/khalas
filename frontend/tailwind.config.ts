@@ -8,13 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // ── Brand colours (keep existing, add semantic aliases) ──
+      // ── Brand colours (semantic mappings) ──
       colors: {
-        sand:  '#F4F0E8',
-        ink:   '#1A1614',
-        teal:  '#0F766E',
-        mint:  '#D1FAE5',
-        clay:  '#A16207',
+        ink:   '#0A0A0A',
         // Semantic surface tokens — map to CSS vars
         surface: {
           0: 'var(--surface-0)',
@@ -42,6 +38,7 @@ const config: Config = {
 
       // ── Border radius ───────────────────────────────────────
       borderRadius: {
+        'xs':  'var(--radius-xs)',
         'sm':  'var(--radius-sm)',
         'md':  'var(--radius-md)',
         'lg':  'var(--radius-lg)',
@@ -52,15 +49,12 @@ const config: Config = {
       // ── Box shadows ─────────────────────────────────────────
       boxShadow: {
         // Legacy — keep for any existing usage
-        soft:    '0 24px 70px rgba(15, 23, 42, 0.08)',
+        soft:    '0 12px 30px rgba(0, 0, 0, 0.05)',
         // New elevation system
         card:    'var(--shadow-card)',
         float:   'var(--shadow-float)',
         overlay: 'var(--shadow-overlay)',
         teal:    'var(--shadow-teal)',
-        // Teal glow for CTAs
-        'teal-sm': '0 0 20px rgba(15, 118, 110, 0.30)',
-        'teal-lg': '0 0 40px rgba(15, 118, 110, 0.25)',
       },
 
       // ── Transitions ─────────────────────────────────────────

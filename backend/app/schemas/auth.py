@@ -89,7 +89,19 @@ class UpdateProfileRequest(APIModel):
     name_ar: str | None = None
     name_en: str | None = None
     email: EmailStr | None = None
+    phone: str | None = None
     preferred_channel: Literal["email", "whatsapp", "both"] | None = None
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone(cls, value: str | None) -> str | None:
+        """Validate and normalize the phone number format."""
+        if value is not None:
+            if value.startswith("00"): value = "+" + value[2:]
+            if value.startswith("01") and len(value) == 11: value = "+2" + value
+            if re.fullmatch(r"\+\d{10,15}", value) is None:
+                raise ValueError("Phone must be in international format (e.g., +2010...) or local Egyptian (010...).")
+        return value
 
 
 class VerifyOtpRequest(APIModel):

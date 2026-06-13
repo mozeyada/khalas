@@ -145,10 +145,10 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--card)] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between border-b border-[var(--border)] px-6 py-4">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
           <h2 className="text-xl font-bold text-ink">New Walk-In Booking</h2>
-          <button onClick={onClose} className="rounded-full p-2 text-ink/50 hover:bg-ink/5 hover:text-ink">
+          <button onClick={onClose} className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-ink">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -171,7 +171,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full rounded-xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-ink outline-none focus:border-teal"
+                  className="w-full rounded-md border border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm text-ink outline-none focus:border-ink"
                 >
                   {services.map(s => (
                     <option key={s._id} value={s._id}>
@@ -196,7 +196,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                   type="button"
                   disabled={!selectedSlot}
                   onClick={() => setStep(2)}
-                  className="rounded-full bg-teal px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                  className="rounded-md bg-ink px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
                 >
                   Next Details
                 </button>
@@ -213,7 +213,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                   required
                   value={patientName}
                   onChange={e => setPatientName(e.target.value)}
-                  className="w-full rounded-xl border border-white/40 bg-white/50 px-4 py-3 text-sm outline-none focus:border-teal"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-ink"
                   placeholder="E.g. Ahmed Hassan"
                 />
               </div>
@@ -227,7 +227,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                   dir="ltr"
                   value={patientPhone}
                   onChange={e => setPatientPhone(e.target.value)}
-                  className="w-full rounded-xl border border-white/40 bg-white/50 px-4 py-3 text-sm text-left outline-none focus:border-teal"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm text-left outline-none focus:border-ink"
                   placeholder="Optional, for WhatsApp reminders"
                 />
               </div>
@@ -240,7 +240,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                   type="text"
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  className="w-full rounded-xl border border-white/40 bg-white/50 px-4 py-3 text-sm outline-none focus:border-teal"
+                  className="w-full rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-ink"
                   placeholder="Optional notes"
                 />
               </div>
@@ -249,14 +249,14 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="rounded-full border border-ink/10 bg-transparent px-8 py-3 text-sm font-semibold text-ink transition-colors hover:bg-ink/5"
+                  className="rounded-md border border-zinc-300 bg-white px-8 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-zinc-50"
                 >
                   Back
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting || !patientName}
-                  className="flex items-center gap-2 rounded-full bg-teal px-8 py-3 text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-md bg-ink px-8 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 disabled:opacity-50"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                   Confirm Booking

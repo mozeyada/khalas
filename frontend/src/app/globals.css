@@ -7,55 +7,56 @@
 
 /* ─── Design Tokens ──────────────────────────────────────────── */
 :root {
-  /* Surfaces - Pure and Stark */
-  --surface-0:   #FFFFFF;        /* Pristine white page background */
-  --surface-1:   #FFFFFF;        /* Cards are pure white (use borders/shadows for separation) */
-  --surface-2:   #FAFAFA;        /* Slightly off-white for secondary blocks or inputs */
+  /* Surfaces */
+  --surface-0:    #F5F5F5;       /* Off-white page background */
+  --surface-1:    #FFFFFF;       /* Pure white cards */
+  --surface-2:    #FAFAFA;       /* Barely-there fill on inputs */
   --surface-dark: #000000;       /* Pitch black panels */
 
-  /* Brand - Uber Style Black */
-  --accent:       #000000;       /* Pitch black primary buttons */
-  --accent-light: rgba(0, 0, 0, 0.05); /* Very subtle hover fill */
-  --accent-hover: #1A1A1A;       /* Off-black hover state */
-  --gold:         #059669;       /* Swap old gold for a crisp Emerald medical accent */
-  --gold-light:   rgba(5, 150, 105, 0.10);
+  /* Brand / Action */
+  --accent:       #09090B;       /* Near-black primary buttons */
+  --accent-light: rgba(9, 9, 11, 0.05); /* Very subtle hover fill */
+  --accent-hover: #18181B;       /* Hover state */
+  --gold:         #000000;       /* Keeping variable name but mapping to black for now */
+  --gold-light:   rgba(0, 0, 0, 0.10);
 
-  /* Borders - Barely there */
-  --border:       rgba(0, 0, 0, 0.06);   /* Ultra-thin, barely visible line */
-  --border-strong: rgba(0, 0, 0, 0.12);  /* For focus rings or strong separation */
-  --border-accent: rgba(0, 0, 0, 0.20);  /* For dark mode / black cards */
+  /* Borders */
+  --border:       #E4E4E7;       /* Clean zinc-gray */
+  --border-strong: #D1D1D6;      /* For interactive states */
+  --border-accent: rgba(255, 255, 255, 0.20); /* For dark mode / black cards */
 
-  /* Text - High Contrast */
-  --text-1: #000000;   /* Pitch black */
-  --text-2: #4A4A4A;   /* Sleek, readable gray */
-  --text-3: #8E8E93;   /* Apple-style muted gray */
+  /* Text */
+  --text-1: #0A0A0A;   /* Near black */
+  --text-2: #3F3F46;   /* Secondary gray */
+  --text-3: #71717A;   /* Muted zinc */
 
-  /* Status - Clean semantic colors */
-  --success: #10B981;
-  --success-bg: rgba(16, 185, 129, 0.10);
-  --warning: #F59E0B;
-  --warning-bg: rgba(245, 158, 11, 0.10);
-  --danger:  #EF4444;
-  --danger-bg: rgba(239, 68, 68, 0.10);
+  /* Status */
+  --success: #16A34A;
+  --success-bg: rgba(22, 163, 74, 0.10);
+  --warning: #D97706;
+  --warning-bg: rgba(217, 119, 6, 0.10);
+  --danger:  #DC2626;
+  --danger-bg: rgba(220, 38, 38, 0.10);
 
-  /* Elevation — Apple/Uber style wide, ultra-soft diffused shadows */
-  --shadow-card:    0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --shadow-float:   0 16px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
-  --shadow-overlay: 0 32px 80px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.06);
-  --shadow-teal:    0 12px 32px rgba(0, 0, 0, 0.15); /* Keep name for compat, but it's a deep shadow */
+  /* Elevation — Sharp and Precise */
+  --shadow-card:    0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-float:   0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --shadow-teal:    0 8px 24px rgba(0, 0, 0, 0.15); /* Legacy name, but just a standard deep shadow now */
 
-  /* Motion - Springy and fluid */
-  --ease-spring:  cubic-bezier(0.25, 1, 0.35, 1.15); /* More bounce */
+  /* Motion */
+  --ease-spring:  cubic-bezier(0.25, 1, 0.35, 1.15);
   --ease-smooth:  cubic-bezier(0.25, 0.1, 0.25, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
 
-  /* Radii - Squircle/Apple style */
-  --radius-sm:  0.5rem;    /* 8px */
-  --radius-md:  1rem;      /* 16px */
-  --radius-lg:  1.5rem;    /* 24px */
-  --radius-xl:  2rem;      /* 32px */
+  /* Radii - Precision Geometry */
+  --radius-xs:  2px;       /* 2px */
+  --radius-sm:  4px;       /* 4px */
+  --radius-md:  6px;       /* 6px */
+  --radius-lg:  8px;       /* 8px */
+  --radius-xl:  12px;      /* 12px */
 }
 
 /* ─── Reset & Base ───────────────────────────────────────────── */
@@ -113,6 +114,6 @@ html {
 
 /* ─── Selection colour ───────────────────────────────────────── */
 ::selection {
-  background: rgba(15, 118, 110, 0.18);
+  background: rgba(9, 9, 11, 0.15);
   color: var(--text-1);
 }

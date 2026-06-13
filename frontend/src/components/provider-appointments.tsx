@@ -95,8 +95,8 @@ export function ProviderAppointments() {
 
   if (!isReady || isLoading) {
     return (
-      <div className="flex min-h-[200px] items-center justify-center rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-soft backdrop-blur-md">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-teal border-t-transparent" />
+      <div className="flex min-h-[200px] items-center justify-center rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink border-t-transparent" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export function ProviderAppointments() {
         </h2>
         <button
           onClick={() => setIsWalkInModalOpen(true)}
-          className="flex items-center justify-center gap-2 rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-105 active:scale-95"
+          className="flex items-center justify-center gap-2 rounded-md bg-ink px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-zinc-800 active:scale-95"
         >
           <Calendar className="h-4 w-4" />
           {locale === 'ar' ? 'إضافة موعد مباشر' : 'New Walk-In'}
@@ -127,10 +127,10 @@ export function ProviderAppointments() {
           <button
             key={f.id}
             onClick={() => setFilter(f.id as FilterType)}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+            className={`shrink-0 rounded-sm px-4 py-2 text-sm font-semibold transition-all ${
               filter === f.id
-                ? 'bg-[var(--text-1)] text-white'
-                : 'bg-[var(--surface-1)] text-[var(--text-2)] border border-[var(--border)] hover:bg-[var(--surface-2)]'
+                ? 'bg-ink text-white'
+                : 'bg-white text-zinc-500 border border-zinc-200 hover:bg-zinc-50'
             }`}
           >
             {f.label}
@@ -154,14 +154,14 @@ export function ProviderAppointments() {
       />
 
       {filteredAppointments.length === 0 ? (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center justify-center rounded-[2.5rem] border border-[var(--border)] bg-[var(--card)] py-16 px-6 text-center shadow-soft backdrop-blur-xl">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-teal/5">
-            <CalendarOff className="h-10 w-10 text-teal/40" />
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center justify-center rounded-lg border border-zinc-200 bg-white py-16 px-6 text-center shadow-sm">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-50 border border-zinc-100">
+            <CalendarOff className="h-10 w-10 text-zinc-400" />
           </div>
-          <h3 className="mb-2 text-xl font-semibold text-[var(--text-1)]">
+          <h3 className="mb-2 text-xl font-semibold text-ink">
             {locale === 'ar' ? 'لا توجد مواعيد' : 'No Appointments'}
           </h3>
-          <p className="max-w-sm text-sm text-[var(--text-3)] leading-relaxed">
+          <p className="max-w-sm text-sm text-zinc-500 leading-relaxed">
             {filter === 'all' 
               ? (locale === 'ar' ? 'لا توجد مواعيد محجوزة حتى الآن.' : 'You have no booked appointments yet.')
               : (locale === 'ar' ? 'لا توجد مواعيد في هذه الفترة.' : 'No appointments found for this period.')}
@@ -180,17 +180,16 @@ export function ProviderAppointments() {
             return (
               <article
                 key={appointment._id}
-                className="group animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-hidden rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-black/10 hover:shadow-md"
+                className="group animate-in fade-in slide-in-from-bottom-4 duration-700 relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md"
                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
               >
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/[0.02] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 
                 <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="space-y-3">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest ${
-                      isConfirmed ? 'bg-emerald-100/50 text-emerald-700' : 
-                      isCancelled ? 'bg-rose-100/50 text-rose-700' : 
-                      'bg-amber-100/50 text-amber-700'
+                    <span className={`inline-flex items-center gap-1.5 rounded-sm border px-3 py-1 text-[10px] font-bold uppercase tracking-widest ${
+                      isConfirmed ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 
+                      isCancelled ? 'bg-rose-50 border-rose-100 text-rose-700' : 
+                      'bg-amber-50 border-amber-100 text-amber-700'
                     }`}>
                       <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${
                         isConfirmed ? 'bg-emerald-500' : 
@@ -202,16 +201,16 @@ export function ProviderAppointments() {
                     
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
                       <div>
-                        <h2 className="text-xl font-bold text-[var(--text-1)] mb-1">
+                        <h2 className="text-xl font-bold tracking-tight text-ink mb-1">
                           {appointment.patient_name || (locale === 'ar' ? 'حجز إلكتروني' : 'Online Booking')}
                         </h2>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-1.5 text-[var(--text-2)] font-medium text-sm">
-                            <Calendar className="h-4 w-4 text-teal/70" />
+                        <div className="flex items-center gap-4 mt-2">
+                          <div className="flex items-center gap-1.5 text-zinc-600 font-medium text-sm">
+                            <Calendar className="h-4 w-4 text-zinc-400" />
                             <span>{dateStr}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-[var(--text-3)] text-sm">
-                            <Clock className="h-4 w-4 text-teal/50" />
+                          <div className="flex items-center gap-1.5 text-zinc-600 text-sm">
+                            <Clock className="h-4 w-4 text-zinc-400" />
                             <span>{timeStr}</span>
                           </div>
                         </div>
@@ -238,9 +237,9 @@ export function ProviderAppointments() {
                         type="button"
                         onClick={() => void handleStatusChange(appointment._id, 'confirmed')}
                         disabled={isCancelled}
-                        className="group/btn relative flex items-center gap-2 overflow-hidden rounded-full border border-emerald-200 bg-emerald-50 px-5 py-2.5 text-sm font-medium text-emerald-700 shadow-sm transition-all hover:border-transparent hover:bg-emerald-500 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group/btn relative flex items-center gap-2 overflow-hidden rounded-md border border-emerald-200 bg-emerald-50 px-5 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <CheckCircle2 className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
+                        <CheckCircle2 className="h-4 w-4" />
                         {locale === 'ar' ? 'تأكيد' : 'Confirm'}
                       </button>
                     )}
@@ -249,9 +248,9 @@ export function ProviderAppointments() {
                       <button
                         type="button"
                         onClick={() => void handleStatusChange(appointment._id, 'cancelled')}
-                        className="group/btn relative flex items-center gap-2 overflow-hidden rounded-full border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-medium text-rose-700 shadow-sm transition-all hover:border-transparent hover:bg-rose-500 hover:text-white hover:shadow-[0_0_20px_rgba(244,63,94,0.3)]"
+                        className="group/btn relative flex items-center gap-2 overflow-hidden rounded-md border border-rose-200 bg-rose-50 px-5 py-2 text-sm font-semibold text-rose-700 shadow-sm transition-all hover:bg-rose-100 active:scale-95"
                       >
-                        <XCircle className="h-4 w-4 transition-transform group-hover/btn:scale-110" />
+                        <XCircle className="h-4 w-4" />
                         {locale === 'ar' ? 'إلغاء' : 'Cancel'}
                       </button>
                     )}

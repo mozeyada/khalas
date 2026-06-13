@@ -49,18 +49,18 @@ export function SlotPicker({
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-dashed border-white/10 bg-white/5 backdrop-blur-sm">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-400/50" />
-        <p className="text-sm font-medium text-slate-400 animate-pulse">{t('loadingSlots')}</p>
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-md border border-dashed border-white/10 bg-white/5">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <p className="text-sm font-semibold text-zinc-400 animate-pulse">{t('loadingSlots')}</p>
       </div>
     );
   }
 
   if (slots.length === 0) {
     return (
-      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-[1.5rem] border border-dashed border-white/10 bg-white/5 backdrop-blur-sm">
-        <CalendarX2 className="h-8 w-8 text-slate-500" />
-        <p className="text-sm font-medium text-slate-400">{t('noSlots')}</p>
+      <div className="flex min-h-[15rem] flex-col items-center justify-center gap-4 rounded-md border border-dashed border-white/10 bg-white/5">
+        <CalendarX2 className="h-8 w-8 text-zinc-500" />
+        <p className="text-sm font-semibold text-zinc-400">{t('noSlots')}</p>
       </div>
     );
   }
@@ -82,7 +82,6 @@ export function SlotPicker({
         </div>
         
         {/* Horizontal scroll fade effect */}
-        <div className="pointer-events-none absolute right-0 top-10 z-10 h-[5.5rem] w-12 bg-gradient-to-l from-slate-950 to-transparent" />
         
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide relative z-0">
           {availableDates.map((date) => {
@@ -97,16 +96,13 @@ export function SlotPicker({
                 key={date}
                 type="button"
                 onClick={() => setSelectedDate(date)}
-                className={`group relative flex min-w-[5rem] flex-col items-center justify-center overflow-hidden rounded-[1.25rem] border p-3 transition-all duration-300 active:scale-95 ${
+                className={`group relative flex min-w-[5rem] flex-col items-center justify-center overflow-hidden rounded-md border p-3 transition-all duration-300 active:scale-95 ${
                   isSelected
-                    ? 'border-emerald-400 bg-emerald-400/10 text-emerald-300 shadow-[0_0_20px_rgba(52,211,153,0.15)] -translate-y-1'
+                    ? 'border-white bg-white text-ink shadow-sm'
                     : 'border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10 hover:text-slate-200'
                 }`}
               >
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-b from-emerald-400/20 to-transparent opacity-50" />
-                )}
-                <span className="relative z-10 text-xs uppercase font-medium tracking-wider opacity-80 mb-1">{dayName}</span>
+                <span className="relative z-10 text-xs uppercase font-semibold tracking-wider opacity-80 mb-1">{dayName}</span>
                 <span className="relative z-10 text-2xl font-bold leading-none">{dayNumber}</span>
                 <span className="relative z-10 text-[10px] uppercase font-bold tracking-widest opacity-80 mt-1">{monthName}</span>
               </button>
@@ -133,9 +129,9 @@ export function SlotPicker({
                   key={slot.slot_datetime}
                   type="button"
                   onClick={() => onSelectSlot(slot.slot_datetime)}
-                  className={`animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden rounded-xl border py-3 text-center text-sm font-semibold transition-all duration-300 active:scale-95 ${
+                  className={`animate-in fade-in zoom-in-95 duration-500 relative overflow-hidden rounded-sm border py-3 text-center text-sm font-semibold transition-all duration-300 active:scale-95 ${
                     isSelected
-                      ? 'border-emerald-300 bg-emerald-300 text-slate-950 shadow-[0_0_15px_rgba(110,231,183,0.3)] scale-[1.02]'
+                      ? 'border-white bg-white text-ink scale-[1.02]'
                       : 'border-white/10 bg-white/5 text-slate-300 hover:border-white/30 hover:bg-white/10'
                   }`}
                   style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}

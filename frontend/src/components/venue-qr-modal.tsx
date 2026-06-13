@@ -83,13 +83,13 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 print-hide">
         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
         
-        <div className="relative w-full max-w-sm overflow-hidden rounded-[2rem] border border-[var(--border)] bg-white shadow-float animate-in fade-in zoom-in-95 duration-200">
+        <div className="relative w-full max-w-sm overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-black/[0.04] px-6 py-4">
-            <h2 className="text-base font-bold text-[var(--text-1)]">
+          <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
+            <h2 className="text-base font-bold text-ink">
               {locale === 'ar' ? 'رمز حجز العيادة' : 'Clinic Booking QR'}
             </h2>
-            <button onClick={onClose} className="rounded-full p-2 text-[var(--text-3)] hover:bg-black/5 hover:text-[var(--text-1)] transition-colors active:scale-95">
+            <button onClick={onClose} className="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-ink transition-colors active:scale-95">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -110,7 +110,7 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                 <div id="printable-qr-section" className="flex flex-col items-center w-full">
                   {/* Brand header for the printed page */}
                   <div className="mb-6 hidden print:flex items-center justify-center w-full">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white text-xl font-black">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-ink text-white text-xl font-bold">
                       خ
                     </div>
                   </div>
@@ -122,8 +122,8 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                     {locale === 'ar' ? 'امسح الرمز للحجز فوراً' : 'Scan to Book Instantly'}
                   </p>
 
-                  <div className="rounded-[2.5rem] border-[12px] border-black p-4 w-full max-w-[280px] bg-white shadow-2xl">
-                    <QRCode value={qrUrl} size={256} level="H" style={{ width: '100%', height: 'auto' }} />
+                  <div className="rounded-md border-[10px] border-ink p-4 w-full max-w-[280px] bg-white shadow-sm">
+                    <QRCode value={qrUrl} size={256} level="H" style={{ width: '100%', height: 'auto' }} fgColor="#0F172A" />
                   </div>
                   
                   <p className="mt-8 text-xs font-medium text-black/40 tracking-wider">
@@ -134,7 +134,7 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                 <div className="mt-8 grid w-full gap-3 print-hide">
                   <button
                     onClick={handlePrint}
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--text-1)] px-6 py-3.5 text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-95 shadow-sm"
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95 shadow-sm"
                   >
                     <Printer className="h-4 w-4" />
                     {locale === 'ar' ? 'طباعة الرمز' : 'Print QR Code'}
@@ -145,7 +145,7 @@ export function VenueQrModal({ isOpen, onClose }: VenueQrModalProps) {
                       navigator.clipboard.writeText(qrUrl);
                       alert(locale === 'ar' ? 'تم نسخ الرابط!' : 'Link copied!');
                     }}
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--surface-0)] border border-black/[0.06] px-6 py-3.5 text-sm font-semibold text-[var(--text-1)] transition-transform hover:bg-[var(--surface-1)] active:scale-95"
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-zinc-50 border border-zinc-200 px-6 py-2.5 text-sm font-semibold text-ink transition-all hover:bg-zinc-100 active:scale-95"
                   >
                     <LinkIcon className="h-4 w-4" />
                     {locale === 'ar' ? 'نسخ الرابط' : 'Copy Booking Link'}

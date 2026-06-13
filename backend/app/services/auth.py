@@ -477,6 +477,13 @@ class AuthService:
                 if existing and str(existing["_id"]) != user_id:
                     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already in use.")
             updates["email"] = request.email
+        if request.phone is not None:
+            # Check for duplicate phone
+            if request.phone != user.get("phone"):
+                existing = await self.user_repository.find_by_identifier(request.phone)
+                if existing and str(existing["_id"]) != user_id:
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Phone is already in use.")
+            updates["phone"] = request.phone
         if request.preferred_channel is not None:
             updates["preferred_channel"] = request.preferred_channel
 

@@ -137,12 +137,12 @@ export function SiteShell({
       {isReady && isAuthenticated && user && (
         <div className={`mx-3 mb-4 ${collapsed ? 'flex justify-center' : ''}`}>
           {collapsed ? (
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--text-1)] text-white text-xs font-bold">
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-ink text-white text-xs font-bold">
               {getUserInitials()}
             </div>
           ) : (
-            <div className="flex items-center gap-2.5 rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] p-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--text-1)] text-white text-xs font-bold">
+            <div className="flex items-center gap-2.5 px-1 py-2">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm bg-ink text-white text-xs font-bold">
                 {getUserInitials()}
               </div>
               <div className="min-w-0">
@@ -170,17 +170,17 @@ export function SiteShell({
               locale={locale}
               onClick={onClose}
               title={collapsed ? t(item.labelKey) : undefined}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all active:scale-95 ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-all ${
                 collapsed ? 'justify-center px-0' : ''
               } ${
                 active
-                  ? 'bg-[var(--text-1)] text-white'
-                  : 'text-[var(--text-2)] hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]'
+                  ? 'border-l-2 border-ink text-ink bg-zinc-50 rounded-r-md'
+                  : 'border-l-2 border-transparent text-zinc-500 hover:bg-zinc-50 hover:text-ink rounded-r-md'
               }`}
             >
               <Icon
-                className={`h-5 w-5 shrink-0 ${active ? 'text-white' : 'text-[var(--text-3)]'}`}
-                strokeWidth={active ? 2.5 : 1.8}
+                className={`h-5 w-5 shrink-0 ${active ? 'text-ink' : 'text-zinc-400'}`}
+                strokeWidth={active ? 2.5 : 2}
               />
               {!collapsed && <span>{t(item.labelKey)}</span>}
             </Link>
@@ -189,18 +189,18 @@ export function SiteShell({
       </nav>
 
       {/* Bottom actions */}
-      <div className="space-y-1 px-2 pb-4 pt-2 border-t border-[var(--border)] mt-2">
+      <div className="space-y-1 px-2 pb-4 pt-2 border-t border-zinc-200 mt-2">
         {/* Language toggle */}
-        <div className={`mb-2 flex rounded-xl border border-[var(--border)] p-0.5 ${collapsed ? 'flex-col gap-0.5' : ''}`}>
-          <Link href={pathname} locale="ar" className={`flex-1 rounded-lg py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-3)] hover:text-[var(--text-1)]'}`}>ع</Link>
-          <Link href={pathname} locale="en" className={`flex-1 rounded-lg py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-3)] hover:text-[var(--text-1)]'}`}>En</Link>
+        <div className={`mb-2 flex rounded-md border border-zinc-200 p-0.5 ${collapsed ? 'flex-col gap-0.5' : ''}`}>
+          <Link href={pathname} locale="ar" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-ink text-white' : 'text-zinc-500 hover:text-ink'}`}>ع</Link>
+          <Link href={pathname} locale="en" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-ink text-white' : 'text-zinc-500 hover:text-ink'}`}>En</Link>
         </div>
 
         {isReady && isAuthenticated ? (
           <button
             onClick={() => void logout()}
             title={collapsed ? (locale === 'ar' ? 'خروج' : 'Logout') : undefined}
-            className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 active:scale-95 ${collapsed ? 'justify-center px-0' : ''}`}
+            className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 ${collapsed ? 'justify-center px-0' : ''}`}
           >
             <LogOut className="h-5 w-5 shrink-0" />
             {!collapsed && (locale === 'ar' ? 'خروج' : 'Logout')}
@@ -210,7 +210,7 @@ export function SiteShell({
             href="/auth/login"
             locale={locale}
             onClick={onClose}
-            className={`flex w-full items-center gap-2.5 rounded-xl bg-[var(--text-1)] px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 active:scale-95 ${collapsed ? 'justify-center px-0' : ''}`}
+            className={`flex w-full items-center gap-2.5 rounded-md bg-ink px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 ${collapsed ? 'justify-center px-0' : ''}`}
           >
             <LogIn className="h-5 w-5 shrink-0" />
             {!collapsed && t('login')}
@@ -243,7 +243,7 @@ export function SiteShell({
         {/* Desktop sidebar */}
         <aside
           style={{width: sidebarW}}
-          className={`relative flex shrink-0 flex-col border-e border-[var(--border)] bg-white transition-all duration-300 ${isRTL ? 'border-s border-e-0' : ''}`}
+          className={`relative flex shrink-0 flex-col border-e border-zinc-200 bg-white transition-all duration-300 ${isRTL ? 'border-s border-e-0' : ''}`}
         >
           {/* Sticky inner */}
           <div className="sticky top-0 h-screen overflow-hidden">
@@ -265,9 +265,9 @@ export function SiteShell({
         {/* Desktop main content — fills remaining space */}
         <main className="flex-1 min-w-0">
           {(title || subtitle) && (
-            <div className="sticky top-0 z-10 border-b border-[var(--border)] bg-white/95 backdrop-blur-sm px-8 py-4">
-              {title && <h1 className="text-xl font-black text-[var(--text-1)]">{title}</h1>}
-              {subtitle && <p className="mt-0.5 text-sm text-[var(--text-3)]">{subtitle}</p>}
+            <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 px-8 py-4">
+              {title && <h1 className="text-xl font-black text-ink tracking-tight">{title}</h1>}
+              {subtitle && <p className="mt-0.5 text-sm text-zinc-500">{subtitle}</p>}
             </div>
           )}
           <div className="px-8 py-6 max-w-7xl mx-auto">
@@ -280,7 +280,7 @@ export function SiteShell({
       <div className="md:hidden">
         {/* Mobile top header */}
         <header
-          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-[var(--border)] px-4"
+          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white border-b border-zinc-200 px-4"
           style={{
             height: MOBILE_HEADER_H,
             top: impersonatingName ? 36 : 0,
@@ -288,13 +288,13 @@ export function SiteShell({
         >
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-xl text-[var(--text-2)] hover:bg-[var(--surface-0)] transition"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-50 transition"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          <Link href="/" locale={locale} className="flex items-center gap-2 font-black text-[var(--text-1)]">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--text-1)] text-white text-xs font-black">خ</div>
+          <Link href="/" locale={locale} className="flex items-center gap-2 font-black text-ink tracking-tight">
+            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ink text-white text-xs font-black">خ</div>
             <span>Khalas</span>
           </Link>
 
@@ -313,13 +313,13 @@ export function SiteShell({
               onClick={() => setMobileSidebarOpen(false)}
             />
             <aside
-              className={`fixed top-0 bottom-0 z-50 w-72 bg-white shadow-overlay flex flex-col ${isRTL ? 'right-0' : 'left-0'}`}
+              className={`fixed top-0 bottom-0 z-50 w-72 bg-white shadow-float flex flex-col ${isRTL ? 'right-0' : 'left-0'}`}
               style={{paddingTop: impersonatingName ? 36 : 0}}
             >
-              <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+              <div className="flex items-center justify-between p-4 border-b border-zinc-200">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[var(--text-1)] text-white text-xs font-black">خ</div>
-                  <span className="font-black text-[var(--text-1)]">Khalas</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-ink text-white text-xs font-black">خ</div>
+                  <span className="font-black text-ink tracking-tight">Khalas</span>
                 </div>
                 <button
                   onClick={() => setMobileSidebarOpen(false)}
@@ -356,8 +356,8 @@ export function SiteShell({
         </main>
 
         {/* Mobile bottom tab bar */}
-        <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/90 backdrop-blur-md border-t border-[var(--border)]">
-          <div className="flex items-end justify-around pb-[env(safe-area-inset-bottom,8px)] pt-1.5">
+        <nav className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-zinc-200 pb-[env(safe-area-inset-bottom,0px)]">
+          <div className="flex items-end justify-around">
             {navItems.map(item => {
               const active = isActive(item);
               const Icon = item.icon;
@@ -366,16 +366,11 @@ export function SiteShell({
                   key={item.href}
                   href={item.href}
                   locale={locale}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1 text-[10px] font-semibold transition-colors active:scale-95 ${
-                    active ? 'text-[var(--text-1)]' : 'text-[var(--text-3)]'
+                  className={`flex flex-col flex-1 items-center gap-1 pt-3 pb-2 text-[10px] font-semibold transition-colors ${
+                    active ? 'text-ink border-t-2 border-ink -mt-[2px]' : 'text-zinc-400 border-t-2 border-transparent -mt-[2px]'
                   }`}
                 >
-                  <div className="relative">
-                    <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 1.8} />
-                    {active && (
-                      <div className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-[var(--text-1)]" />
-                    )}
-                  </div>
+                  <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 1.8} />
                   <span>{t(item.labelKey)}</span>
                 </Link>
               );

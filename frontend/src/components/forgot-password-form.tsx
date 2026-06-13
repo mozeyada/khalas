@@ -35,43 +35,43 @@ export function ForgotPasswordForm() {
 
   return (
     <div className="grid gap-6">
-      <section className="rounded-[2rem] border border-white/70 bg-[var(--card)] p-6 shadow-soft backdrop-blur sm:p-8">
+      <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
         
         {!isSuccess ? (
           <form className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500" onSubmit={handleSubmit}>
             <div className="text-center mb-6">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-teal/10 text-teal">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center text-ink">
                 <KeyRound className="h-6 w-6" />
               </div>
-              <h2 className="text-xl font-semibold text-ink mb-2">{t('title')}</h2>
-              <p className="text-sm text-ink/60">
+              <h2 className="text-xl font-bold tracking-tight text-ink mb-2">{t('title')}</h2>
+              <p className="text-sm text-zinc-500">
                 {t('subtitle')}
               </p>
             </div>
 
             <label className="block group">
-              <span className="mb-2 block text-sm font-medium text-ink transition-colors group-focus-within:text-teal">{t('fields.identifier')}</span>
+              <span className="mb-2 block text-sm font-semibold text-ink">{t('fields.identifier')}</span>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-ink/40 group-focus-within:text-teal transition-colors">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400 group-focus-within:text-ink transition-colors">
                   <Mail className="h-5 w-5" />
                 </div>
                 <input
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}
-                  className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md pl-12 pr-4 py-3.5 text-sm text-ink outline-none transition-all focus:bg-white focus:border-teal focus:ring-4 focus:ring-teal/10 hover:border-black/20"
+                  className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] pl-10 pr-4 py-3 text-sm text-ink outline-none transition-all focus:bg-white focus:border-ink hover:border-zinc-300"
                   placeholder={t('placeholders.identifier')}
                   required
                 />
               </div>
             </label>
 
-            {error ? <p className="rounded-2xl border border-rose-100 bg-rose-50/80 backdrop-blur px-4 py-3 text-sm text-rose-700 animate-in fade-in">{error}</p> : null}
+            {error ? <p className="text-sm text-rose-600 font-medium animate-in fade-in">{error}</p> : null}
 
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20 disabled:cursor-not-allowed disabled:opacity-60"
+                className="group relative w-full overflow-hidden rounded-md bg-ink px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 active:scale-95"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {t('actions.submit')}
@@ -82,17 +82,17 @@ export function ForgotPasswordForm() {
           </form>
         ) : (
           <div className="text-center py-6 animate-in zoom-in-95 fade-in duration-500">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center text-ink">
               <Mail className="h-8 w-8" />
             </div>
-            <h3 className="mb-2 text-xl font-semibold text-ink">{t('successTitle')}</h3>
-            <p className="mb-6 text-sm text-ink/70">
+            <h3 className="mb-2 text-xl font-bold tracking-tight text-ink">{t('successTitle')}</h3>
+            <p className="mb-6 text-sm text-zinc-500">
               {feedback}
             </p>
             <div className="space-y-3">
               <button
                 onClick={() => router.push(`/${locale}/auth/reset-password`)}
-                className="group relative w-full overflow-hidden rounded-2xl bg-teal px-4 py-3.5 text-sm font-medium text-white transition-all hover:bg-teal/90 hover:shadow-lg hover:shadow-teal/20"
+                className="group relative w-full overflow-hidden rounded-md bg-ink px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-zinc-800 active:scale-95"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   Enter Reset Code
@@ -101,7 +101,7 @@ export function ForgotPasswordForm() {
               </button>
               <button
                 onClick={() => setIsSuccess(false)}
-                className="w-full rounded-2xl border border-white/40 bg-white/50 backdrop-blur-md px-4 py-3.5 text-sm font-medium text-teal outline-none transition-all hover:bg-white focus:border-teal hover:border-black/20"
+                className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold text-ink outline-none transition-all hover:bg-zinc-50 active:scale-95"
               >
                 {t('tryAnother')}
               </button>

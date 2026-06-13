@@ -148,16 +148,16 @@ export function BookingPanel({
             key={service._id}
             type="button"
             onClick={() => handleSelectService(service._id)}
-            className={`group relative overflow-hidden rounded-[1.5rem] border p-4 text-start transition-all duration-300 sm:p-5 ${
+            className={`group relative overflow-hidden rounded-md border p-4 text-start transition-all duration-300 sm:p-5 ${
               isSelected
-                ? 'border-teal bg-teal/5 shadow-[0_8px_30px_rgba(15,118,110,0.12)] scale-[1.02]'
-                : 'border-[var(--border)] bg-white/50 hover:bg-white/80 hover:shadow-md'
+                ? 'border-ink bg-zinc-50 shadow-sm scale-[1.01]'
+                : 'border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300'
             }`}
           >
-            {isSelected && <div className="absolute left-0 top-0 h-full w-1.5 rounded-l-[1.5rem] bg-teal" />}
+            {isSelected && <div className="absolute left-0 top-0 h-full w-1 rounded-l-md bg-ink" />}
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className={`font-semibold transition-colors ${isSelected ? 'text-teal' : 'text-ink'}`}>
+                <p className={`font-semibold transition-colors ${isSelected ? 'text-ink' : 'text-zinc-700'}`}>
                   {locale === 'ar' ? service.name_ar : service.name_en}
                 </p>
                 <p className="mt-1 line-clamp-1 text-sm text-ink/60">
@@ -167,7 +167,7 @@ export function BookingPanel({
                 </p>
               </div>
               <div className="shrink-0 text-end">
-                <p className={`font-bold ${isSelected ? 'text-teal' : 'text-ink'}`}>
+                <p className={`font-bold ${isSelected ? 'text-ink' : 'text-zinc-700'}`}>
                   {formatPrice(service.price, activeLocale)}
                 </p>
                 <p className="mt-1 flex items-center justify-end gap-1 text-xs text-ink/50">
@@ -184,7 +184,7 @@ export function BookingPanel({
 
   /* ─── Shared: booking action button ─────────────────────────── */
   const BookButton = ({dark = false}: {dark?: boolean}) => {
-    const base = 'group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[1.25rem] px-6 py-4 text-sm font-bold transition-all active:scale-[0.98] disabled:cursor-not-allowed';
+    const base = 'group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-md px-6 py-4 text-sm font-semibold transition-all active:scale-[0.98] disabled:cursor-not-allowed';
 
     if (user?.role !== 'patient') {
       return (
@@ -194,7 +194,7 @@ export function BookingPanel({
             const redirectUrl = encodeURIComponent(`${pathname}?serviceId=${selectedServiceId}&slot=${selectedSlot}`);
             router.push(`/${locale}/auth/login?redirect=${redirectUrl}`);
           }}
-          className={`${base} bg-amber-400 text-slate-950 hover:bg-amber-300 hover:shadow-[0_0_30px_rgba(251,191,36,0.3)]`}
+          className={`${base} bg-zinc-100 text-ink hover:bg-zinc-200 border border-zinc-200`}
         >
           {t('loginToBook')}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -209,10 +209,10 @@ export function BookingPanel({
         disabled={isSubmitting || isSuccess}
         className={`${base} ${
           isSuccess
-            ? 'bg-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.5)] text-slate-950'
+            ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
             : dark
-              ? 'bg-emerald-300 text-slate-950 hover:bg-emerald-200 hover:shadow-[0_0_30px_rgba(110,231,183,0.3)]'
-              : 'bg-teal text-white hover:bg-teal/90 hover:shadow-[0_0_30px_rgba(15,118,110,0.35)]'
+              ? 'bg-white text-ink hover:bg-zinc-100'
+              : 'bg-ink text-white hover:bg-zinc-800'
         }`}
       >
         {isSubmitting ? (
@@ -236,15 +236,14 @@ export function BookingPanel({
   const DesktopLayout = () => (
     <div className="hidden lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-start lg:gap-6">
       {/* Left: context + services */}
-      <section className="relative overflow-hidden rounded-[2.5rem] border border-[var(--border)] bg-[var(--card)] p-8 shadow-soft backdrop-blur-xl">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-teal/5 blur-3xl" />
+      <section className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
         <div className="relative z-10">
-          <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-teal">
+          <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-500">
             <Sparkles className="h-4 w-4" />
             {t('overviewEyebrow')}
           </p>
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-teal/20 to-teal/5 text-teal">
+            <div className="flex h-16 w-16 items-center justify-center rounded-md bg-zinc-50 border border-zinc-100 text-ink">
               <UserCircle2 className="h-8 w-8" />
             </div>
             <div>
@@ -255,8 +254,8 @@ export function BookingPanel({
             </div>
           </div>
 
-          <div className="mt-8 flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-white/40 p-4 backdrop-blur-sm">
-            <div className="rounded-xl bg-teal/10 p-2 text-teal">
+          <div className="mt-8 flex items-center gap-3 rounded-md border border-zinc-200 bg-[#FAFAFA] p-4">
+            <div className="rounded-sm bg-white border border-zinc-200 p-2 text-ink shadow-sm">
               <MapPin className="h-5 w-5" />
             </div>
             <div>
@@ -278,15 +277,15 @@ export function BookingPanel({
       {/* Right: slot picker + confirm */}
       <div className="relative">
         {!selectedServiceId ? (
-          <div className="flex h-full min-h-[400px] flex-col items-center justify-center rounded-[2.5rem] border border-dashed border-ink/10 bg-white/20 p-8 text-center backdrop-blur-sm">
-            <div className="mb-4 rounded-full bg-teal/5 p-4 text-teal/40">
+          <div className="flex h-full min-h-[400px] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-8 text-center">
+            <div className="mb-4 rounded-md bg-white border border-zinc-200 p-4 text-zinc-400 shadow-sm">
               <Sparkles className="h-8 w-8" />
             </div>
             <p className="text-lg font-medium text-ink/60">{t('selectServiceFirst')}</p>
           </div>
         ) : (
-          <section className="animate-in fade-in slide-in-from-right-8 duration-500 rounded-[2.5rem] border border-slate-800/50 bg-slate-950 p-8 text-slate-50 shadow-2xl">
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-emerald-400">{t('bookingEyebrow')}</p>
+          <section className="animate-in fade-in slide-in-from-right-8 duration-500 rounded-lg border border-slate-800 bg-slate-950 p-8 text-slate-50 shadow-md">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-zinc-400">{t('bookingEyebrow')}</p>
             <h3 className="text-2xl font-bold">{t('bookingTitle')}</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">{t('bookingBody')}</p>
             <div className="mt-8 space-y-8">
@@ -304,15 +303,15 @@ export function BookingPanel({
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="min-h-[90px] w-full rounded-[1.25rem] border border-white/10 bg-white/5 px-5 py-4 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-emerald-400 focus:bg-white/10 focus:ring-4 focus:ring-emerald-400/10"
+                      className="min-h-[90px] w-full rounded-md border border-white/10 bg-white/5 px-5 py-4 text-sm text-white placeholder-slate-500 outline-none transition-all focus:border-white focus:bg-white/10"
                       placeholder={t('notesPlaceholder')}
                     />
                   </div>
-                  <div className="rounded-[1.25rem] bg-emerald-400/10 p-4">
-                    <p className="text-sm text-emerald-200/80">{t('cashNote')}</p>
+                  <div className="rounded-md bg-white/5 border border-white/10 p-4">
+                    <p className="text-sm text-slate-300">{t('cashNote')}</p>
                   </div>
                   {error && (
-                    <div className="animate-in zoom-in-95 rounded-[1.25rem] border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
+                    <div className="animate-in zoom-in-95 rounded-md border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300">
                       {error}
                     </div>
                   )}
@@ -331,13 +330,13 @@ export function BookingPanel({
     <div className="lg:hidden space-y-3">
 
       {/* Doctor + Venue summary strip */}
-      <div className="flex items-center gap-3 rounded-[1.5rem] border border-[var(--border)] bg-[var(--surface-1)] px-4 py-3 shadow-sm backdrop-blur">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal/20 to-teal/5 text-teal">
+      <div className="flex items-center gap-3 rounded-md border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-zinc-50 border border-zinc-100 text-ink">
           <UserCircle2 className="h-5 w-5" />
         </div>
         <div className="min-w-0">
           <p className="truncate font-semibold text-ink">{locale === 'ar' ? staff.name_ar : staff.name_en}</p>
-          <p className="truncate text-xs text-ink/60">
+          <p className="truncate text-xs text-zinc-500">
             {locale === 'ar' ? venue.name_ar : venue.name_en} ·{' '}
             {locale === 'ar' ? venue.governorate : venue.area}
           </p>
@@ -345,7 +344,7 @@ export function BookingPanel({
       </div>
 
       {/* STEP 1: Choose service */}
-      <div className="overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] shadow-sm backdrop-blur">
+      <div className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
         <button
           type="button"
           onClick={() => setMobileStep(1)}
@@ -378,10 +377,10 @@ export function BookingPanel({
       </div>
 
       {/* STEP 2: Choose slot */}
-      <div className={`overflow-hidden rounded-[2rem] border shadow-sm backdrop-blur transition-all duration-300 ${
+      <div className={`overflow-hidden rounded-md border shadow-sm transition-all duration-300 ${
         selectedServiceId
-          ? 'border-[var(--border)] bg-slate-950'
-          : 'border-[var(--border)] bg-[var(--surface-1)] opacity-50 pointer-events-none'
+          ? 'border-slate-800 bg-slate-950'
+          : 'border-zinc-200 bg-zinc-50 opacity-50 pointer-events-none'
       }`}>
         <button
           type="button"
@@ -423,10 +422,10 @@ export function BookingPanel({
       </div>
 
       {/* STEP 3: Confirm */}
-      <div className={`overflow-hidden rounded-[2rem] border shadow-sm backdrop-blur transition-all duration-300 ${
+      <div className={`overflow-hidden rounded-md border shadow-sm transition-all duration-300 ${
         selectedSlot
-          ? 'border-[var(--border)] bg-slate-950'
-          : 'border-[var(--border)] bg-[var(--surface-1)] opacity-50 pointer-events-none'
+          ? 'border-slate-800 bg-slate-950'
+          : 'border-zinc-200 bg-zinc-50 opacity-50 pointer-events-none'
       }`}>
         <button
           type="button"
@@ -447,7 +446,7 @@ export function BookingPanel({
         {mobileStep === 3 && (
           <div className="animate-in slide-in-from-top-2 fade-in duration-300 border-t border-white/10 px-4 pb-6 pt-4 space-y-4">
             {/* Booking summary */}
-            <div className="space-y-2 rounded-[1.25rem] bg-white/5 p-4 text-sm text-slate-300">
+            <div className="space-y-2 rounded-md bg-white/5 border border-white/10 p-4 text-sm text-slate-300">
               <div className="flex justify-between">
                 <span className="text-slate-500">{locale === 'ar' ? 'الخدمة' : 'Service'}</span>
                 <span className="font-medium text-slate-100">
@@ -479,17 +478,17 @@ export function BookingPanel({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
-                className="w-full rounded-[1.25rem] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all focus:border-emerald-400 focus:bg-white/8 focus:ring-2 focus:ring-emerald-400/20"
+                className="w-full rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-600 outline-none transition-all focus:border-white focus:bg-white/10"
                 placeholder={t('notesPlaceholder')}
               />
             </div>
 
-            <div className="rounded-[1rem] bg-emerald-400/10 px-4 py-3">
-              <p className="text-xs text-emerald-200/80">{t('cashNote')}</p>
+            <div className="rounded-md bg-white/5 border border-white/10 px-4 py-3">
+              <p className="text-xs text-slate-300">{t('cashNote')}</p>
             </div>
 
             {error && (
-              <div className="rounded-[1rem] border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+              <div className="rounded-md border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
                 {error}
               </div>
             )}

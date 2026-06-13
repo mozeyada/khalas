@@ -17,21 +17,21 @@ const CATEGORIES = ['clinic', 'dental', 'beauty', 'fitness', 'physiotherapy', 'l
 
 // Category colour map for chips
 const CATEGORY_COLORS: Record<string, string> = {
-  clinic:          'bg-teal/10 text-teal border-teal/20 hover:bg-teal/20',
-  dental:          'bg-blue-500/10 text-blue-700 border-blue-500/20 hover:bg-blue-500/20',
-  beauty:          'bg-rose-500/10 text-rose-600 border-rose-500/20 hover:bg-rose-500/20',
-  fitness:         'bg-amber-400/10 text-amber-700 border-amber-400/20 hover:bg-amber-400/20',
-  physiotherapy:   'bg-violet-500/10 text-violet-700 border-violet-500/20 hover:bg-violet-500/20',
-  legal:           'bg-slate-400/10 text-slate-700 border-slate-400/20 hover:bg-slate-400/20',
+  clinic:          'bg-zinc-50 text-ink border-zinc-200 hover:bg-zinc-100',
+  dental:          'bg-zinc-50 text-blue-700 border-zinc-200 hover:bg-blue-50',
+  beauty:          'bg-zinc-50 text-rose-600 border-zinc-200 hover:bg-rose-50',
+  fitness:         'bg-zinc-50 text-amber-700 border-zinc-200 hover:bg-amber-50',
+  physiotherapy:   'bg-zinc-50 text-violet-700 border-zinc-200 hover:bg-violet-50',
+  legal:           'bg-zinc-50 text-slate-700 border-zinc-200 hover:bg-slate-100',
 };
 
 const CATEGORY_COLORS_ACTIVE: Record<string, string> = {
-  clinic:          'bg-teal text-white border-teal shadow-teal-sm',
+  clinic:          'bg-ink text-white border-ink',
   dental:          'bg-blue-600 text-white border-blue-600',
-  beauty:          'bg-rose-500 text-white border-rose-500',
-  fitness:         'bg-amber-500 text-white border-amber-500',
+  beauty:          'bg-rose-600 text-white border-rose-600',
+  fitness:         'bg-amber-600 text-white border-amber-600',
   physiotherapy:   'bg-violet-600 text-white border-violet-600',
-  legal:           'bg-slate-600 text-white border-slate-600',
+  legal:           'bg-slate-700 text-white border-slate-700',
 };
 
 type SearchFormProps = {
@@ -69,38 +69,38 @@ export function SearchForm({
   return (
     <form
       onSubmit={handleSearch}
-      className="mb-8 overflow-hidden rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] shadow-float backdrop-blur-md"
+      className="mb-8 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
     >
       {/* Main search row */}
-      <div className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
-        <Search className="h-5 w-5 shrink-0 text-[var(--text-3)]" />
+      <div className="flex items-center gap-3 border-b border-zinc-200 px-5 py-4">
+        <Search className="h-5 w-5 shrink-0 text-zinc-400" />
         <input
           id="search-query"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('placeholder')}
-          className="min-w-0 flex-1 bg-transparent text-base text-[var(--text-1)] outline-none placeholder:text-[var(--text-3)]"
+          className="min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-zinc-400"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-full bg-teal px-6 py-2.5 text-sm font-bold text-white transition-all duration-fast hover:scale-105 hover:bg-teal/90 hover:shadow-teal-sm disabled:opacity-60"
+          className="shrink-0 rounded-md bg-ink px-6 py-2.5 text-sm font-semibold text-white transition-all duration-fast hover:bg-zinc-800 active:scale-95 disabled:opacity-60"
         >
           {isPending ? t('loading') : t('searchButton')}
         </button>
       </div>
 
       {/* Filters row */}
-      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:gap-5">
+      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:gap-5">
         {/* Governorate select */}
         <label className="flex shrink-0 items-center gap-2">
-          <MapPin className="h-4 w-4 text-[var(--text-3)]" />
+          <MapPin className="h-4 w-4 text-zinc-400" />
           <select
             id="search-governorate"
             value={governorate}
             onChange={(e) => setGovernorate(e.target.value)}
-            className="border-0 bg-transparent text-sm font-medium text-[var(--text-2)] outline-none focus:text-[var(--text-1)] cursor-pointer"
+            className="border-0 bg-transparent text-sm font-semibold text-zinc-600 outline-none focus:text-ink cursor-pointer"
           >
             <option value="">{t('allGovernorates')}</option>
             {EGYPT_GOVERNORATES.map((g) => (
@@ -109,18 +109,18 @@ export function SearchForm({
           </select>
         </label>
 
-        <div className="h-px bg-[var(--border)] sm:h-6 sm:w-px" />
+        <div className="h-px bg-zinc-200 sm:h-6 sm:w-px" />
 
         {/* Category chips */}
         <div className="flex flex-wrap items-center gap-2">
-          <Stethoscope className="h-4 w-4 shrink-0 text-[var(--text-3)]" />
+          <Stethoscope className="h-4 w-4 shrink-0 text-zinc-400" />
           <button
             type="button"
             onClick={() => setCategory('')}
-            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-fast ${
+            className={`rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-fast ${
               category === ''
-                ? 'bg-[var(--text-1)] text-white border-[var(--text-1)]'
-                : 'bg-transparent text-[var(--text-2)] border-[var(--border-strong)] hover:bg-black/5'
+                ? 'bg-ink text-white border-ink'
+                : 'bg-white text-zinc-500 border-zinc-200 hover:bg-zinc-50 hover:text-ink'
             }`}
           >
             {t('allCategories')}
@@ -130,7 +130,7 @@ export function SearchForm({
               key={c}
               type="button"
               onClick={() => setCategory(c === category ? '' : c)}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-fast ${
+              className={`rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-fast ${
                 category === c
                   ? CATEGORY_COLORS_ACTIVE[c]
                   : CATEGORY_COLORS[c]
