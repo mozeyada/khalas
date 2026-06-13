@@ -34,6 +34,12 @@ class DemoClinicRequest(BaseModel):
     doctor_phone: str
 
 
+class SendWelcomeRequest(BaseModel):
+    """Payload for sending welcome message."""
+    language: str
+    password: str | None = None
+
+
 @router.post("/demo-clinic", response_model=ApiResponse[VenueResponse], status_code=status.HTTP_201_CREATED)
 async def create_demo_clinic(
     payload: DemoClinicRequest,
@@ -171,3 +177,29 @@ async def get_salesman_clinics(
     venues = await cursor.to_list(length=100)
     
     return ApiResponse(data=[serialize_venue(v) for v in venues])
+
+
+@router.post("/clinics/{venue_id}/send-welcome", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+async def salesman_send_welcome(
+    venue_id: str,
+    payload: SendWelcomeRequest,
+    current_user: Annotated[dict, Depends(require_role("salesman", "admin"))],
+) -> ApiResponse[dict]:
+    """Send welcome message to a clinic owner."""
+    venue = await VenueRepository().find_by_id(venue_id)
+    if not venue:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinic not found.")
+    
+    # Ensure this salesman owns the clinic or is admin
+    if current_user["role"] != "admin" and venue.get("created_by") != str(current_user["_id"]):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only send messages to clinics you onboarded.")
+        
+    owner = await UserRepository().find_by_id(venue["owner_id"])
+    if not owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinic owner not found.")
+
+    from app.services.notifications import send_clinic_welcome_msg
+    import asyncio
+    asyncio.create_task(send_clinic_welcome_msg(venue, owner, payload.language, payload.password))
+
+    return ApiResponse(data={"message": "Welcome message sent."})

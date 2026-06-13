@@ -303,6 +303,44 @@ async def _send_whatsapp(
                 f"\nالعنوان: {parameters[3]}\n\n"
                 f"Hi {parameters[0]},\nReminder: your appointment at {parameters[2]} is tomorrow on {parameters[5]} at {parameters[6]}."
                 f"\nAddress: {parameters[4]}")
+    elif template_name == "khalas_salesman_welcome_ar":
+        text = (f"مرحباً {parameters[0]}،\nأهلاً بك في فريق مبيعات خلاص! 🎉\n\n"
+                f"رابط الدخول: https://khalas.app/ar/auth/login\n"
+                f"رقم الهاتف: {parameters[1]}\n")
+        if parameters[2]:
+            text += f"كلمة المرور المؤقتة: {parameters[2]}\n"
+        else:
+            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n"
+        text += "\nنحن متحمسون لانضمامك إلينا! لا تتردد في التواصل إذا كان لديك أي استفسار."
+    elif template_name == "khalas_salesman_welcome_en":
+        text = (f"Hi {parameters[0]},\nWelcome to the Khalas Sales Team! 🎉\n\n"
+                f"Login Link: https://khalas.app/en/auth/login\n"
+                f"Phone Number: {parameters[1]}\n")
+        if parameters[2]:
+            text += f"Temporary Password: {parameters[2]}\n"
+        else:
+            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n"
+        text += "\nWe're thrilled to have you! Feel free to reach out if you have any questions."
+    elif template_name == "khalas_clinic_welcome_ar":
+        text = (f"مرحباً {parameters[0]}،\nأهلاً بك كشريك في منصة خلاص! 🎉\n"
+                f"تم إعداد عيادتك '{parameters[3]}' بنجاح.\n\n"
+                f"رابط الدخول: https://khalas.app/ar/auth/login\n"
+                f"رقم الهاتف: {parameters[1]}\n")
+        if parameters[2]:
+            text += f"كلمة المرور المؤقتة: {parameters[2]}\n"
+        else:
+            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n"
+        text += "\nشكراً لاختيارك منصة خلاص."
+    elif template_name == "khalas_clinic_welcome_en":
+        text = (f"Hi {parameters[0]},\nWelcome as a partner on the Khalas Platform! 🎉\n"
+                f"Your clinic '{parameters[3]}' has been set up successfully.\n\n"
+                f"Login Link: https://khalas.app/en/auth/login\n"
+                f"Phone Number: {parameters[1]}\n")
+        if parameters[2]:
+            text += f"Temporary Password: {parameters[2]}\n"
+        else:
+            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n"
+        text += "\nThank you for choosing Khalas."
     else:
         text = "رسالة من خلاص: " + " ".join(parameters)
 
@@ -526,3 +564,37 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
             subject="Khalas – تذكير بالموعد / Appointment Reminder",
             html=_base_email_html("Appointment Reminder", ar_html, en_html),
         )
+
+
+async def send_salesman_welcome_msg(user: dict, language: str, password: str | None = None) -> None:
+    """Send a welcome message to a newly onboarded Salesman."""
+    phone = user.get("phone", "")
+    if not phone:
+        return
+    name = user.get("name_ar") or user.get("name_en") or "عضو المبيعات"
+    template = "khalas_salesman_welcome_ar" if language == "ar" else "khalas_salesman_welcome_en"
+    
+    sent = await _send_whatsapp(
+        phone=phone,
+        template_name=template,
+        parameters=[name, phone, password or ""],
+    )
+    if not sent:
+        _log_notify("CONSOLE", phone, f"Welcome message sent to salesman {name} in {language}")
+
+async def send_clinic_welcome_msg(venue: dict, owner: dict, language: str, password: str | None = None) -> None:
+    """Send a welcome message to a newly onboarded Clinic owner."""
+    phone = owner.get("phone", "")
+    if not phone:
+        return
+    name = owner.get("name_ar") or owner.get("name_en") or "شريك خلاص"
+    venue_name = venue.get("name_ar") or venue.get("name_en") or "العيادة"
+    template = "khalas_clinic_welcome_ar" if language == "ar" else "khalas_clinic_welcome_en"
+
+    sent = await _send_whatsapp(
+        phone=phone,
+        template_name=template,
+        parameters=[name, phone, password or "", venue_name],
+    )
+    if not sent:
+        _log_notify("CONSOLE", phone, f"Welcome message sent to clinic owner {name} for {venue_name} in {language}")

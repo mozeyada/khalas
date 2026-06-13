@@ -60,6 +60,12 @@ export default function AdminPage() {
   
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Welcome Modal State
+  const [welcomeModalUser, setWelcomeModalUser] = useState<User | null>(null);
+  const [welcomeLang, setWelcomeLang] = useState<'ar' | 'en'>('ar');
+  const [welcomePassword, setWelcomePassword] = useState('');
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -139,6 +145,29 @@ export default function AdminPage() {
       window.location.reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : t('genericError'));
+    }
+  }
+
+  async function handleSendWelcome() {
+    if (!welcomeModalUser) return;
+    setIsSendingWelcome(true);
+    try {
+      const res = await fetch(`/api/proxy/admin/users/${welcomeModalUser._id}/send-welcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: welcomeLang, password: welcomePassword || null }),
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to send welcome message.');
+      }
+      alert(locale === 'ar' ? 'تم إرسال رسالة الترحيب بنجاح' : 'Welcome message sent successfully');
+      setWelcomeModalUser(null);
+      setWelcomePassword('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('genericError'));
+    } finally {
+      setIsSendingWelcome(false);
     }
   }
 
@@ -361,6 +390,15 @@ export default function AdminPage() {
                         {locale === 'ar' ? 'دخول كـ' : 'Login As'}
                       </button>
                     )}
+                    {u.is_active && u.role === 'salesman' && user?.email?.startsWith('m.zeyada91') && (
+                      <button
+                        type="button"
+                        onClick={() => setWelcomeModalUser(u)}
+                        className="rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-5 py-2.5 text-sm font-semibold transition"
+                      >
+                        {locale === 'ar' ? 'رسالة ترحيب' : 'Send Welcome'}
+                      </button>
+                    )}
                     {u.is_active ? (
                       <button
                         type="button"
@@ -375,6 +413,72 @@ export default function AdminPage() {
               </article>
             ))
           )}
+        </div>
+      )}
+      {/* Welcome Modal */}
+      {welcomeModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-3xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-1 text-lg font-bold text-[var(--text-1)]">
+              {locale === 'ar' ? `إرسال رسالة ترحيب لـ ${welcomeModalUser.name_ar}` : `Send Welcome to ${welcomeModalUser.name_en}`}
+            </h3>
+            <p className="mb-6 text-sm text-[var(--text-3)]">
+              {locale === 'ar' 
+                ? 'سيتم إرسال رسالة واتساب توضح تفاصيل الحساب ورابط الدخول.' 
+                : 'A WhatsApp message with account details and login link will be sent.'}
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                  {locale === 'ar' ? 'لغة الرسالة' : 'Message Language'}
+                </label>
+                <div className="flex gap-2 rounded-xl border border-black/10 p-1">
+                  <button
+                    onClick={() => setWelcomeLang('ar')}
+                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'ar' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-black/5'}`}
+                  >
+                    العربية
+                  </button>
+                  <button
+                    onClick={() => setWelcomeLang('en')}
+                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'en' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-black/5'}`}
+                  >
+                    English
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                  {locale === 'ar' ? 'كلمة المرور المؤقتة (اختياري)' : 'Temporary Password (Optional)'}
+                </label>
+                <input
+                  type="text"
+                  value={welcomePassword}
+                  onChange={(e) => setWelcomePassword(e.target.value)}
+                  placeholder={locale === 'ar' ? 'إذا تركته فارغاً، سيفعل الحساب بـ OTP' : 'If left empty, OTP will be required'}
+                  className="w-full rounded-xl border border-black/10 bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-teal focus:ring-1 focus:ring-teal"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setWelcomeModalUser(null)}
+                className="flex-1 rounded-full border border-black/10 py-3 text-sm font-semibold text-[var(--text-2)] transition hover:bg-black/5"
+              >
+                {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSendWelcome}
+                disabled={isSendingWelcome}
+                className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {isSendingWelcome ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send Message')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </SiteShell>

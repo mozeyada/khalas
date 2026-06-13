@@ -41,6 +41,12 @@ class UserRoleRequest(BaseModel):
     provider_type: str | None = None
 
 
+class SendWelcomeRequest(BaseModel):
+    """Payload for sending welcome message."""
+    language: str
+    password: str | None = None
+
+
 # ── Venue moderation ──────────────────────────────────────────────────────────
 
 @router.get("/venues", response_model=ApiResponse[list[VenueResponse]], status_code=status.HTTP_200_OK)
@@ -137,6 +143,30 @@ async def admin_update_user_role(
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return ApiResponse(data=serialize_user(user))
+
+
+@router.post("/users/{user_id}/send-welcome", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+async def admin_send_welcome(
+    user_id: str,
+    payload: SendWelcomeRequest,
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> ApiResponse[dict]:
+    """Send welcome message to a salesman. Restricted to global admin."""
+    if "m.zeyada91" not in current_user.get("email", ""):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only global admin can send welcome messages.")
+        
+    user = await UserRepository().find_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    
+    if user.get("role") != "salesman":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Welcome messages can only be sent to salesmen from here.")
+
+    from app.services.notifications import send_salesman_welcome_msg
+    import asyncio
+    asyncio.create_task(send_salesman_welcome_msg(user, payload.language, payload.password))
+
+    return ApiResponse(data={"message": "Welcome message sent."})
 
 
 @router.post("/users/{user_id}/impersonate", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)

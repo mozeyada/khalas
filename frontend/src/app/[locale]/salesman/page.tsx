@@ -50,6 +50,12 @@ export default function SalesmanPage() {
   const [showForm, setShowForm] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
+  // Welcome Modal State
+  const [welcomeModalClinic, setWelcomeModalClinic] = useState<any>(null);
+  const [welcomeLang, setWelcomeLang] = useState<'ar' | 'en'>('ar');
+  const [welcomePassword, setWelcomePassword] = useState('');
+  const [isSendingWelcome, setIsSendingWelcome] = useState(false);
+
   // form state
   const [clinicName, setClinicName] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -114,6 +120,29 @@ export default function SalesmanPage() {
     navigator.clipboard.writeText(link);
     setCopiedSlug(slug);
     setTimeout(() => setCopiedSlug(null), 2000);
+  }
+
+  async function handleSendWelcome() {
+    if (!welcomeModalClinic) return;
+    setIsSendingWelcome(true);
+    try {
+      const res = await fetch(`/api/proxy/salesman/clinics/${welcomeModalClinic._id}/send-welcome`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: welcomeLang, password: welcomePassword || null }),
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to send welcome message');
+      }
+      alert(locale === 'ar' ? 'تم إرسال رسالة الترحيب بنجاح' : 'Welcome message sent successfully');
+      setWelcomeModalClinic(null);
+      setWelcomePassword('');
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setIsSendingWelcome(false);
+    }
   }
 
   if (!isReady || isLoadingClinics) {
@@ -366,6 +395,13 @@ export default function SalesmanPage() {
                   {/* Actions */}
                   <div className="flex shrink-0 items-center gap-1">
                     <button
+                      onClick={() => setWelcomeModalClinic(clinic)}
+                      title={locale === 'ar' ? 'رسالة ترحيب' : 'Send Welcome'}
+                      className="flex h-9 w-9 items-center justify-center rounded-full transition bg-indigo-50 hover:bg-indigo-100 text-indigo-500 hover:text-indigo-600"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleCopyLink(clinic.slug)}
                       title={locale === 'ar' ? 'نسخ الرابط' : 'Copy link'}
                       className="flex h-9 w-9 items-center justify-center rounded-full transition hover:bg-[var(--surface-0)] text-[var(--text-3)] hover:text-[var(--text-1)]"
@@ -420,6 +456,73 @@ export default function SalesmanPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Welcome Modal */}
+      {welcomeModalClinic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-3xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-1 text-lg font-bold text-[var(--text-1)]">
+              {locale === 'ar' ? `ترحيب لـ ${welcomeModalClinic.name_ar}` : `Welcome for ${welcomeModalClinic.name_en}`}
+            </h3>
+            <p className="mb-6 text-sm text-[var(--text-3)]">
+              {locale === 'ar' 
+                ? 'سيتم إرسال رسالة واتساب للطبيب توضح تفاصيل الحساب ورابط الدخول.' 
+                : 'A WhatsApp message with account details and login link will be sent to the doctor.'}
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                  {locale === 'ar' ? 'لغة الرسالة' : 'Message Language'}
+                </label>
+                <div className="flex gap-2 rounded-xl border border-[var(--border)] p-1">
+                  <button
+                    onClick={() => setWelcomeLang('ar')}
+                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'ar' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-[var(--surface-0)]'}`}
+                  >
+                    العربية
+                  </button>
+                  <button
+                    onClick={() => setWelcomeLang('en')}
+                    className={`flex-1 rounded-lg py-2 text-sm font-bold transition ${welcomeLang === 'en' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-2)] hover:bg-[var(--surface-0)]'}`}
+                  >
+                    English
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                  {locale === 'ar' ? 'كلمة المرور المؤقتة (اختياري)' : 'Temporary Password (Optional)'}
+                </label>
+                <input
+                  type="text"
+                  value={welcomePassword}
+                  onChange={(e) => setWelcomePassword(e.target.value)}
+                  placeholder={locale === 'ar' ? 'إذا تركته فارغاً، سيفعل الحساب بـ OTP' : 'If left empty, OTP will be required'}
+                  className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-[var(--text-1)] focus:ring-1 focus:ring-[var(--text-1)]"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setWelcomeModalClinic(null)}
+                className="flex-1 rounded-full border border-[var(--border)] py-3 text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
+              >
+                {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSendWelcome}
+                disabled={isSendingWelcome}
+                className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {isSendingWelcome ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send Message')}
+              </button>
+            </div>
           </div>
         </div>
       )}
