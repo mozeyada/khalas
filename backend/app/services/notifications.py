@@ -282,15 +282,27 @@ async def _send_whatsapp(
     # Build the text dynamically instead of using pre-approved templates
     text = ""
     if template_name == "khalas_otp_auth":
-        text = f"كود التحقق الخاص بك هو: {parameters[0]}\nينتهي خلال {parameters[1]} دقائق."
+        text = f"كود التحقق الخاص بك هو: {parameters[0]}\nينتهي خلال {parameters[1]} دقائق.\n\nYour verification code is: {parameters[0]}\nExpires in {parameters[1]} minutes."
     elif template_name == "khalas_appointment_booked":
-        text = f"مرحباً {parameters[0]}،\nتم حجز موعدك بنجاح بتاريخ {parameters[2]} الساعة {parameters[3]}."
+        text = (f"مرحباً {parameters[0]}،\nتم حجز موعدك بنجاح في {parameters[1]} بتاريخ {parameters[5]} الساعة {parameters[6]}."
+                f"\nالعنوان: {parameters[3]}\n\n"
+                f"Hi {parameters[0]},\nYour appointment at {parameters[2]} has been booked for {parameters[5]} at {parameters[6]}."
+                f"\nAddress: {parameters[4]}")
     elif template_name == "khalas_appointment_confirmed":
-        text = f"مرحباً {parameters[0]}،\nتم تأكيد موعدك بتاريخ {parameters[2]} الساعة {parameters[3]}."
+        text = (f"مرحباً {parameters[0]}،\nتم تأكيد موعدك في {parameters[1]} بتاريخ {parameters[5]} الساعة {parameters[6]}. ✅"
+                f"\nالعنوان: {parameters[3]}\n\n"
+                f"Hi {parameters[0]},\nYour appointment at {parameters[2]} on {parameters[5]} at {parameters[6]} has been confirmed. ✅"
+                f"\nAddress: {parameters[4]}")
     elif template_name == "khalas_appointment_cancelled":
-        text = f"مرحباً {parameters[0]}،\nتم إلغاء موعدك بتاريخ {parameters[2]} الساعة {parameters[3]}."
+        text = (f"مرحباً {parameters[0]}،\nتم إلغاء موعدك في {parameters[1]} بتاريخ {parameters[5]} الساعة {parameters[6]}."
+                f"\nالسبب: {parameters[7]}\n\n"
+                f"Hi {parameters[0]},\nYour appointment at {parameters[2]} on {parameters[5]} at {parameters[6]} has been cancelled."
+                f"\nReason: {parameters[7]}")
     elif template_name == "khalas_reminder_24h":
-        text = f"مرحباً {parameters[0]}،\nتذكير: موعدك غداً بتاريخ {parameters[2]} الساعة {parameters[3]}."
+        text = (f"مرحباً {parameters[0]}،\nتذكير: موعدك غداً في {parameters[1]} بتاريخ {parameters[5]} الساعة {parameters[6]}."
+                f"\nالعنوان: {parameters[3]}\n\n"
+                f"Hi {parameters[0]},\nReminder: your appointment at {parameters[2]} is tomorrow on {parameters[5]} at {parameters[6]}."
+                f"\nAddress: {parameters[4]}")
     else:
         text = "رسالة من خلاص: " + " ".join(parameters)
 
@@ -323,7 +335,7 @@ async def _send_whatsapp(
 
 def _log_notify(channel: str, recipient: str, message: str) -> None:
     """Console fallback — matches current log format."""
-    logger.info("[KHALAS NOTIFY] %s -> %s: %s", channel, recipient, message)
+    logger.info("[KHALAS NOTIFY] %s -> %s: \n%s\n", channel, recipient, message)
 
 
 def _format_slot(slot_datetime: object) -> tuple[str, str]:
@@ -340,17 +352,23 @@ def _format_slot(slot_datetime: object) -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
-async def _get_venue_name(venue_id: str) -> str:
+async def _get_venue_details(venue_id: str) -> dict:
+    fallback = {"name_ar": venue_id, "name_en": venue_id, "address_ar": "", "address_en": ""}
     if not venue_id:
-        return ""
+        return fallback
     try:
         from app.repositories.venues import VenueRepository
         venue = await VenueRepository().find_by_id(venue_id)
         if venue:
-            return venue.get("name_ar") or venue.get("name_en") or venue_id
+            return {
+                "name_ar": venue.get("name_ar") or venue_id,
+                "name_en": venue.get("name_en") or venue_id,
+                "address_ar": venue.get("address_ar") or "",
+                "address_en": venue.get("address_en") or "",
+            }
     except Exception:
         pass
-    return venue_id
+    return fallback
 
 
 # ---------------------------------------------------------------------------
@@ -362,7 +380,7 @@ async def notify_appointment_booked(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
+    venue = await _get_venue_details(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -370,16 +388,24 @@ async def notify_appointment_booked(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_booked",
-            parameters=[name, venue_name, date_str, time_str],
+            parameters=[name, venue["name_ar"], venue["name_en"], venue["address_ar"], venue["address_en"], date_str, time_str],
         )
         if not sent:
-            msg = f"تم حجز موعدك بنجاح بتاريخ {date_str} الساعة {time_str}"
+            msg = (f"مرحباً {name}،\nتم حجز موعدك بنجاح في {venue['name_ar']} بتاريخ {date_str} الساعة {time_str}."
+                   f"\nالعنوان: {venue['address_ar']}\n\n"
+                   f"Hi {name},\nYour appointment at {venue['name_en']} has been booked for {date_str} at {time_str}."
+                   f"\nAddress: {venue['address_en']}")
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم حجز موعدك بنجاح بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment has been booked for <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
-        
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم حجز موعدك بنجاح في <strong>{venue['name_ar']}</strong> بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
+        if venue["address_ar"]:
+            ar_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>العنوان: {venue['address_ar']}</p>"
+            
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment at <strong>{venue['name_en']}</strong> has been booked for <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
+        if venue["address_en"]:
+            en_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>Address: {venue['address_en']}</p>"
+            
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تم الحجز / Appointment Booked",
@@ -392,7 +418,7 @@ async def notify_appointment_confirmed(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
+    venue = await _get_venue_details(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -400,16 +426,24 @@ async def notify_appointment_confirmed(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_confirmed",
-            parameters=[name, venue_name, date_str, time_str],
+            parameters=[name, venue["name_ar"], venue["name_en"], venue["address_ar"], venue["address_en"], date_str, time_str],
         )
         if not sent:
-            msg = f"تم تأكيد موعدك بتاريخ {date_str} الساعة {time_str}"
+            msg = (f"مرحباً {name}،\nتم تأكيد موعدك في {venue['name_ar']} بتاريخ {date_str} الساعة {time_str}. ✅"
+                   f"\nالعنوان: {venue['address_ar']}\n\n"
+                   f"Hi {name},\nYour appointment at {venue['name_en']} on {date_str} at {time_str} has been confirmed. ✅"
+                   f"\nAddress: {venue['address_en']}")
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم تأكيد موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>. ✅</p>"
-        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been confirmed. ✅</p>"
-        
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم تأكيد موعدك في <strong>{venue['name_ar']}</strong> بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>. ✅</p>"
+        if venue["address_ar"]:
+            ar_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>العنوان: {venue['address_ar']}</p>"
+
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment at <strong>{venue['name_en']}</strong> on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been confirmed. ✅</p>"
+        if venue["address_en"]:
+            en_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>Address: {venue['address_en']}</p>"
+
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تم التأكيد / Appointment Confirmed ✅",
@@ -424,28 +458,30 @@ async def notify_appointment_cancelled(
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
+    venue = await _get_venue_details(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
-    reason = appointment.get("cancellation_reason") or ""
+    reason = appointment.get("cancellation_reason") or "لا يوجد سبب محدد / No reason provided"
     channel = user.get("preferred_channel", "whatsapp")
 
     if channel == "whatsapp" and phone:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_cancelled",
-            parameters=[name, venue_name, date_str, time_str],
+            parameters=[name, venue["name_ar"], venue["name_en"], venue["address_ar"], venue["address_en"], date_str, time_str, reason],
         )
         if not sent:
-            msg = f"تم إلغاء موعدك بتاريخ {date_str} الساعة {time_str} بواسطة {cancelled_by}. {reason}".strip()
+            msg = (f"مرحباً {name}،\nتم إلغاء موعدك في {venue['name_ar']} بتاريخ {date_str} الساعة {time_str} بواسطة {cancelled_by}."
+                   f"\nالسبب: {reason}\n\n"
+                   f"Hi {name},\nYour appointment at {venue['name_en']} on {date_str} at {time_str} has been cancelled by {cancelled_by}."
+                   f"\nReason: {reason}")
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم إلغاء موعدك بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been cancelled by {cancelled_by}.</p>"
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>مرحباً {name}،<br>تم إلغاء موعدك في <strong>{venue['name_ar']}</strong> بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong> بواسطة {cancelled_by}.</p>"
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Hi {name},<br>your appointment at <strong>{venue['name_en']}</strong> on <strong>{date_str}</strong> at <strong>{time_str}</strong> has been cancelled by {cancelled_by}.</p>"
         
-        if reason:
-            ar_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>السبب: {reason}</p>"
-            en_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>Reason: {reason}</p>"
+        ar_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>السبب: {reason}</p>"
+        en_html += f"<p style='margin-top:16px;font-size:14px;color:#ef4444;background:#fef2f2;padding:12px;border-radius:8px;'>Reason: {reason}</p>"
 
         await _send_appointment_email(
             to_email=email,
@@ -459,7 +495,7 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
+    venue = await _get_venue_details(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -467,16 +503,24 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_reminder_24h",
-            parameters=[name, venue_name, date_str, time_str],
+            parameters=[name, venue["name_ar"], venue["name_en"], venue["address_ar"], venue["address_en"], date_str, time_str],
         )
         if not sent:
-            msg = f"تذكير: موعدك غداً بتاريخ {date_str} الساعة {time_str}"
+            msg = (f"مرحباً {name}،\nتذكير: موعدك غداً في {venue['name_ar']} بتاريخ {date_str} الساعة {time_str}."
+                   f"\nالعنوان: {venue['address_ar']}\n\n"
+                   f"Hi {name},\nReminder: your appointment at {venue['name_en']} is tomorrow on {date_str} at {time_str}."
+                   f"\nAddress: {venue['address_en']}")
             _log_notify("CONSOLE", phone, msg)
 
     if channel == "email" and email:
-        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>تذكير: موعدك غداً بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
-        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Reminder: your appointment is tomorrow on <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
-        
+        ar_html = f"<p style='margin:0;font-size:16px;color:#1e293b;line-height:1.7'>تذكير: موعدك غداً في <strong>{venue['name_ar']}</strong> بتاريخ <strong>{date_str}</strong> الساعة <strong>{time_str}</strong>.</p>"
+        if venue["address_ar"]:
+            ar_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>العنوان: {venue['address_ar']}</p>"
+
+        en_html = f"<p style='margin:0;font-size:15px;color:#1e293b;line-height:1.7'>Reminder: your appointment at <strong>{venue['name_en']}</strong> is tomorrow on <strong>{date_str}</strong> at <strong>{time_str}</strong>.</p>"
+        if venue["address_en"]:
+            en_html += f"<p style='margin-top:16px;font-size:14px;color:#475569;'>Address: {venue['address_en']}</p>"
+
         await _send_appointment_email(
             to_email=email,
             subject="Khalas – تذكير بالموعد / Appointment Reminder",
