@@ -61,19 +61,22 @@ class VenueRepository:
         limit: int = 20,
         skip: int = 0,
     ) -> list[dict]:
-        """Full-text search on approved venues with optional filters."""
+        """Regex search on approved venues with optional filters."""
         query: dict = {"is_approved": True}
         if q:
-            query["$text"] = {"$search": q}
+            # Case-insensitive partial match on name_ar, name_en, or area
+            regex = {"$regex": q, "$options": "i"}
+            query["$or"] = [
+                {"name_ar": regex},
+                {"name_en": regex},
+                {"area": regex},
+            ]
         if governorate:
             query["governorate"] = governorate
         if category:
             query["category"] = category
-        sort = [("score", {"$meta": "textScore"})] if q else [("created_at", -1)]
-        cursor = self.collection.find(
-            query,
-            {"score": {"$meta": "textScore"}} if q else {},
-        ).sort(sort).skip(skip).limit(limit)
+        sort = [("created_at", -1)]
+        cursor = self.collection.find(query).sort(sort).skip(skip).limit(limit)
         return await cursor.to_list(length=None)
 
     async def list_all(self, *, skip: int = 0, limit: int = 50) -> list[dict]:

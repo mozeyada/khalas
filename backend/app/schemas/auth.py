@@ -15,29 +15,29 @@ from app.schemas.user import Role, UserProfile
 class RegisterRequest(APIModel):
     """Payload for creating a new user and issuing an OTP."""
 
-    phone: str
+    phone: str | None = None
     email: EmailStr | None = None
     name_ar: str
     name_en: str
     role: Role = "patient"
     provider_type: Literal["doctor", "clinic"] | None = None
-    preferred_channel: Literal["email", "whatsapp"] | None = None
+    preferred_channel: Literal["email", "whatsapp", "both"] | None = None
     password: str | None = Field(default=None, min_length=8)
 
     from pydantic import model_validator
     @model_validator(mode="after")
     def validate_contact_info(self) -> RegisterRequest:
-        if self.email and not self.preferred_channel:
-            raise ValueError("preferred_channel must be provided when email is given.")
+        if not self.phone and not self.email:
+            raise ValueError("At least one of phone or email must be provided.")
         if self.role == "provider" and not self.provider_type:
             raise ValueError("provider_type must be provided for provider role.")
         return self
 
     @field_validator("phone")
     @classmethod
-    def validate_phone(cls, value: str) -> str:
+    def validate_phone(cls, value: str | None) -> str | None:
         """Validate the phone number format."""
-        if re.fullmatch(r"\+20\d{10}", value) is None:
+        if value is not None and re.fullmatch(r"\+20\d{10}", value) is None:
             raise ValueError("Phone must be in +20XXXXXXXXXX format.")
         return value
 
@@ -81,7 +81,7 @@ class UpdateProfileRequest(APIModel):
     name_ar: str | None = None
     name_en: str | None = None
     email: EmailStr | None = None
-    preferred_channel: Literal["email", "whatsapp"] | None = None
+    preferred_channel: Literal["email", "whatsapp", "both"] | None = None
 
 
 class VerifyOtpRequest(APIModel):

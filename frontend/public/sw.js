@@ -45,9 +45,11 @@ self.addEventListener('fetch', (event) => {
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) return cachedResponse;
         return fetch(request).then((networkResponse) => {
-          if (networkResponse.ok) {
+          if (networkResponse.ok && networkResponse.type !== 'opaque') {
             const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+            caches.open(CACHE_NAME).then((cache) => {
+              try { cache.put(request, responseClone); } catch(e) {}
+            });
           }
           return networkResponse;
         });
@@ -60,12 +62,18 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
-        if (networkResponse.ok) {
+        if (networkResponse.ok && networkResponse.type !== 'opaque') {
           const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          caches.open(CACHE_NAME).then((cache) => {
+            try { cache.put(request, responseClone); } catch(e) {}
+          });
         }
         return networkResponse;
       })
-      .catch(() => caches.match(request))
+      .catch(() => 
+        caches.match(request).then((cachedResponse) => 
+          cachedResponse || new Response('Network error occurred', { status: 503, statusText: 'Service Unavailable' })
+        )
+      )
   );
 });

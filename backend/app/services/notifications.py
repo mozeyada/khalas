@@ -340,6 +340,20 @@ def _format_slot(slot_datetime: object) -> tuple[str, str]:
 
 
 # ---------------------------------------------------------------------------
+async def _get_venue_name(venue_id: str) -> str:
+    if not venue_id:
+        return ""
+    try:
+        from app.repositories.venues import VenueRepository
+        venue = await VenueRepository().find_by_id(venue_id)
+        if venue:
+            return venue.get("name_ar") or venue.get("name_en") or venue_id
+    except Exception:
+        pass
+    return venue_id
+
+
+# ---------------------------------------------------------------------------
 # Appointment notification public API
 # ---------------------------------------------------------------------------
 
@@ -348,7 +362,7 @@ async def notify_appointment_booked(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_id = appointment.get("venue_id", "")
+    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -356,7 +370,7 @@ async def notify_appointment_booked(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_booked",
-            parameters=[name, venue_id, date_str, time_str],
+            parameters=[name, venue_name, date_str, time_str],
         )
         if not sent:
             msg = f"تم حجز موعدك بنجاح بتاريخ {date_str} الساعة {time_str}"
@@ -378,7 +392,7 @@ async def notify_appointment_confirmed(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_id = appointment.get("venue_id", "")
+    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -386,7 +400,7 @@ async def notify_appointment_confirmed(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_confirmed",
-            parameters=[name, venue_id, date_str, time_str],
+            parameters=[name, venue_name, date_str, time_str],
         )
         if not sent:
             msg = f"تم تأكيد موعدك بتاريخ {date_str} الساعة {time_str}"
@@ -410,7 +424,7 @@ async def notify_appointment_cancelled(
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_id = appointment.get("venue_id", "")
+    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     reason = appointment.get("cancellation_reason") or ""
     channel = user.get("preferred_channel", "whatsapp")
@@ -419,7 +433,7 @@ async def notify_appointment_cancelled(
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_appointment_cancelled",
-            parameters=[name, venue_id, date_str, time_str],
+            parameters=[name, venue_name, date_str, time_str],
         )
         if not sent:
             msg = f"تم إلغاء موعدك بتاريخ {date_str} الساعة {time_str} بواسطة {cancelled_by}. {reason}".strip()
@@ -445,7 +459,7 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
     phone = user.get("phone", "")
     email = user.get("email")
     name = user.get("name_ar") or user.get("name_en") or "عزيزي العميل"
-    venue_id = appointment.get("venue_id", "")
+    venue_name = await _get_venue_name(appointment.get("venue_id", ""))
     date_str, time_str = _format_slot(appointment.get("slot_datetime"))
     channel = user.get("preferred_channel", "whatsapp")
 
@@ -453,7 +467,7 @@ async def notify_appointment_reminder(appointment: dict, user: dict) -> None:
         sent = await _send_whatsapp(
             phone=phone,
             template_name="khalas_reminder_24h",
-            parameters=[name, venue_id, date_str, time_str],
+            parameters=[name, venue_name, date_str, time_str],
         )
         if not sent:
             msg = f"تذكير: موعدك غداً بتاريخ {date_str} الساعة {time_str}"

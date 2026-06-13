@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.api.deps import require_role
-from app.core.security import utc_now, create_access_token, create_refresh_token
+from app.core.security import utc_now, create_access_token, create_refresh_token, hash_token
 from app.repositories.users import UserRepository
 from app.repositories.venues import VenueRepository
 from app.schemas.common import ApiResponse
@@ -156,7 +156,7 @@ async def admin_impersonate_user(
     refresh_token, refresh_expires_at = create_refresh_token(str(user["_id"]), user["role"])
     
     await UserRepository().update_by_id(str(user["_id"]), {
-        "refresh_token": refresh_token,
+        "refresh_token": hash_token(refresh_token),
         "updated_at": utc_now(),
     })
     

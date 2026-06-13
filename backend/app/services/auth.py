@@ -50,13 +50,14 @@ class AuthService:
 
     async def register(self, request: RegisterRequest) -> OtpChallengeData:
         """Create a user and issue an OTP."""
-        existing = await self.user_repository.find_by_identifier(request.phone)
-        if existing is not None:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this phone already exists.")
+        if request.phone:
+            existing_phone = await self.user_repository.find_by_identifier(request.phone)
+            if existing_phone is not None:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this phone already exists.")
 
         if request.email:
             existing_email = await self.user_repository.find_by_identifier(request.email)
-            if existing_email is not None and str(existing_email["_id"]) != str(existing.get("_id") if existing else ""):
+            if existing_email is not None:
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.")
 
         timestamp = utc_now()
@@ -75,7 +76,7 @@ class AuthService:
             "updated_at": timestamp,
             "role": request.role,
             "provider_type": request.provider_type if request.role == "provider" else None,
-            "preferred_channel": request.preferred_channel or ("email" if request.email else "whatsapp"),
+            "preferred_channel": request.preferred_channel or ("both" if (request.email and request.phone) else ("email" if request.email else "whatsapp")),
             "hashed_password": get_password_hash(request.password) if request.password else None,
             "reset_token": None,
             "reset_token_expires_at": None,
@@ -171,7 +172,7 @@ class AuthService:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user with this email already exists.") from exc
         
         channel = document["preferred_channel"]
-        if channel == "email" and request.email:
+        if channel in ["email", "both"] and request.email:
             asyncio.create_task(
                 send_otp_email(
                     to_email=request.email,
@@ -179,7 +180,7 @@ class AuthService:
                     otp_code=otp_code,
                 )
             )
-        else: # defaults to whatsapp if no email or channel=whatsapp
+        if channel in ["whatsapp", "both"] and request.phone:
             from app.services.notifications import send_otp_whatsapp
             asyncio.create_task(
                 send_otp_whatsapp(
@@ -188,8 +189,9 @@ class AuthService:
                 )
             )
 
-        logger.info("[KHALAS OTP] %s -> %s (%s queued)", request.phone, otp_code, channel)
-        return OtpChallengeData(phone=request.phone, otp_expires_at=otp_expires_at, role=request.role)
+        identifier_used = request.phone or request.email or ""
+        logger.info("[KHALAS OTP] %s -> %s (%s queued)", identifier_used, otp_code, channel)
+        return OtpChallengeData(identifier=identifier_used, otp_expires_at=otp_expires_at, role=request.role)
 
     async def request_login_otp(self, identifier: str) -> OtpChallengeData:
         """Issue a fresh OTP to an existing user."""
@@ -212,23 +214,42 @@ class AuthService:
         logger.info("[KHALAS OTP] %s -> %s", identifier, otp_code)
         
         is_email_input = "@" in identifier
-        if is_email_input or (user.get("preferred_channel") == "email" and user.get("email")):
+        channel = user.get("preferred_channel", "whatsapp")
+        
+        send_email = False
+        send_whatsapp = False
+        
+        if channel == "both":
+            if user.get("email") or is_email_input: send_email = True
+            if user.get("phone") or not is_email_input: send_whatsapp = True
+        elif channel == "email":
+            if user.get("email") or is_email_input: send_email = True
+            else: send_whatsapp = True
+        else: # whatsapp
+            if user.get("phone") or not is_email_input: send_whatsapp = True
+            else: send_email = True
+
+        if send_email:
             name = user.get("name_ar") or user.get("name_en") or ""
-            asyncio.create_task(
-                send_otp_email(
-                    to_email=user.get("email") if not is_email_input else identifier,
-                    name=name,
-                    otp_code=otp_code,
+            target_email = identifier if is_email_input else user.get("email")
+            if target_email:
+                asyncio.create_task(
+                    send_otp_email(
+                        to_email=target_email,
+                        name=name,
+                        otp_code=otp_code,
+                    )
                 )
-            )
-        else: # defaults to whatsapp
+        if send_whatsapp:
             from app.services.notifications import send_otp_whatsapp
-            asyncio.create_task(
-                send_otp_whatsapp(
-                    phone=user.get("phone", identifier),
-                    otp_code=otp_code,
+            target_phone = identifier if not is_email_input else user.get("phone")
+            if target_phone:
+                asyncio.create_task(
+                    send_otp_whatsapp(
+                        phone=target_phone,
+                        otp_code=otp_code,
+                    )
                 )
-            )
             
         return OtpChallengeData(identifier=identifier, otp_expires_at=otp_expires_at, role=user["role"])
 
@@ -356,27 +377,40 @@ class AuthService:
         channel = user.get("preferred_channel", "whatsapp")
         is_email_input = "@" in request.identifier
         
-        # Reuse existing OTP notification mechanism, but we really should have a proper reset notification
-        # For simplicity in this iteration, we send the reset token like an OTP
-        if is_email_input or (channel == "email" and user.get("email")):
+        send_email = False
+        send_whatsapp = False
+        
+        if channel == "both":
+            if user.get("email") or is_email_input: send_email = True
+            if user.get("phone") or not is_email_input: send_whatsapp = True
+        elif channel == "email":
+            if user.get("email") or is_email_input: send_email = True
+            else: send_whatsapp = True
+        else: # whatsapp
+            if user.get("phone") or not is_email_input: send_whatsapp = True
+            else: send_email = True
+
+        if send_email:
             name = user.get("name_ar") or user.get("name_en") or ""
-            # Truncating token to 6 chars just so it fits in the current OTP email template if needed,
-            # but ideally we send the full link
-            asyncio.create_task(
-                send_otp_email(
-                    to_email=user.get("email") if not is_email_input else request.identifier,
-                    name=name,
-                    otp_code=reset_token,
+            target_email = request.identifier if is_email_input else user.get("email")
+            if target_email:
+                asyncio.create_task(
+                    send_otp_email(
+                        to_email=target_email,
+                        name=name,
+                        otp_code=reset_token,
+                    )
                 )
-            )
-        else:
+        if send_whatsapp:
             from app.services.notifications import send_otp_whatsapp
-            asyncio.create_task(
-                send_otp_whatsapp(
-                    phone=user["phone"],
-                    otp_code=reset_token,
+            target_phone = request.identifier if not is_email_input else user.get("phone")
+            if target_phone:
+                asyncio.create_task(
+                    send_otp_whatsapp(
+                        phone=target_phone,
+                        otp_code=reset_token,
+                    )
                 )
-            )
             
         logger.info("[KHALAS PASSWORD RESET] %s -> FULL TOKEN: %s", request.identifier, reset_token)
         return {"detail": "If your account exists, a reset code will be sent to you."}

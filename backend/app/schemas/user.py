@@ -21,7 +21,7 @@ class UserProfile(IdentifierModel, TimestampedModel):
     role: Role
     provider_type: Literal["doctor", "clinic"] | None = None
     is_active: bool = True
-    preferred_channel: Literal["email", "whatsapp"]
+    preferred_channel: Literal["email", "whatsapp", "both"]
 
 class UserCreatePayload:
     """Internal payload used for user creation."""
