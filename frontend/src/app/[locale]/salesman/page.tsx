@@ -10,7 +10,7 @@ import {
   Building2, Plus, Sparkles, TrendingUp, Users, Calendar,
   CheckCircle2, Clock, ArrowRight, ExternalLink, Copy, Phone,
   BarChart3, Zap, AlertCircle, ChevronRight, LayoutDashboard,
-  Presentation, MoreVertical, Send, ShieldCheck, Check
+  Presentation, MoreVertical, Send, ShieldCheck, Check, User
 } from 'lucide-react';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -76,6 +76,7 @@ export default function SalesmanPage() {
   // Portfolio State
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isImpersonating, setIsImpersonating] = useState(false);
   
   // Welcome Modal State
   const [welcomeModalClinic, setWelcomeModalClinic] = useState<any>(null);
@@ -163,6 +164,41 @@ export default function SalesmanPage() {
       alert(e.message);
     } finally {
       setIsSendingWelcome(false);
+    }
+  }
+
+  async function handleImpersonateClinic(venueId: string) {
+    if (isImpersonating) return;
+    setIsImpersonating(true);
+    try {
+      const res = await fetch(`/api/proxy/salesman/clinics/${venueId}/impersonate`, { method: 'POST' });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to impersonate clinic');
+      }
+      const data = (await res.json()).data;
+      // We need to reload to apply the new tokens. Standard impersonation pattern.
+      // Easiest is to set cookies and redirect, but the proxy sets the cookies.
+      window.location.href = `/${locale}/provider/appointments`;
+    } catch (e: any) {
+      alert(e.message);
+      setIsImpersonating(false);
+    }
+  }
+
+  async function handleImpersonatePatient() {
+    if (isImpersonating) return;
+    setIsImpersonating(true);
+    try {
+      const res = await fetch(`/api/proxy/salesman/impersonate-patient`, { method: 'POST' });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to create patient account');
+      }
+      window.location.href = `/${locale}`; // Go to home page to book
+    } catch (e: any) {
+      alert(e.message);
+      setIsImpersonating(false);
     }
   }
 
@@ -273,13 +309,23 @@ export default function SalesmanPage() {
                 {locale === 'ar' ? 'أنشئ عيادة تجريبية في ثوانٍ وأبهر العميل بالتجربة.' : 'Generate an instant demo clinic and wow them on the spot.'}
               </p>
             </div>
-            <button
-              onClick={() => setActiveTab('demo')}
-              className="flex shrink-0 items-center gap-2 rounded-full bg-[var(--text-1)] px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:scale-105 active:scale-95"
-            >
-              <Sparkles className="h-4 w-4" />
-              {locale === 'ar' ? 'بدء تجربة جديدة' : 'Start New Demo'}
-            </button>
+            <div className="flex shrink-0 items-center gap-3">
+              <button
+                onClick={handleImpersonatePatient}
+                disabled={isImpersonating}
+                className="flex items-center gap-2 rounded-full border border-[var(--border)] bg-white px-6 py-3 text-sm font-bold text-[var(--text-1)] shadow-sm transition-transform hover:bg-[var(--surface-0)] active:scale-95"
+              >
+                <User className="h-4 w-4" />
+                {locale === 'ar' ? 'تجربة حجز كمريض' : 'Test as Patient'}
+              </button>
+              <button
+                onClick={() => setActiveTab('demo')}
+                className="flex items-center gap-2 rounded-full bg-[var(--text-1)] px-6 py-3 text-sm font-bold text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+              >
+                <Sparkles className="h-4 w-4" />
+                {locale === 'ar' ? 'بدء تجربة جديدة' : 'Start New Demo'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -322,34 +368,30 @@ export default function SalesmanPage() {
                       <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
                         {locale === 'ar' ? 'التخصص' : 'Specialty'}
                       </label>
-                      <input
-                        list="specialties-list"
+                      <select
                         value={specialty}
                         onChange={e => setSpecialty(e.target.value)}
                         required
-                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
-                        placeholder={locale === 'ar' ? 'مثال: أسنان' : 'e.g. Dentistry'}
-                      />
-                      <datalist id="specialties-list">
-                        {['Cardiology','Dentistry','Dermatology','Orthopedics','Pediatrics','Internal Medicine','Ophthalmology','Neurology','Psychiatry','General Surgery'].map(s => <option key={s} value={s} />)}
-                      </datalist>
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 appearance-none"
+                      >
+                        <option value="" disabled>{locale === 'ar' ? 'اختر التخصص' : 'Select Specialty'}</option>
+                        {['Cardiology','Dentistry','Dermatology','Orthopedics','Pediatrics','Internal Medicine','Ophthalmology','Neurology','Psychiatry','General Surgery'].map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
                     </div>
 
                     <div>
                       <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[var(--text-2)]">
                         {locale === 'ar' ? 'المحافظة' : 'Governorate'}
                       </label>
-                      <input
-                        list="governorates-list"
+                      <select
                         value={governorate}
                         onChange={e => setGovernorate(e.target.value)}
                         required
-                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
-                        placeholder={locale === 'ar' ? 'القاهرة' : 'Cairo'}
-                      />
-                      <datalist id="governorates-list">
-                        {['Cairo','Giza','Alexandria','Dakahlia','Beheira','Fayoum','Gharbia','Ismailia','Menofia','Minya','Qalyubia','Suez','Aswan','Assiut','Beni Suef','Port Said','Damietta','Sharkia','Luxor','Qena','Sohag'].map(g => <option key={g} value={g} />)}
-                      </datalist>
+                        className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 appearance-none"
+                      >
+                        <option value="" disabled>{locale === 'ar' ? 'اختر المحافظة' : 'Select Governorate'}</option>
+                        {['Cairo','Giza','Alexandria','Dakahlia','Beheira','Fayoum','Gharbia','Ismailia','Menofia','Minya','Qalyubia','Suez','Aswan','Assiut','Beni Suef','Port Said','Damietta','Sharkia','Luxor','Qena','Sohag'].map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
                     </div>
                   </div>
 
@@ -358,7 +400,8 @@ export default function SalesmanPage() {
                       {locale === 'ar' ? 'رقم هاتف العميل (للتسجيل)' : "Prospect's Phone Number"}
                     </label>
                     <input
-                      dir="ltr"
+                      type="tel"
+                      dir="auto"
                       value={doctorPhone}
                       onChange={e => setDoctorPhone(e.target.value)}
                       required
@@ -544,6 +587,13 @@ export default function SalesmanPage() {
                             {locale === 'ar' ? 'نسخ رابط العيادة' : 'Copy Clinic Link'}
                           </button>
                           <div className="my-1 border-t border-[var(--border)]" />
+                          <button
+                            onClick={() => { handleImpersonateClinic(clinic._id); setActiveDropdown(null); }}
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]"
+                          >
+                            <User className="h-4 w-4" />
+                            {locale === 'ar' ? 'دخول لحساب العيادة' : 'Login as Clinic'}
+                          </button>
                           <button
                             onClick={() => window.open(`/${locale}/${clinic.slug}`, '_blank')}
                             className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-[var(--text-2)] transition hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]"

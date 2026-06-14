@@ -79,10 +79,12 @@ async def create_demo_clinic(
         provider_user = await user_repo.create(document)
         
     if provider_user["role"] != "provider":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="User exists but is not a provider. Cannot attach clinic."
-        )
+        provider_user = await user_repo.update_by_id(str(provider_user["_id"]), {"role": "provider", "updated_at": timestamp})
+        if not provider_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="User exists but could not be upgraded to a provider. Cannot attach clinic."
+            )
 
     # 2. Create Venue
     venue_doc = {
@@ -203,3 +205,83 @@ async def salesman_send_welcome(
     asyncio.create_task(send_clinic_welcome_msg(venue, owner, payload.language, payload.password))
 
     return ApiResponse(data={"message": "Welcome message sent."})
+
+
+from app.schemas.auth import AuthTokensData
+from app.core.security import create_access_token, create_refresh_token, hash_token
+
+@router.post("/clinics/{venue_id}/impersonate", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+async def salesman_impersonate_clinic(
+    venue_id: str,
+    current_user: Annotated[dict, Depends(require_role("salesman", "admin"))],
+) -> ApiResponse[AuthTokensData]:
+    """Impersonate the clinic owner of a clinic onboarded by this salesman."""
+    venue = await VenueRepository().find_by_id(venue_id)
+    if not venue:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinic not found.")
+    
+    if current_user["role"] != "admin" and venue.get("created_by") != str(current_user["_id"]):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only impersonate clinics you onboarded.")
+        
+    owner = await UserRepository().find_by_id(venue["owner_id"])
+    if not owner:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clinic owner not found.")
+        
+    access_token, access_expires_at = create_access_token(str(owner["_id"]), owner["role"])
+    refresh_token, refresh_expires_at = create_refresh_token(str(owner["_id"]), owner["role"])
+    
+    await UserRepository().update_by_id(str(owner["_id"]), {
+        "refresh_token": hash_token(refresh_token),
+        "updated_at": utc_now(),
+    })
+    
+    from app.services.serializers import serialize_user
+    tokens_data = AuthTokensData(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        access_token_expires_at=access_expires_at,
+        refresh_token_expires_at=refresh_expires_at,
+        user=serialize_user(owner)
+    )
+    return ApiResponse(data=tokens_data)
+
+
+@router.post("/impersonate-patient", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)
+async def salesman_impersonate_patient(
+    current_user: Annotated[dict, Depends(require_role("salesman", "admin"))],
+) -> ApiResponse[AuthTokensData]:
+    """Log the salesman into a dummy patient account to test the booking flow."""
+    user_repo = UserRepository()
+    patient_phone = current_user["phone"] + "000"
+    
+    patient_user = await user_repo.find_by_identifier(patient_phone)
+    if not patient_user:
+        patient_user = await user_repo.create({
+            "phone": patient_phone,
+            "name_ar": current_user.get("name_ar", "Test") + " (مريض)",
+            "name_en": current_user.get("name_en", "Test") + " (Patient)",
+            "email": current_user.get("email", "") + "+patient@khalas.com" if current_user.get("email") else None,
+            "is_active": True,
+            "role": "patient",
+            "preferred_channel": "whatsapp",
+            "created_at": utc_now(),
+            "updated_at": utc_now(),
+        })
+        
+    access_token, access_expires_at = create_access_token(str(patient_user["_id"]), patient_user["role"])
+    refresh_token, refresh_expires_at = create_refresh_token(str(patient_user["_id"]), patient_user["role"])
+    
+    await user_repo.update_by_id(str(patient_user["_id"]), {
+        "refresh_token": hash_token(refresh_token),
+        "updated_at": utc_now(),
+    })
+    
+    from app.services.serializers import serialize_user
+    tokens_data = AuthTokensData(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        access_token_expires_at=access_expires_at,
+        refresh_token_expires_at=refresh_expires_at,
+        user=serialize_user(patient_user)
+    )
+    return ApiResponse(data=tokens_data)

@@ -224,7 +224,7 @@ export function WalkInModal({ isOpen, onClose, onSuccess }: WalkInModalProps) {
                 </label>
                 <input
                   type="tel"
-                  dir="ltr"
+                  dir="auto"
                   value={patientPhone}
                   onChange={e => setPatientPhone(e.target.value)}
                   className="w-full rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm text-left outline-none focus:border-ink"

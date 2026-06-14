@@ -177,7 +177,8 @@ export function RegisterForm() {
                     <Phone className="h-5 w-5" />
                   </div>
                   <input
-                    dir="ltr"
+                    type="tel"
+                    dir="auto"
                     value={formState.phone}
                     onChange={(event) => setFormState((current) => ({...current, phone: event.target.value}))}
                     className={`w-full rounded-sm border bg-[#FAFAFA] pl-10 pr-4 py-3 text-sm text-left outline-none transition-all focus:bg-white 
