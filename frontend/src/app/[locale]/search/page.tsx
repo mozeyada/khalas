@@ -30,17 +30,26 @@ type SearchPageProps = {
   };
 };
 
-// Per-category visual treatment
-const CATEGORY_BADGE: Record<string, {bg: string; text: string; dot: string}> = {
-  clinic:        {bg: 'bg-brand-light',   text: 'text-brand',       dot: 'bg-brand'},
-  dental:        {bg: 'bg-blue-50',       text: 'text-blue-700',    dot: 'bg-blue-500'},
-  beauty:        {bg: 'bg-rose-50',       text: 'text-rose-600',    dot: 'bg-rose-500'},
-  fitness:       {bg: 'bg-amber-50',      text: 'text-amber-700',   dot: 'bg-amber-500'},
-  physiotherapy: {bg: 'bg-violet-50',     text: 'text-violet-700',  dot: 'bg-violet-500'},
-  legal:         {bg: 'bg-slate-100',     text: 'text-slate-700',   dot: 'bg-slate-500'},
-};
-
 const DEFAULT_BADGE = {bg: 'bg-brand-light', text: 'text-brand', dot: 'bg-brand'};
+
+const SPECIALTIES = [
+  { en: 'Cardiology', ar: 'أمراض القلب' },
+  { en: 'Dentistry', ar: 'طب الأسنان' },
+  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
+  { en: 'Orthopedics', ar: 'جراحة العظام' },
+  { en: 'Pediatrics', ar: 'طب الأطفال' },
+  { en: 'Internal Medicine', ar: 'الباطنة' },
+  { en: 'Ophthalmology', ar: 'طب العيون' },
+  { en: 'Neurology', ar: 'المخ والأعصاب' },
+  { en: 'Psychiatry', ar: 'الطب النفسي' },
+  { en: 'General Surgery', ar: 'الجراحة العامة' }
+];
+
+function getSpecialtyName(cat: string, locale: string) {
+  const spec = SPECIALTIES.find(s => s.en.toLowerCase() === cat.toLowerCase());
+  if (spec) return locale === 'ar' ? spec.ar : spec.en;
+  return cat;
+}
 
 async function getSearchResults(searchParams: SearchPageProps['searchParams']): Promise<VenueResult[]> {
   const params = new URLSearchParams();
@@ -92,7 +101,6 @@ export default async function SearchPage({params, searchParams}: SearchPageProps
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-6">
             {results.map((venue, idx) => {
-              const badge = CATEGORY_BADGE[venue.category] ?? DEFAULT_BADGE;
               const name = locale === 'ar' ? venue.name_ar : venue.name_en;
               const area = locale === 'ar' ? venue.governorate : venue.area;
               const address = locale === 'ar' ? venue.address_ar : venue.address_en;
@@ -129,9 +137,9 @@ export default async function SearchPage({params, searchParams}: SearchPageProps
 
                   <div className="flex flex-1 flex-col p-5">
                     {/* Category badge */}
-                    <div className={`mb-3 inline-flex self-start items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${badge.bg} ${badge.text}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
-                      {(t as any)(`categories.${venue.category}`)}
+                    <div className={`mb-3 inline-flex self-start items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${DEFAULT_BADGE.bg} ${DEFAULT_BADGE.text}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${DEFAULT_BADGE.dot}`} />
+                      {getSpecialtyName(venue.category, locale)}
                     </div>
 
                     {/* Name */}

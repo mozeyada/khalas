@@ -5,34 +5,42 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 import {Search, MapPin, Stethoscope} from 'lucide-react';
 
-const EGYPT_GOVERNORATES = [
-  'القاهرة', 'الجيزة', 'الإسكندرية', 'الشرقية', 'الدقهلية',
-  'البحيرة', 'المنيا', 'الغربية', 'المنوفية', 'القليوبية',
-  'الفيوم', 'بني سويف', 'سوهاج', 'أسيوط', 'الأقصر', 'أسوان',
-  'كفر الشيخ', 'دمياط', 'الإسماعيلية', 'بورسعيد', 'السويس',
-  'شمال سيناء', 'جنوب سيناء', 'البحر الأحمر', 'مطروح', 'الوادي الجديد',
+const GOVERNORATES = [
+  { en: 'Cairo', ar: 'القاهرة' },
+  { en: 'Giza', ar: 'الجيزة' },
+  { en: 'Alexandria', ar: 'الإسكندرية' },
+  { en: 'Dakahlia', ar: 'الدقهلية' },
+  { en: 'Beheira', ar: 'البحيرة' },
+  { en: 'Fayoum', ar: 'الفيوم' },
+  { en: 'Gharbia', ar: 'الغربية' },
+  { en: 'Ismailia', ar: 'الإسماعيلية' },
+  { en: 'Menofia', ar: 'المنوفية' },
+  { en: 'Minya', ar: 'المنيا' },
+  { en: 'Qalyubia', ar: 'القليوبية' },
+  { en: 'Suez', ar: 'السويس' },
+  { en: 'Aswan', ar: 'أسوان' },
+  { en: 'Assiut', ar: 'أسيوط' },
+  { en: 'Beni Suef', ar: 'بني سويف' },
+  { en: 'Port Said', ar: 'بورسعيد' },
+  { en: 'Damietta', ar: 'دمياط' },
+  { en: 'Sharkia', ar: 'الشرقية' },
+  { en: 'Luxor', ar: 'الأقصر' },
+  { en: 'Qena', ar: 'قنا' },
+  { en: 'Sohag', ar: 'سوهاج' }
 ];
 
-const CATEGORIES = ['clinic', 'dental', 'beauty', 'fitness', 'physiotherapy', 'legal'];
-
-// Category colour map for chips
-const CATEGORY_COLORS: Record<string, string> = {
-  clinic:          'bg-zinc-50 text-zinc-700 border-zinc-200/80 hover:bg-zinc-100',
-  dental:          'bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100',
-  beauty:          'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100',
-  fitness:         'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100',
-  physiotherapy:   'bg-violet-50 text-violet-700 border-violet-100 hover:bg-violet-100',
-  legal:           'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100',
-};
-
-const CATEGORY_COLORS_ACTIVE: Record<string, string> = {
-  clinic:          'bg-brand text-white border-brand shadow-sm',
-  dental:          'bg-blue-600 text-white border-blue-600 shadow-sm',
-  beauty:          'bg-rose-600 text-white border-rose-600 shadow-sm',
-  fitness:         'bg-amber-600 text-white border-amber-600 shadow-sm',
-  physiotherapy:   'bg-violet-600 text-white border-violet-600 shadow-sm',
-  legal:           'bg-slate-700 text-white border-slate-700 shadow-sm',
-};
+const SPECIALTIES = [
+  { en: 'Cardiology', ar: 'أمراض القلب' },
+  { en: 'Dentistry', ar: 'طب الأسنان' },
+  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
+  { en: 'Orthopedics', ar: 'جراحة العظام' },
+  { en: 'Pediatrics', ar: 'طب الأطفال' },
+  { en: 'Internal Medicine', ar: 'الباطنة' },
+  { en: 'Ophthalmology', ar: 'طب العيون' },
+  { en: 'Neurology', ar: 'المخ والأعصاب' },
+  { en: 'Psychiatry', ar: 'الطب النفسي' },
+  { en: 'General Surgery', ar: 'الجراحة العامة' }
+];
 
 type SearchFormProps = {
   initialQuery?: string;
@@ -69,77 +77,80 @@ export function SearchForm({
   return (
     <form
       onSubmit={handleSearch}
-      className="mb-8 overflow-hidden rounded-3xl border border-zinc-200/80 bg-white/80 backdrop-blur-xl shadow-sm transition-shadow duration-300 hover:shadow-md animate-in fade-in slide-in-from-bottom-4"
+      className="mx-auto w-full max-w-5xl rounded-[2rem] border border-zinc-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-2xl transition-shadow duration-500 hover:shadow-2xl animate-in fade-in slide-in-from-bottom-4"
     >
-      {/* Main search row */}
-      <div className="flex items-center gap-3 border-b border-zinc-200/80 px-6 py-5">
-        <Search className="h-6 w-6 shrink-0 text-brand" />
-        <input
-          id="search-query"
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('placeholder')}
-          className="min-w-0 flex-1 bg-transparent text-lg font-bold text-zinc-900 outline-none placeholder:text-zinc-400"
-        />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 rtl:left-auto rtl:right-0 rtl:pr-5">
+            <Search className="h-5 w-5 text-zinc-400" />
+          </div>
+          <input
+            id="search-query"
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={locale === 'ar' ? 'ابحث عن اسم طبيب، عيادة...' : 'Search for a doctor, clinic...'}
+            className="w-full rounded-2xl bg-zinc-50 py-4 pl-12 pr-4 text-sm font-bold text-zinc-900 outline-none transition-all placeholder:font-medium placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-brand/20 rtl:pl-4 rtl:pr-12"
+          />
+        </div>
+
+        <div className="hidden h-10 w-px bg-zinc-200 lg:block" />
+
+        <div className="grid grid-cols-2 gap-3 lg:flex lg:w-[450px] lg:shrink-0 lg:gap-3">
+          {/* Governorate Select */}
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 rtl:left-auto rtl:right-0 rtl:pr-4">
+              <MapPin className="h-4 w-4 text-brand" />
+            </div>
+            <select
+              id="search-governorate"
+              value={governorate}
+              onChange={(e) => setGovernorate(e.target.value)}
+              className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
+            >
+              <option value="">{locale === 'ar' ? 'كل المحافظات' : 'All Governorates'}</option>
+              {GOVERNORATES.map((g) => (
+                <option key={g.en} value={g.en}>{locale === 'ar' ? g.ar : g.en}</option>
+              ))}
+            </select>
+            {/* Custom dropdown arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 rtl:right-auto rtl:left-0 rtl:pl-4">
+              <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+
+          {/* Specialty Select */}
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 rtl:left-auto rtl:right-0 rtl:pr-4">
+              <Stethoscope className="h-4 w-4 text-brand" />
+            </div>
+            <select
+              id="search-specialty"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
+            >
+              <option value="">{locale === 'ar' ? 'كل التخصصات' : 'All Specialties'}</option>
+              {SPECIALTIES.map((s) => (
+                <option key={s.en} value={s.en}>{locale === 'ar' ? s.ar : s.en}</option>
+              ))}
+            </select>
+            {/* Custom dropdown arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 rtl:right-auto rtl:left-0 rtl:pl-4">
+              <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-2xl bg-brand px-8 py-3 text-sm font-bold text-white shadow-sm transition-all duration-300 hover:bg-brand-hover hover:shadow-md active:scale-95 disabled:opacity-60"
+          className="shrink-0 rounded-2xl bg-brand px-8 py-4 text-sm font-black tracking-wide text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-lg active:scale-95 disabled:opacity-60"
         >
           {isPending ? t('loading') : t('searchButton')}
         </button>
-      </div>
-
-      {/* Filters row */}
-      <div className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:gap-6 bg-white/50">
-        {/* Governorate select */}
-        <label className="flex shrink-0 items-center gap-2 rounded-xl bg-zinc-50 px-4 py-2 border border-zinc-200/80 transition-colors hover:bg-zinc-100">
-          <MapPin className="h-4 w-4 text-brand" />
-          <select
-            id="search-governorate"
-            value={governorate}
-            onChange={(e) => setGovernorate(e.target.value)}
-            className="border-0 bg-transparent text-sm font-bold text-zinc-700 outline-none focus:text-ink cursor-pointer"
-          >
-            <option value="">{t('allGovernorates')}</option>
-            {EGYPT_GOVERNORATES.map((g) => (
-              <option key={g} value={g}>{locale === 'ar' ? g : (t as any)(`governorates.${g}`)}</option>
-            ))}
-          </select>
-        </label>
-
-        <div className="hidden h-8 w-px bg-zinc-200/80 sm:block" />
-
-        {/* Category chips */}
-        <div className="flex flex-wrap items-center gap-2">
-          <Stethoscope className="h-4 w-4 shrink-0 text-zinc-400 mr-2" />
-          <button
-            type="button"
-            onClick={() => setCategory('')}
-            className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all duration-300 ${
-              category === ''
-                ? 'bg-brand text-white border-brand shadow-sm'
-                : 'bg-zinc-50 text-zinc-600 border-zinc-200/80 hover:bg-zinc-100 hover:text-zinc-900'
-            }`}
-          >
-            {t('allCategories')}
-          </button>
-          {CATEGORIES.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCategory(c === category ? '' : c)}
-              className={`rounded-xl border px-4 py-2 text-xs font-bold transition-all duration-300 ${
-                category === c
-                  ? CATEGORY_COLORS_ACTIVE[c]
-                  : CATEGORY_COLORS[c]
-              }`}
-            >
-              {(t as any)(`categories.${c}`)}
-            </button>
-          ))}
-        </div>
       </div>
     </form>
   );
