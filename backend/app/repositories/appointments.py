@@ -81,3 +81,24 @@ class AppointmentRepository:
             session=session,
         )
         return await cursor.to_list(length=None)
+
+    async def list_for_patient_between(
+        self,
+        *,
+        patient_id: str,
+        range_start: datetime,
+        range_end: datetime,
+        statuses: list[str],
+        session=None,
+    ) -> list[dict]:
+        """List patient appointments within a time range."""
+        cursor = self.collection.find(
+            {
+                "patient_id": patient_id,
+                "status": {"$in": statuses},
+                "slot_datetime": {"$lt": range_end},
+                "occupied_until": {"$gt": range_start},
+            },
+            session=session,
+        )
+        return await cursor.to_list(length=None)

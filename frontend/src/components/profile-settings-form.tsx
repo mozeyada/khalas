@@ -98,11 +98,14 @@ export function ProfileSettingsForm() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className="mx-auto w-full max-w-4xl">
+      <h1 className="text-3xl font-extrabold text-slate-900 mb-6 text-start">
+        {t('pageTitle') || (locale === 'ar' ? 'إعدادات الحساب' : 'Account Settings')}
+      </h1>
 
       {/* ── Identity card ─────────────────────────────────────── */}
-      <div className="mb-6 flex items-center gap-4 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-xl font-bold text-ink">
+      <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
+        <div className="bg-blue-100 text-blue-600 font-bold text-3xl w-24 h-24 flex items-center justify-center rounded-full flex-shrink-0">
           {(locale === 'ar' ? user.name_ar : user.name_en)
             ?.trim()
             .split(/\s+/)
@@ -110,33 +113,23 @@ export function ProfileSettingsForm() {
             .slice(0, 2)
             .join('')}
         </div>
-        <div className="min-w-0">
-          <p className="truncate font-bold text-[var(--text-1)]">
+        <div className="min-w-0 text-center md:text-start flex-1">
+          <p className="font-bold text-xl text-slate-900">
             {locale === 'ar' ? user.name_ar : user.name_en}
           </p>
           <div className="mt-1 flex flex-col gap-0.5">
-            {user.email && <p className="truncate text-sm text-zinc-500">{user.email}</p>}
-            <p className="truncate text-sm text-zinc-500">
+            {user.email && <p className="text-sm text-slate-500">{user.email}</p>}
+            <p className="text-sm text-slate-500">
               {user.phone ? (
                 <span dir="ltr">{user.phone}</span>
               ) : (
-                <span className="italic text-zinc-400">
+                <span className="italic text-slate-400">
                   {locale === 'ar' ? 'لا يوجد رقم هاتف' : 'No phone number added'}
                 </span>
               )}
             </p>
           </div>
-          <span
-            className={`mt-1 inline-block rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
-              user.role === 'admin'
-                ? 'bg-amber-50 text-amber-700 border border-amber-100'
-                : user.role === 'salesman'
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-                  : user.role === 'provider'
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                    : 'bg-zinc-100 text-zinc-600 border border-zinc-200'
-            }`}
-          >
+          <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold inline-block mt-3">
             {user.role === 'admin'
               ? (locale === 'ar' ? 'مشرف' : 'Admin')
               : user.role === 'salesman'
@@ -147,13 +140,14 @@ export function ProfileSettingsForm() {
           </span>
         </div>
       </div>
+      
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-1">
+      <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-max mb-8">
         <button
           type="button"
           onClick={() => setTab('basic')}
-          className={`flex-1 rounded-sm px-5 py-2.5 text-sm font-semibold transition ${
-            tab === 'basic' ? 'bg-white text-ink shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-ink'
+          className={`w-1/2 md:w-auto text-center transition-all ${
+            tab === 'basic' ? 'bg-white text-slate-900 shadow-sm rounded-lg px-6 py-2 font-bold' : 'text-slate-500 hover:text-slate-700 px-6 py-2 font-medium'
           }`}
         >
           {t('tabBasic')}
@@ -161,8 +155,8 @@ export function ProfileSettingsForm() {
         <button
           type="button"
           onClick={() => setTab('security')}
-          className={`flex-1 rounded-sm px-5 py-2.5 text-sm font-semibold transition ${
-            tab === 'security' ? 'bg-white text-ink shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-ink'
+          className={`w-1/2 md:w-auto text-center transition-all ${
+            tab === 'security' ? 'bg-white text-slate-900 shadow-sm rounded-lg px-6 py-2 font-bold' : 'text-slate-500 hover:text-slate-700 px-6 py-2 font-medium'
           }`}
         >
           {t('tabSecurity')}
@@ -182,44 +176,44 @@ export function ProfileSettingsForm() {
       )}
 
       {tab === 'basic' && (
-        <form onSubmit={handleSaveProfile} className="rounded-lg border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
+        <form onSubmit={handleSaveProfile} className="bg-white rounded-[24px] p-6 lg:p-8 shadow-sm border border-slate-100 text-start">
           <div className="mb-6">
-            <h2 className="text-sm font-semibold text-zinc-500">{t('basicEyebrow')}</h2>
-            <p className="mt-1 text-xl font-bold tracking-tight text-ink">{t('basicTitle')}</p>
+            <h2 className="text-sm font-semibold text-slate-500 mb-1">{t('basicEyebrow')}</h2>
+            <p className="text-xl font-bold tracking-tight text-slate-900">{t('basicTitle')}</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-6">
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.nameAr')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.nameAr')}</label>
               <input
                 type="text"
                 value={nameAr}
                 onChange={(e) => setNameAr(e.target.value)}
                 required
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.nameEn')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.nameEn')}</label>
               <input
                 type="text"
                 value={nameEn}
                 onChange={(e) => setNameEn(e.target.value)}
                 required
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.email')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">
                 {locale === 'ar' ? 'رقم الهاتف' : 'Phone Number'}
               </label>
               <input
@@ -227,15 +221,15 @@ export function ProfileSettingsForm() {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-left text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.preferredChannel')}</label>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.preferredChannel')}</label>
               <select
                 value={channel}
                 onChange={(e) => setChannel(e.target.value as 'whatsapp' | 'email')}
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               >
                 <option value="whatsapp">WhatsApp</option>
                 <option value="email">Email</option>
@@ -246,7 +240,7 @@ export function ProfileSettingsForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-8 w-full rounded-md bg-brand px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-95 disabled:opacity-50"
+            className="w-full md:w-auto px-10 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all mt-8 disabled:opacity-50"
           >
             {isLoading ? '...' : t('actions.save')}
           </button>
@@ -254,32 +248,32 @@ export function ProfileSettingsForm() {
       )}
 
       {tab === 'security' && (
-        <form onSubmit={handleChangePassword} className="rounded-lg border border-zinc-200 bg-white p-6 sm:p-8 shadow-sm">
+        <form onSubmit={handleChangePassword} className="bg-white rounded-[24px] p-6 lg:p-8 shadow-sm border border-slate-100 text-start">
           <div className="mb-6">
-            <h2 className="text-sm font-semibold text-zinc-500">{t('securityEyebrow')}</h2>
-            <p className="mt-1 text-xl font-bold tracking-tight text-ink">{t('securityTitle')}</p>
+            <h2 className="text-sm font-semibold text-slate-500 mb-1">{t('securityEyebrow')}</h2>
+            <p className="text-xl font-bold tracking-tight text-slate-900">{t('securityTitle')}</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.currentPassword')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.currentPassword')}</label>
               <input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-semibold text-ink">{t('fields.newPassword')}</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2 text-start">{t('fields.newPassword')}</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-sm border border-zinc-200 bg-[#FAFAFA] px-4 py-3 text-ink placeholder:text-zinc-400 focus:border-ink focus:outline-none focus:bg-white transition-colors hover:border-zinc-300"
+                className="bg-slate-50 border border-transparent rounded-xl px-4 py-3 w-full focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-start"
               />
             </div>
           </div>
@@ -287,7 +281,7 @@ export function ProfileSettingsForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="mt-8 w-full rounded-md bg-brand px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-hover active:scale-95 disabled:opacity-50"
+            className="w-full md:w-auto px-10 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all mt-8 disabled:opacity-50"
           >
             {isLoading ? '...' : t('actions.save')}
           </button>
@@ -295,13 +289,13 @@ export function ProfileSettingsForm() {
       )}
 
       {/* ── Sign out ──────────────────────────────────────────── */}
-      <div className="mt-8 text-center">
+      <div className="mt-12 text-center">
         <button
           type="button"
           onClick={() => void logout()}
-          className="inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 hover:text-rose-600 transition-colors"
+          className="flex items-center justify-center gap-2 text-red-500 hover:bg-red-50 w-full md:w-max mx-auto px-6 py-3 rounded-xl transition-colors font-semibold"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-5 w-5" />
           {locale === 'ar' ? 'تسجيل الخروج' : 'Sign out of Khalas'}
         </button>
       </div>

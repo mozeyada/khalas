@@ -126,6 +126,20 @@ class AppointmentService:
 
         occupied_until = slot_datetime + timedelta(minutes=service["duration_minutes"] + service.get("buffer_minutes", 0))
         timestamp = utc_now()
+
+        # Check if the patient already has an appointment overlapping this time slot
+        patient_conflicts = await self.appointment_repository.list_for_patient_between(
+            patient_id=patient_id,
+            range_start=slot_datetime,
+            range_end=occupied_until,
+            statuses=["pending", "confirmed"],
+        )
+        if patient_conflicts:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You already have an appointment scheduled during this time.",
+            )
+
         document = {
             "venue_id": str(venue["_id"]),
             "staff_id": staff_id,

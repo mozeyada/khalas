@@ -170,16 +170,16 @@ export function SiteShell({
               locale={locale}
               onClick={onClose}
               title={collapsed ? t(item.labelKey) : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-semibold transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-bold transition-all duration-300 ${
                 collapsed ? 'justify-center px-0' : ''
               } ${
                 active
-                  ? 'border-l-2 border-ink text-ink bg-zinc-50 rounded-r-md'
-                  : 'border-l-2 border-transparent text-zinc-500 hover:bg-zinc-50 hover:text-ink rounded-r-md'
+                  ? 'border-s-4 border-brand text-brand bg-brand/10 rounded-e-md'
+                  : 'border-s-4 border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800 rounded-e-md'
               }`}
             >
               <Icon
-                className={`h-5 w-5 shrink-0 ${active ? 'text-ink' : 'text-zinc-400'}`}
+                className={`h-5 w-5 shrink-0 transition-colors ${active ? 'text-brand' : 'text-slate-400'}`}
                 strokeWidth={active ? 2.5 : 2}
               />
               {!collapsed && <span>{t(item.labelKey)}</span>}
@@ -249,7 +249,7 @@ export function SiteShell({
         {/* Desktop sidebar */}
         <aside
           style={{width: sidebarW}}
-          className={`relative flex shrink-0 flex-col border-e border-zinc-200 bg-white transition-all duration-300 ${isRTL ? 'border-s border-e-0' : ''}`}
+          className={`relative flex shrink-0 flex-col bg-white transition-all duration-300 z-20 ${isRTL ? 'border-s border-slate-100' : 'border-e border-slate-100'}`}
         >
           {/* Sticky inner */}
           <div className="sticky top-0 h-screen overflow-hidden">
@@ -259,7 +259,7 @@ export function SiteShell({
           {/* Collapse toggle */}
           <button
             onClick={toggleCollapse}
-            className={`absolute top-6 flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] bg-white shadow-sm text-[var(--text-3)] hover:text-[var(--text-1)] transition z-10 ${isRTL ? '-left-3' : '-right-3'}`}
+            className={`absolute top-6 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm text-slate-400 hover:text-slate-800 transition-colors z-10 ${isRTL ? '-left-3' : '-right-3'}`}
           >
             {isRTL
               ? (sidebarCollapsed ? <ChevronLeft className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />)
@@ -271,12 +271,12 @@ export function SiteShell({
         {/* Desktop main content — fills remaining space */}
         <main className="flex-1 min-w-0">
           {(title || subtitle) && (
-            <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white/95 px-8 py-4">
-              {title && <h1 className="text-xl font-black text-ink tracking-tight">{title}</h1>}
-              {subtitle && <p className="mt-0.5 text-sm text-zinc-500">{subtitle}</p>}
+            <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-6 lg:px-12 py-4 backdrop-blur-md">
+              {title && <h1 className="text-xl font-black text-slate-800 tracking-tight">{title}</h1>}
+              {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
             </div>
           )}
-          <div className="px-8 py-6 max-w-7xl mx-auto">
+          <div className="px-6 lg:px-12 py-6 max-w-7xl mx-auto">
             {children}
           </div>
         </main>
@@ -286,43 +286,39 @@ export function SiteShell({
       <div className="md:hidden relative z-10">
         {/* Mobile top header */}
         <header
-          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-3"
+          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-slate-100 px-5 py-3 shadow-sm transition-all"
           style={{
             height: MOBILE_HEADER_H,
             top: impersonatingName ? 36 : 0,
           }}
         >
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileSidebarOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition active:scale-95"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white text-sm font-bold shadow-sm">
-                {isReady && isAuthenticated && user ? getUserInitials() : 'خ'}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  {locale === 'ar' ? 'مرحباً بك' : 'Welcome back'}
-                </span>
-                <span className="text-sm font-black text-slate-800 tracking-tight leading-none">
-                  {isReady && isAuthenticated && user 
-                    ? (locale === 'ar' ? user.name_ar.replace(/^المريض\s+/i, '').split(' ')[0] : user.name_en.replace(/^Patient\s+/i, '').split(' ')[0])
-                    : 'Khalas'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Language toggle */}
+          {/* Left Side (Language Toggle) */}
+          <div className="flex w-1/3 justify-start">
             <div className="flex items-center rounded-full bg-slate-100 p-1">
               <Link href={pathname} locale="ar" className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${locale === 'ar' ? 'bg-white text-brand shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>ع</Link>
               <Link href={pathname} locale="en" className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${locale === 'en' ? 'bg-white text-brand shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>En</Link>
             </div>
+          </div>
+
+          {/* Center (Logo) */}
+          <div className="flex w-1/3 justify-center">
+            <Link href="/" locale={locale} className="flex items-center gap-2 font-black text-slate-800 tracking-tight">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-white text-xs font-black shadow-sm">خ</div>
+              <span className="hidden xs:inline">Khalas</span>
+            </Link>
+          </div>
+
+          {/* Right Side (Avatar or Bell) */}
+          <div className="flex w-1/3 justify-end items-center gap-3">
+            {isReady && isAuthenticated && user ? (
+              <Link href="/profile" locale={locale} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand text-sm font-bold shadow-sm transition active:scale-95">
+                {getUserInitials()}
+              </Link>
+            ) : (
+              <Link href="/auth/login" locale={locale} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 shadow-sm transition active:scale-95">
+                <UserCircle className="h-6 w-6" />
+              </Link>
+            )}
           </div>
         </header>
 

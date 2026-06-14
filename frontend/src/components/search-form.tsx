@@ -55,13 +55,13 @@ export function SearchForm({
   return (
     <form
       onSubmit={handleSearch}
-      className="mx-auto w-full max-w-5xl rounded-[2rem] border border-zinc-200/80 bg-white/90 p-3 shadow-xl backdrop-blur-2xl transition-shadow duration-500 hover:shadow-2xl animate-in fade-in slide-in-from-bottom-4"
+      className="mx-auto w-full max-w-5xl rounded-3xl border border-slate-100 bg-white p-4 shadow-sm mb-6 transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div className="flex flex-col lg:flex-row lg:items-center">
         {/* Search Input */}
         <div className="relative flex-1">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 rtl:left-auto rtl:right-0 rtl:pr-5">
-            <Search className="h-5 w-5 text-zinc-400" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 rtl:left-auto rtl:right-0 rtl:pr-4">
+            <Search className="h-5 w-5 text-slate-400" />
           </div>
           <input
             id="search-query"
@@ -69,23 +69,23 @@ export function SearchForm({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={locale === 'ar' ? 'ابحث عن اسم طبيب، عيادة...' : 'Search for a doctor, clinic...'}
-            className="w-full rounded-2xl bg-zinc-50 py-4 pl-12 pr-4 text-sm font-bold text-zinc-900 outline-none transition-all placeholder:font-medium placeholder:text-zinc-500 focus:bg-white focus:ring-2 focus:ring-brand/20 rtl:pl-4 rtl:pr-12"
+            className="w-full rounded-xl bg-slate-50 py-3 pl-12 pr-4 text-sm font-bold text-slate-800 outline-none border-none transition-all placeholder:font-medium placeholder:text-slate-500 focus:bg-white focus:ring-2 focus:ring-brand/20 rtl:pl-4 rtl:pr-12"
           />
         </div>
 
-        <div className="hidden h-10 w-px bg-zinc-200 lg:block" />
+        <div className="hidden h-10 w-px bg-slate-200 lg:block mx-3" />
 
-        <div className="grid grid-cols-2 gap-3 lg:flex lg:w-[450px] lg:shrink-0 lg:gap-3">
+        <div className="grid grid-cols-2 gap-3 mt-3 lg:mt-0 lg:flex lg:w-[450px] lg:shrink-0 lg:gap-3">
           {/* Governorate Select */}
           <div className="relative flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 rtl:left-auto rtl:right-0 rtl:pr-4">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 rtl:left-auto rtl:right-0 rtl:pr-3">
               <MapPin className="h-4 w-4 text-brand" />
             </div>
             <select
               id="search-governorate"
               value={governorate}
               onChange={(e) => handleGovChange(e.target.value)}
-              className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
+              className="w-full appearance-none rounded-xl bg-slate-50 py-3 pl-9 pr-8 text-sm font-bold text-slate-700 outline-none border-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-9"
             >
               <option value="">{locale === 'ar' ? 'كل المحافظات' : 'All Governorates'}</option>
               {GOVERNORATES.map((g) => (
@@ -93,21 +93,21 @@ export function SearchForm({
               ))}
             </select>
             {/* Custom dropdown arrow */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 rtl:right-auto rtl:left-0 rtl:pl-4">
-              <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 rtl:right-auto rtl:left-0 rtl:pl-3">
+              <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </div>
           </div>
 
           {/* Specialty Select */}
           <div className="relative flex-1">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 rtl:left-auto rtl:right-0 rtl:pr-4">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 rtl:left-auto rtl:right-0 rtl:pr-3">
               <Stethoscope className="h-4 w-4 text-brand" />
             </div>
             <select
               id="search-specialty"
               value={category}
               onChange={(e) => handleCatChange(e.target.value)}
-              className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
+              className="w-full appearance-none rounded-xl bg-slate-50 py-3 pl-9 pr-8 text-sm font-bold text-slate-700 outline-none border-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-9"
             >
               <option value="">{locale === 'ar' ? 'كل التخصصات' : 'All Specialties'}</option>
               {SPECIALTIES.map((s) => (
@@ -115,8 +115,8 @@ export function SearchForm({
               ))}
             </select>
             {/* Custom dropdown arrow */}
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 rtl:right-auto rtl:left-0 rtl:pl-4">
-              <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 rtl:right-auto rtl:left-0 rtl:pl-3">
+              <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export function SearchForm({
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-2xl bg-brand px-8 py-4 text-sm font-black tracking-wide text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-brand-hover hover:shadow-lg active:scale-95 disabled:opacity-60"
+          className="w-full mt-4 lg:mt-0 lg:w-auto lg:shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 py-3 lg:px-8 text-sm font-bold text-white shadow-sm transition-all duration-300 hover:shadow-md active:scale-95 disabled:opacity-60"
         >
           {isPending ? t('loading') : t('searchButton')}
         </button>

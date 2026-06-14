@@ -106,20 +106,20 @@ export function PatientDashboard() {
   });
 
   return (
-    <div data-theme="patient" className="space-y-6">
+    <div data-theme="patient" className="space-y-6 max-w-5xl mx-auto w-full">
       {/* ── Hero Banner ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl px-6 pt-8 pb-12 text-white" style={{background: 'var(--grad-patient)'}}>
+      <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 text-white bg-gradient-to-r from-blue-600 to-blue-800 rtl:from-blue-800 rtl:to-blue-600">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
-        <div className="pointer-events-none absolute -bottom-10 left-1/4 h-32 w-32 rounded-full bg-purple-500/20" />
+        <div className="pointer-events-none absolute -bottom-10 left-1/4 h-32 w-32 rounded-full bg-white/10" />
         <div className="relative z-10">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest drop-shadow-sm">
             <Calendar className="h-3 w-3" />
             {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
           </div>
-          <h1 className="text-2xl font-black tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight drop-shadow-sm">
             {greeting}{user?.name_ar || user?.name_en ? `، ${locale === 'ar' ? user.name_ar.replace(/^المريض\s+/i, '') : user.name_en.replace(/^Patient\s+/i, '')}` : ''}
           </h1>
-          <p className="mt-1 max-w-lg text-sm text-white/70">
+          <p className="mt-1 md:mt-2 max-w-lg text-sm md:text-base text-white/90 drop-shadow-sm">
             {locale === 'ar'
               ? 'مرحباً بك في ملفك الصحي الذكي. يمكنك إدارة مواعيدك وملفاتك بكل سهولة.'
               : 'Welcome to your smart health dossier. Manage your appointments and records seamlessly.'}
@@ -136,122 +136,103 @@ export function PatientDashboard() {
 
       {/* ── Next Appointment Hero ────────────────────────────────── */}
       {nextAppt ? (
-        <div className={`relative overflow-hidden rounded-[2rem] p-6 transition card-lift animate-fade-in-up stagger-1 ${
-          isSoon(nextAppt.slot_datetime) 
-            ? 'bg-[var(--text-1)] text-white shadow-float border border-[var(--text-1)]/20' 
-            : 'bg-white border border-[var(--border)] shadow-sm'
-        }`}>
-          {isSoon(nextAppt.slot_datetime) && (
-            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1">
-              <span className="h-2 w-2 rounded-full bg-white dot-pulse" />
-              <span className="text-[10px] font-black text-white uppercase tracking-widest">
-                {locale === 'ar' ? 'قريباً' : 'Soon'}
-              </span>
-            </div>
-          )}
-          <p className={`text-xs font-bold uppercase tracking-widest ${isSoon(nextAppt.slot_datetime) ? 'text-white/60' : 'text-[var(--text-3)]'}`}>
+        <div className="bg-white rounded-[24px] p-5 shadow-sm border border-slate-100 mb-4 relative overflow-hidden animate-fade-in-up stagger-1">
+          {/* Status Badge floating top-left (RTL) */}
+          <div className="absolute top-4 left-4 bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-xs font-bold rtl:left-4 rtl:right-auto z-10 shadow-sm border border-amber-100">
+            {getStatusLabel(nextAppt.status, locale)}
+          </div>
+
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">
             {locale === 'ar' ? 'موعدك القادم' : 'Next Appointment'}
           </p>
 
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl ${isSoon(nextAppt.slot_datetime) ? 'bg-white/10' : 'bg-[var(--surface-1)] text-[var(--text-1)]'}`}>
-              <span className="text-2xl font-black leading-none">
+          <div className="flex items-center gap-4">
+            {/* Calendar Block */}
+            <div className="flex flex-col items-center justify-center bg-slate-50 rounded-xl p-3 min-w-[70px] border border-slate-100">
+              <span className="text-2xl font-black leading-none text-slate-800">
                 {new Date(nextAppt.slot_datetime).getDate()}
               </span>
-              <span className="text-[10px] font-bold uppercase mt-1">
+              <span className="text-xs font-bold uppercase mt-1 text-slate-500">
                 {new Intl.DateTimeFormat(locale, { month: 'short' }).format(new Date(nextAppt.slot_datetime))}
               </span>
             </div>
-            <div className="min-w-0">
-              <h2 className={`text-xl font-black tracking-tight ${isSoon(nextAppt.slot_datetime) ? 'text-white' : 'text-[var(--text-1)]'}`}>
+            
+            {/* Details */}
+            <div className="flex flex-col items-start min-w-0 flex-1">
+              <h2 className="text-lg md:text-xl font-black tracking-tight text-slate-800">
                 {new Intl.DateTimeFormat(locale, { timeStyle: 'short' }).format(new Date(nextAppt.slot_datetime))}
               </h2>
-              <p className={`text-sm font-semibold mt-0.5 ${isSoon(nextAppt.slot_datetime) ? 'text-white/70' : 'text-[var(--text-2)]'}`}>
-                {(nextAppt as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
-              </p>
-              <div className={`text-xs font-bold mt-1 inline-flex items-center ${isSoon(nextAppt.slot_datetime) ? 'text-white/50' : 'text-[var(--text-3)]'}`} dir="ltr">
-                <span className="mr-1">{formatPrice(nextAppt.price_at_booking, locale)}</span>
+              <div className="flex items-center gap-1.5 text-sm font-semibold mt-1 text-slate-500">
+                <MapPin className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span className="truncate">{(nextAppt as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs font-bold mt-1 text-slate-400">
+                <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                <span dir="ltr">{formatPrice(nextAppt.price_at_booking, locale)}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex flex-col sm:flex-row gap-2">
+          {/* Action Buttons Footer */}
+          <div className="mt-5 pt-4 border-t border-slate-50 flex flex-col md:flex-row-reverse gap-3 items-center">
+            {/* Primary Action (Send Files) */}
+            {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
+              <button
+                onClick={() => router.push(`/${locale}/dashboard/dossier/${nextAppt._id}`)}
+                className="w-full md:w-auto md:flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 py-3 px-6 text-sm font-bold text-white shadow-sm transition-colors flex justify-center items-center gap-2"
+              >
+                <Paperclip className="h-4 w-4" />
+                {locale === 'ar' ? 'أرسل ملفاتك للطبيب' : 'Send your files'}
+              </button>
+            )}
+            
+            {/* Secondary Action (Cancel) */}
             {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
               <button
                 onClick={() => void handleCancel(nextAppt._id)}
-                className={`flex-1 rounded-full border bg-transparent py-3 text-sm font-bold transition active:scale-95 ${
-                  isSoon(nextAppt.slot_datetime)
-                    ? 'border-white/30 text-white hover:bg-white/10'
-                    : 'border-rose-200 text-rose-600 hover:bg-rose-50'
-                }`}
+                className="w-full md:w-auto text-red-500 hover:bg-red-50 px-4 py-2.5 rounded-xl transition-colors text-sm font-semibold flex justify-center items-center"
               >
                 {t('cancel')}
               </button>
             )}
-            <span className={`inline-flex flex-1 items-center justify-center rounded-full py-3 text-xs font-black uppercase tracking-widest ${
-              nextAppt.status === 'confirmed' 
-                ? (isSoon(nextAppt.slot_datetime) ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800')
-                : (isSoon(nextAppt.slot_datetime) ? 'bg-white/10 text-white/70' : 'bg-amber-100 text-amber-800')
-            }`}>
-              {getStatusLabel(nextAppt.status, locale)}
-            </span>
           </div>
-
-          {/* Dossier upload CTA */}
-          {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
-            <button
-              onClick={() => router.push(`/${locale}/dashboard/dossier/${nextAppt._id}`)}
-              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition active:scale-95 ${
-                isSoon(nextAppt.slot_datetime)
-                  ? 'bg-white text-[var(--text-1)] hover:bg-white/90 shadow-sm'
-                  : 'bg-brand text-white hover:bg-brand-hover shadow-sm'
-              }`}
-            >
-              <Paperclip className="h-4 w-4" />
-              {locale === 'ar' ? 'أرسل ملفاتك للطبيب قبل الموعد' : 'Send your files to the doctor'}
-            </button>
-          )}
         </div>
       ) : (
         /* ── No Upcoming ── */
-        <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-[var(--border)] bg-white py-16 px-6 text-center shadow-sm animate-fade-in-up stagger-1">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--surface-0)] text-[var(--text-3)]">
-            <CalendarX className="h-8 w-8" />
+        <div 
+          onClick={() => router.push(`/${locale}/search`)}
+          className="border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-white hover:border-blue-400 hover:shadow-md rounded-[24px] flex flex-col items-center justify-center p-8 lg:p-12 text-slate-500 hover:text-blue-600 transition-all cursor-pointer group mb-4 animate-fade-in-up stagger-1"
+        >
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 group-hover:bg-blue-50 transition-colors">
+            <Search className="h-8 w-8 text-slate-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform duration-300" />
           </div>
-          <h3 className="mb-2 text-xl font-black tracking-tight text-[var(--text-1)]">{t('noAppointments')}</h3>
-          <p className="mb-8 max-w-sm text-sm text-[var(--text-3)] leading-relaxed">{t('empty')}</p>
-          <button
-            onClick={() => router.push(`/${locale}/search`)}
-            className="group flex items-center gap-2 rounded-full bg-[var(--text-1)] px-8 py-4 text-sm font-bold text-white transition hover:scale-105 active:scale-95 shadow-md"
-          >
-            <Search className="h-4 w-4" />
-            {t('bookNow')}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" />
-          </button>
+          <h3 className="mb-2 text-xl font-black tracking-tight text-slate-800 group-hover:text-blue-600 transition-colors">{t('noAppointments')}</h3>
+          <p className="text-sm text-slate-500 leading-relaxed max-w-sm text-center mb-4">{t('empty')}</p>
+          <span className="font-bold text-blue-600">{locale === 'ar' ? 'احجز موعداً جديداً' : 'Book a New Appointment'}</span>
         </div>
       )}
 
       {/* ── Quick Book Button (when they do have appointments) ───── */}
       {nextAppt && (
-        <button
+        <div 
           onClick={() => router.push(`/${locale}/search`)}
-          className="group flex w-full items-center justify-between rounded-2xl border border-[var(--border)] bg-white px-5 py-4 shadow-sm transition hover:border-[var(--text-3)] hover:shadow-md active:scale-[0.99] animate-fade-in-up stagger-2 card-lift"
+          className="border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-white hover:border-blue-400 hover:shadow-md rounded-[24px] flex items-center justify-between p-4 px-5 text-slate-500 hover:text-blue-600 transition-all cursor-pointer group mb-4 animate-fade-in-up stagger-2"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--surface-1)] text-[var(--text-1)] group-hover:bg-[var(--text-1)] group-hover:text-white transition-colors">
-              <Search className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 group-hover:bg-blue-50 transition-colors">
+              <Search className="h-5 w-5 text-slate-400 group-hover:text-blue-600 group-hover:scale-110 transition-transform duration-300" />
             </div>
             <div className="text-start">
-              <p className="text-sm font-black text-[var(--text-1)]">
+              <p className="text-sm font-black text-slate-800 group-hover:text-blue-600 transition-colors">
                 {locale === 'ar' ? 'احجز موعداً جديداً' : 'Book a New Appointment'}
               </p>
-              <p className="text-xs text-[var(--text-3)] mt-0.5">
+              <p className="text-xs text-slate-500 mt-0.5">
                 {locale === 'ar' ? 'ابحث عن عيادة أو طبيب' : 'Find a clinic or doctor near you'}
               </p>
             </div>
           </div>
-          <ChevronRight className="h-5 w-5 text-[var(--text-3)] transition-transform group-hover:translate-x-0.5 rtl:rotate-180 group-hover:text-[var(--text-1)]" />
-        </button>
+          <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
+        </div>
       )}
 
       {/* ── Past Appointments ────────────────────────────────────── */}

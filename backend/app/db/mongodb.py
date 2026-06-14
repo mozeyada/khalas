@@ -124,7 +124,11 @@ async def create_indexes(db: AsyncIOMotorDatabase) -> None:
         ),
         APPOINTMENTS_COLLECTION: (
             IndexModel([("patient_id", ASCENDING), ("slot_datetime", ASCENDING)]),
-            IndexModel([("staff_id", ASCENDING), ("slot_datetime", ASCENDING)]),
+            IndexModel(
+                [("staff_id", ASCENDING), ("slot_datetime", ASCENDING)],
+                unique=True,
+                partialFilterExpression={"status": {"$in": ["pending", "confirmed"]}},
+            ),
             IndexModel([("venue_id", ASCENDING), ("slot_datetime", ASCENDING)]),
             IndexModel([("status", ASCENDING)]),
         ),
@@ -135,5 +139,10 @@ async def create_indexes(db: AsyncIOMotorDatabase) -> None:
             existing_indexes = await db[collection_name].index_information()
             if "email_1" in existing_indexes:
                 await db[collection_name].drop_index("email_1")
+        elif collection_name == APPOINTMENTS_COLLECTION:
+            existing_indexes = await db[collection_name].index_information()
+            if "staff_id_1_slot_datetime_1" in existing_indexes:
+                # Drop it if it's not unique or if we are upgrading it
+                await db[collection_name].drop_index("staff_id_1_slot_datetime_1")
         if indexes:
             await db[collection_name].create_indexes(list(indexes))
