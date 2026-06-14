@@ -349,7 +349,9 @@ async def update_staff_availability(
     return ApiResponse(data=data)
 
 
-class PatientRecord(APIModel):
+from pydantic import BaseModel
+
+class PatientRecord(BaseModel):
     """A patient entry in the doctor's registry."""
     patient_id: str
     patient_name: str | None = None

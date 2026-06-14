@@ -470,5 +470,114 @@ async def admin_seed_test_users(
                 s3 = await make_staff("Dr. Sarah Peds", "د. سارة (أطفال)", "Specialist", "أخصائي", "Pediatric Dentistry", "أسنان أطفال")
                 await make_service(s3["_id"], "Pediatric Checkup", "كشف أطفال", 30, 45000)
 
-    return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with their clinics. Password is 'Password123!'."})\n\n\n# ── Data Portability Export (Global Admin Only) ───────────────────────────────\n\nGLOBAL_ADMIN_PHONE = "+201000000000"  # overridden by env\nimport os as _os\n_GLOBAL_ADMIN_PHONE = _os.environ.get("GLOBAL_ADMIN_PHONE", "+201000000000")\n\n\n@router.get("/export/provider/{provider_id}", status_code=status.HTTP_200_OK)\nasync def export_provider_data(\n    provider_id: str,\n    current_user: Annotated[dict, Depends(require_role("admin"))],\n) -> dict:\n    """Export all data for a provider. Global-admin only. Returns a structured JSON export."""\n    # Double-check: must be the global admin\n    caller_phone = current_user.get("phone", "")\n    caller_username = current_user.get("username") or current_user.get("email") or ""\n    is_global_admin = (\n        caller_phone == _GLOBAL_ADMIN_PHONE\n        or "m.zeyada91" in caller_username\n        or "m.zeyada91" in (current_user.get("email") or "")\n    )\n    if not is_global_admin:\n        raise HTTPException(\n            status_code=status.HTTP_403_FORBIDDEN,\n            detail="Only the global administrator can export provider data.",\n        )\n\n    from app.repositories.appointments import AppointmentRepository\n    from app.repositories.venues import VenueRepository\n    from app.repositories.dossier import DossierRepository\n\n    provider = await UserRepository().find_by_id(provider_id)\n    if provider is None:\n        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found.")\n\n    venues = await VenueRepository().list_by_owner(provider_id)\n    venue_ids = [str(v["_id"]) for v in venues]\n\n    all_appointments = await AppointmentRepository().list_for_provider_venues(venue_ids)\n\n    # Mask patient phone numbers in export\n    def mask_phone(phone: str | None) -> str | None:\n        if not phone or len(phone) < 8:\n            return phone\n        return phone[:4] + "*" * (len(phone) - 6) + phone[-2:]\n\n    # Get dossier metadata (no raw file bytes)\n    appointment_ids = [str(a["_id"]) for a in all_appointments]\n    dossier_meta = []\n    for appt_id in appointment_ids:\n        d = await DossierRepository().find_by_appointment_id(appt_id)\n        if d:\n            dossier_meta.append({\n                "appointment_id": appt_id,\n                "chief_complaint_ar": d.get("chief_complaint_ar"),\n                "chief_complaint_en": d.get("chief_complaint_en"),\n                "files": [\n                    {"filename": f.get("filename"), "label": f.get("label"), "uploaded_at": str(f.get("uploaded_at"))}\n                    for f in d.get("files", [])\n                ],\n                "created_at": str(d.get("created_at")),\n            })\n\n    export = {\n        "export_generated_at": utc_now().isoformat(),\n        "provider": {\n            "id": str(provider["_id"]),\n            "name_ar": provider.get("name_ar"),\n            "name_en": provider.get("name_en"),\n            "phone": provider.get("phone"),\n            "email": provider.get("email"),\n            "provider_type": provider.get("provider_type"),\n            "created_at": str(provider.get("created_at")),\n        },\n        "venues": [\n            {\n                "id": str(v["_id"]),\n                "name_ar": v.get("name_ar"),\n                "name_en": v.get("name_en"),\n                "governorate": v.get("governorate"),\n                "category": v.get("category"),\n                "created_at": str(v.get("created_at")),\n            }\n            for v in venues\n        ],\n        "appointments": [\n            {\n                "id": str(a["_id"]),\n                "venue_id": str(a.get("venue_id", "")),\n                "patient_name": a.get("patient_name"),\n                "patient_phone_masked": mask_phone(a.get("patient_phone")),\n                "slot_datetime": str(a.get("slot_datetime")),\n                "status": a.get("status"),\n                "price_at_booking": a.get("price_at_booking"),\n            }\n            for a in all_appointments\n        ],\n        "dossier_metadata": dossier_meta,\n    }\n\n    from fastapi.responses import JSONResponse\n    return JSONResponse(\n        content=export,\n        headers={\n            "Content-Disposition": f'attachment; filename="khalas_export_{provider_id}.json"',\n        },\n    )
+    return ApiResponse(data={"message": f"Successfully cleared data and seeded {created_count} test users with their clinics. Password is 'Password123!'."})
+
+
+# ── Data Portability Export (Global Admin Only) ───────────────────────────────
+
+GLOBAL_ADMIN_PHONE = "+201000000000"  # overridden by env
+import os as _os
+_GLOBAL_ADMIN_PHONE = _os.environ.get("GLOBAL_ADMIN_PHONE", "+201000000000")
+
+
+@router.get("/export/provider/{provider_id}", status_code=status.HTTP_200_OK)
+async def export_provider_data(
+    provider_id: str,
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> dict:
+    """Export all data for a provider. Global-admin only. Returns a structured JSON export."""
+    # Double-check: must be the global admin
+    caller_phone = current_user.get("phone", "")
+    caller_username = current_user.get("username") or current_user.get("email") or ""
+    is_global_admin = (
+        caller_phone == _GLOBAL_ADMIN_PHONE
+        or "m.zeyada91" in caller_username
+        or "m.zeyada91" in (current_user.get("email") or "")
+    )
+    if not is_global_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the global administrator can export provider data.",
+        )
+
+    from app.repositories.appointments import AppointmentRepository
+    from app.repositories.venues import VenueRepository
+    from app.repositories.dossier import DossierRepository
+
+    provider = await UserRepository().find_by_id(provider_id)
+    if provider is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Provider not found.")
+
+    venues = await VenueRepository().list_by_owner(provider_id)
+    venue_ids = [str(v["_id"]) for v in venues]
+
+    all_appointments = await AppointmentRepository().list_for_provider_venues(venue_ids)
+
+    # Mask patient phone numbers in export
+    def mask_phone(phone: str | None) -> str | None:
+        if not phone or len(phone) < 8:
+            return phone
+        return phone[:4] + "*" * (len(phone) - 6) + phone[-2:]
+
+    # Get dossier metadata (no raw file bytes)
+    appointment_ids = [str(a["_id"]) for a in all_appointments]
+    dossier_meta = []
+    for appt_id in appointment_ids:
+        d = await DossierRepository().find_by_appointment_id(appt_id)
+        if d:
+            dossier_meta.append({
+                "appointment_id": appt_id,
+                "chief_complaint_ar": d.get("chief_complaint_ar"),
+                "chief_complaint_en": d.get("chief_complaint_en"),
+                "files": [
+                    {"filename": f.get("filename"), "label": f.get("label"), "uploaded_at": str(f.get("uploaded_at"))}
+                    for f in d.get("files", [])
+                ],
+                "created_at": str(d.get("created_at")),
+            })
+
+    export = {
+        "export_generated_at": utc_now().isoformat(),
+        "provider": {
+            "id": str(provider["_id"]),
+            "name_ar": provider.get("name_ar"),
+            "name_en": provider.get("name_en"),
+            "phone": provider.get("phone"),
+            "email": provider.get("email"),
+            "provider_type": provider.get("provider_type"),
+            "created_at": str(provider.get("created_at")),
+        },
+        "venues": [
+            {
+                "id": str(v["_id"]),
+                "name_ar": v.get("name_ar"),
+                "name_en": v.get("name_en"),
+                "governorate": v.get("governorate"),
+                "category": v.get("category"),
+                "created_at": str(v.get("created_at")),
+            }
+            for v in venues
+        ],
+        "appointments": [
+            {
+                "id": str(a["_id"]),
+                "venue_id": str(a.get("venue_id", "")),
+                "patient_name": a.get("patient_name"),
+                "patient_phone_masked": mask_phone(a.get("patient_phone")),
+                "slot_datetime": str(a.get("slot_datetime")),
+                "status": a.get("status"),
+                "price_at_booking": a.get("price_at_booking"),
+            }
+            for a in all_appointments
+        ],
+        "dossier_metadata": dossier_meta,
+    }
+
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        content=export,
+        headers={
+            "Content-Disposition": f'attachment; filename="khalas_export_{provider_id}.json"',
+        },
+    )
 
