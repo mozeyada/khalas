@@ -13,43 +13,7 @@ import {
   Presentation, MoreVertical, Send, ShieldCheck, Check, User
 } from 'lucide-react';
 
-// ─── constants ────────────────────────────────────────────────────────────────
-const SPECIALTIES = [
-  { en: 'Cardiology', ar: 'أمراض القلب' },
-  { en: 'Dentistry', ar: 'طب الأسنان' },
-  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
-  { en: 'Orthopedics', ar: 'جراحة العظام' },
-  { en: 'Pediatrics', ar: 'طب الأطفال' },
-  { en: 'Internal Medicine', ar: 'الباطنة' },
-  { en: 'Ophthalmology', ar: 'طب العيون' },
-  { en: 'Neurology', ar: 'المخ والأعصاب' },
-  { en: 'Psychiatry', ar: 'الطب النفسي' },
-  { en: 'General Surgery', ar: 'الجراحة العامة' }
-];
-
-const GOVERNORATES = [
-  { en: 'Cairo', ar: 'القاهرة' },
-  { en: 'Giza', ar: 'الجيزة' },
-  { en: 'Alexandria', ar: 'الإسكندرية' },
-  { en: 'Dakahlia', ar: 'الدقهلية' },
-  { en: 'Beheira', ar: 'البحيرة' },
-  { en: 'Fayoum', ar: 'الفيوم' },
-  { en: 'Gharbia', ar: 'الغربية' },
-  { en: 'Ismailia', ar: 'الإسماعيلية' },
-  { en: 'Menofia', ar: 'المنوفية' },
-  { en: 'Minya', ar: 'المنيا' },
-  { en: 'Qalyubia', ar: 'القليوبية' },
-  { en: 'Suez', ar: 'السويس' },
-  { en: 'Aswan', ar: 'أسوان' },
-  { en: 'Assiut', ar: 'أسيوط' },
-  { en: 'Beni Suef', ar: 'بني سويف' },
-  { en: 'Port Said', ar: 'بورسعيد' },
-  { en: 'Damietta', ar: 'دمياط' },
-  { en: 'Sharkia', ar: 'الشرقية' },
-  { en: 'Luxor', ar: 'الأقصر' },
-  { en: 'Qena', ar: 'قنا' },
-  { en: 'Sohag', ar: 'سوهاج' }
-];
+import {GOVERNORATES, SPECIALTIES} from '@/lib/constants';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -242,9 +206,12 @@ export default function SalesmanPage() {
 
   if (!isReady || isLoadingClinics) {
     return (
-      <SiteShell title={locale === 'ar' ? 'لوحة المبيعات' : 'Sales Command Center'}>
-        <div className="flex h-40 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--text-1)] border-t-transparent" />
+      <SiteShell>
+        <div className="space-y-4">
+          <div className="h-44 rounded-3xl skeleton" />
+          <div className="grid grid-cols-4 gap-3">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-24 rounded-2xl skeleton" />)}
+          </div>
         </div>
       </SiteShell>
     );
@@ -261,84 +228,81 @@ export default function SalesmanPage() {
   const pendingClinics = myClinics.filter(c => !c.is_approved);
 
   return (
-    <SiteShell title={locale === 'ar' ? 'مركز القيادة' : 'Command Center'}>
-      {/* ── Top Header ────────────────────────────────────────────── */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-black tracking-tight text-[var(--text-1)]">
-          {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--text-3)] max-w-xl">
-          {locale === 'ar' 
-            ? 'مرحباً بك في مركز قيادة المبيعات الخاص بك. يمكنك من هنا إنشاء روابط تجريبية للعملاء وإدارة محفظتك.' 
-            : 'Welcome to your premium Sales Command Center. Generate instant demos and manage your portfolio with ease.'}
-        </p>
+    <SiteShell>
+      <div data-theme="salesman" className="space-y-6">
+
+      {/* ── Hero Banner ───────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-8 text-white" style={{background: 'var(--grad-salesman)'}}>
+        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute bottom-0 left-1/3 h-32 w-32 rounded-full bg-indigo-500/20" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+            <Sparkles className="h-3 w-3" />
+            {locale === 'ar' ? 'مركز القيادة — خلاص' : 'Khalas Sales Command Center'}
+          </div>
+          <h1 className="text-2xl font-black tracking-tight">
+            {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''}
+          </h1>
+          <p className="mt-1 max-w-lg text-sm text-white/60">
+            {locale === 'ar'
+              ? 'كل عميل تضيفه هو حجز، وكل حجز هو قيمة. دير الدفة وأغلق.'
+              : 'Every clinic you add is a booking engine. Every booking is value delivered. Close the deal.'}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <button onClick={handleImpersonatePatient} disabled={isImpersonating}
+              className="flex items-center gap-2 rounded-xl bg-white/10 border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/20 active:scale-95">
+              <User className="h-4 w-4" />
+              {locale === 'ar' ? 'اختبر كمريض' : 'Test as Patient'}
+            </button>
+            <button onClick={() => setActiveTab('demo')}
+              className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-black text-slate-900 transition hover:scale-105 active:scale-95 shadow-lg">
+              <Sparkles className="h-4 w-4 text-indigo-600" />
+              {locale === 'ar' ? 'عرض تجريبي جديد' : 'New Demo'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── KPI Row ────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          {icon: Building2, v: myClinics.length, label_en: 'Total Clinics', label_ar: 'إجمالي العيادات', c: 'bg-slate-50 text-slate-700', delay: 'stagger-1'},
+          {icon: CheckCircle2, v: approvedClinics.length, label_en: 'Active Partners', label_ar: 'شركاء نشطون', c: 'bg-emerald-50 text-emerald-700', delay: 'stagger-2'},
+          {icon: Clock, v: pendingClinics.length, label_en: 'Pending', label_ar: 'في الانتظار', c: 'bg-amber-50 text-amber-700', delay: 'stagger-3'},
+          {icon: Zap, v: myClinics.reduce((s: number, c: any) => s + (c.appointment_count || 0), 0), label_en: 'Total Bookings', label_ar: 'إجمالي الحجوزات', c: 'bg-indigo-50 text-indigo-700', delay: 'stagger-4'},
+        ].map(k => (
+          <div key={k.label_en} className={`card-lift animate-fade-in-up ${k.delay} rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm`}>
+            <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${k.c}`}>
+              <k.icon className="h-4 w-4" />
+            </div>
+            <p className="stat-num text-3xl font-black text-[var(--text-1)]">{k.v}</p>
+            <p className="mt-0.5 text-xs font-semibold text-[var(--text-3)]">{locale === 'ar' ? k.label_ar : k.label_en}</p>
+          </div>
+        ))}
       </div>
 
       {/* ── Navigation Tabs ──────────────────────────────────────── */}
-      <div className="mb-8 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex items-center gap-1 rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] p-1">
         {[
-          { id: 'overview', icon: <LayoutDashboard className="h-4 w-4" />, label: locale === 'ar' ? 'نظرة عامة' : 'Overview' },
-          { id: 'demo', icon: <Presentation className="h-4 w-4" />, label: locale === 'ar' ? 'محطة العروض التجريبية' : 'Demo Hub' },
-          { id: 'portfolio', icon: <Building2 className="h-4 w-4" />, label: locale === 'ar' ? 'محفظة العيادات' : 'Portfolio' },
+          { id: 'overview', icon: LayoutDashboard, label_ar: 'نظرة عامة', label_en: 'Overview' },
+          { id: 'demo', icon: Presentation, label_ar: 'عرض تجريبي', label_en: 'Demo Hub' },
+          { id: 'portfolio', icon: Building2, label_ar: 'محفظة العيادات', label_en: 'Portfolio' },
         ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as Tab)}
-            className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold transition-all shadow-sm border ${
-              activeTab === tab.id
-                ? 'bg-[var(--text-1)] text-white border-[var(--text-1)]'
-                : 'bg-white text-[var(--text-2)] border-[var(--border)] hover:bg-[var(--surface-0)] hover:text-[var(--text-1)]'
-            }`}
-          >
-            {tab.icon}
-            {tab.label}
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as Tab)}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all ${
+              activeTab === tab.id ? 'bg-white shadow-sm text-[var(--text-1)]' : 'text-[var(--text-3)] hover:text-[var(--text-1)]'
+            }`}>
+            <tab.icon className="h-4 w-4" />
+            <span className="hidden sm:inline">{locale === 'ar' ? tab.label_ar : tab.label_en}</span>
           </button>
         ))}
       </div>
 
       {/* ── OVERVIEW TAB ────────────────────────────────────────── */}
       {activeTab === 'overview' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-teal-500/10 transition-transform group-hover:scale-150" />
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                <Building2 className="h-5 w-5" />
-              </div>
-              <p className="text-3xl font-black text-[var(--text-1)]">{myClinics.length}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'إجمالي العيادات' : 'Total Clinics'}</p>
-            </div>
-            
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-500/10 transition-transform group-hover:scale-150" />
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <p className="text-3xl font-black text-[var(--text-1)]">{approvedClinics.length}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'عيادات مفعلة' : 'Active Partners'}</p>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-white p-5 shadow-sm relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-amber-500/10 transition-transform group-hover:scale-150" />
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                <Clock className="h-5 w-5" />
-              </div>
-              <p className="text-3xl font-black text-[var(--text-1)]">{pendingClinics.length}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]">{locale === 'ar' ? 'في الانتظار' : 'Pending Approval'}</p>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--text-1)] p-5 shadow-float relative overflow-hidden group text-white">
-              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 transition-transform group-hover:scale-150" />
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 text-white">
-                <Zap className="h-5 w-5" />
-              </div>
-              <p className="text-3xl font-black">{myClinics.reduce((sum, c) => sum + (c.appointment_count || 0), 0)}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-wider text-white/60">{locale === 'ar' ? 'إجمالي الحجوزات' : 'Total Bookings Driven'}</p>
-            </div>
-          </div>
-
+        <div className="animate-fade-in-up space-y-4">
           {/* Quick Action Prompt */}
-          <div className="mt-6 flex flex-col items-center justify-between gap-4 rounded-[2rem] border border-[var(--border)] bg-[var(--surface-0)] p-6 sm:flex-row sm:px-8">
+          <div className="flex flex-col items-center justify-between gap-4 rounded-3xl border border-[var(--border)] bg-white p-6 shadow-sm sm:flex-row sm:px-8">
             <div>
               <h3 className="text-lg font-bold text-[var(--text-1)]">
                 {locale === 'ar' ? 'هل أنت في اجتماع مع عميل الآن؟' : 'In a meeting with a prospect?'}
@@ -367,6 +331,7 @@ export default function SalesmanPage() {
           </div>
         </div>
       )}
+
 
       {/* ── DEMO HUB TAB ────────────────────────────────────────── */}
       {activeTab === 'demo' && (
@@ -753,6 +718,7 @@ export default function SalesmanPage() {
           </div>
         </div>
       )}
+      </div>
     </SiteShell>
   );
 }

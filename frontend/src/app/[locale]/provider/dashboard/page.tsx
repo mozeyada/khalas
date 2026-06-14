@@ -61,10 +61,15 @@ export default function ProviderDashboardPage() {
 
   if (!isReady || isLoading) {
     return (
-      <SiteShell title={locale === 'ar' ? 'لوحة التحكم' : 'Dashboard'}>
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--text-3)]/20 border-t-[var(--text-1)]" />
-          <p className="mt-4 text-sm font-medium text-[var(--text-3)]">{t('loading')}</p>
+      <SiteShell>
+        <div className="space-y-6">
+          <div className="h-40 rounded-3xl skeleton" />
+          <div className="grid grid-cols-4 gap-2">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-24 rounded-2xl skeleton" />)}
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[...Array(4)].map((_, i) => <div key={i} className="h-32 rounded-2xl skeleton" />)}
+          </div>
         </div>
       </SiteShell>
     );
@@ -118,140 +123,112 @@ export default function ProviderDashboardPage() {
     : (hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening');
 
   return (
-    <SiteShell title={locale === 'ar' ? 'لوحة التحكم' : 'Dashboard'}>
-      {/* ── Greeting ────────────────────────────────────────────── */}
-      <div className="mb-6">
-        <p className="text-xs font-bold uppercase tracking-widest text-[var(--text-3)]">
-          {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(now)}
-        </p>
-        <h1 className="mt-1 text-2xl font-black text-[var(--text-1)]">
-          {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''} 👋
-        </h1>
+    <SiteShell>
+      <div data-theme="provider" className="space-y-6">
+
+      {/* ── Hero Banner ───────────────────────────────────────────── */}
+      <div className="relative overflow-hidden rounded-3xl px-6 py-8 text-white" style={{background: 'var(--grad-provider)'}}>
+        <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute bottom-0 left-1/4 h-32 w-32 rounded-full bg-teal-500/20" />
+        <div className="relative">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+            <Stethoscope className="h-3 w-3" />
+            {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(now)}
+          </div>
+          <h1 className="text-2xl font-black tracking-tight">
+            {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''}
+          </h1>
+          <p className="mt-1 text-sm text-white/70">
+            {locale === 'ar' ? 'نظرة عامة على مواعيدك ونشاط العيادة اليوم.' : "Overview of your appointments and clinic activity today."}
+          </p>
+        </div>
       </div>
 
       {/* ── Error ───────────────────────────────────────────────── */}
       {error && (
-        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {error}
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 animate-fade-in">
+          <XCircle className="inline h-4 w-4 mb-0.5 me-1" />{error}
         </div>
       )}
 
       {/* ── Quick Actions ────────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-4 gap-2">
-        <button
-          onClick={() => setIsWalkInModalOpen(true)}
-          className="relative flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--text-1)] py-3 text-white transition active:scale-95"
-        >
+      <div className="grid grid-cols-4 gap-2 animate-fade-in-up stagger-1">
+        <button onClick={() => setIsWalkInModalOpen(true)}
+          className="relative flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--text-1)] py-3 text-white transition active:scale-95 shadow-sm card-lift">
           {pendingCount > 0 && (
-            <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white">
+            <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white dot-pulse">
               {pendingCount}
             </span>
           )}
           <PlusCircle className="h-6 w-6" />
           <span className="text-xs font-semibold">{locale === 'ar' ? 'إضافة موعد' : 'Add Walk-in'}</span>
         </button>
-        {/* Doctor-specific: My Patients registry */}
         {user?.provider_type === 'doctor' ? (
-          <Link
-            href="/provider/patients"
-            locale={locale}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-brand/10 border border-brand/20 py-3 text-brand transition hover:bg-brand/20"
-          >
+          <Link href="/provider/patients" locale={locale}
+            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-brand/10 border border-brand/20 py-3 text-brand transition hover:bg-brand/20 card-lift">
             <Users className="h-6 w-6" />
             <span className="text-xs font-semibold">{locale === 'ar' ? 'مرضاي' : 'My Patients'}</span>
           </Link>
         ) : (
-          <button
-            onClick={() => setIsQrModalOpen(true)}
-            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] active:scale-95"
-          >
+          <button onClick={() => setIsQrModalOpen(true)}
+            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] active:scale-95 card-lift">
             <QrCode className="h-6 w-6 text-[var(--text-2)]" />
             <span className="text-xs font-semibold">{locale === 'ar' ? 'رمز QR' : 'Print QR'}</span>
           </button>
         )}
-        <Link
-          href="/provider/appointments"
-          locale={locale}
-          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
-        >
+        <Link href="/provider/appointments" locale={locale}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] card-lift">
           <Calendar className="h-6 w-6 text-[var(--text-3)]" />
           <span className="text-xs font-semibold">{locale === 'ar' ? 'كل المواعيد' : 'All Appts'}</span>
         </Link>
-        <Link
-          href="/provider/settings"
-          locale={locale}
-          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)]"
-        >
+        <Link href="/provider/settings" locale={locale}
+          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-white border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] card-lift">
           <Settings className="h-6 w-6 text-[var(--text-3)]" />
           <span className="text-xs font-semibold">{locale === 'ar' ? 'الإعدادات' : 'Settings'}</span>
         </Link>
       </div>
 
       {/* ── Stats Strip ─────────────────────────────────────────── */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {/* Today's patients */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
-          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--text-1)]/10">
-            <Users className="h-5 w-5 text-[var(--text-1)]" />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          {icon: Users, v: todaysAppointments.length, label_en: "Today's Appts", label_ar: 'مواعيد اليوم', c: 'bg-zinc-100 text-zinc-700', delay: 'stagger-2'},
+          {icon: CreditCard, v: formatPrice(revenueThisWeek, locale), label_en: 'Week Revenue', label_ar: 'إيرادات الأسبوع', c: 'bg-emerald-50 text-emerald-600', delay: 'stagger-3', trend: revenueTrend},
+          {icon: Calendar, v: thisWeekAppts.length, label_en: 'Week Appts', label_ar: 'مواعيد الأسبوع', c: 'bg-blue-50 text-blue-600', delay: 'stagger-4'},
+          {icon: Repeat, v: uniquePatientsThisWeek, label_en: 'Unique Patients', label_ar: 'مرضى هذا الأسبوع', c: 'bg-purple-50 text-purple-600', delay: 'stagger-5', hidden: 'hidden sm:block'},
+        ].map((k: any) => (
+          <div key={k.label_en} className={`card-lift animate-fade-in-up ${k.delay} ${k.hidden || ''} rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm`}>
+            <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${k.c}`}>
+              <k.icon className="h-4 w-4" />
+            </div>
+            <p className="stat-num text-2xl font-black text-[var(--text-1)]">{k.v}</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <p className="text-xs font-semibold text-[var(--text-3)]">{locale === 'ar' ? k.label_ar : k.label_en}</p>
+              {k.trend !== undefined && k.trend !== null && (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${k.trend >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                  {k.trend >= 0 ? '+' : ''}{k.trend}%
+                </span>
+              )}
+            </div>
           </div>
-          <p className="text-2xl font-black text-[var(--text-1)]">{todaysAppointments.length}</p>
-          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'مواعيد اليوم' : "Today's Appts"}</p>
-        </div>
-
-        {/* Weekly revenue */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
-          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100">
-            <CreditCard className="h-5 w-5 text-emerald-600" />
-          </div>
-          <p className="text-2xl font-black text-[var(--text-1)]">{formatPrice(revenueThisWeek, locale)}</p>
-          <div className="flex items-center gap-1">
-            <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'إيرادات الأسبوع' : 'Week Revenue'}</p>
-            {revenueTrend !== null && (
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${revenueTrend >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                {revenueTrend >= 0 ? '+' : ''}{revenueTrend}%
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Week appointments */}
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
-          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100">
-            <Calendar className="h-5 w-5 text-blue-600" />
-          </div>
-          <p className="text-2xl font-black text-[var(--text-1)]">{thisWeekAppts.length}</p>
-          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'مواعيد الأسبوع' : 'Week Appts'}</p>
-        </div>
-
-        {/* Unique patients */}
-        <div className="hidden sm:block rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] p-4 shadow-sm">
-          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100">
-            <Repeat className="h-5 w-5 text-purple-600" />
-          </div>
-          <p className="text-2xl font-black text-[var(--text-1)]">{uniquePatientsThisWeek}</p>
-          <p className="text-xs font-medium text-[var(--text-3)]">{locale === 'ar' ? 'مرضى هذا الأسبوع' : 'Unique Patients'}</p>
-        </div>
+        ))}
       </div>
 
       {/* ── Today's Queue ────────────────────────────────────────── */}
-      <div className="mb-6">
+      <div className="animate-fade-in-up stagger-4">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="text-base font-bold text-[var(--text-1)]">
               {locale === 'ar' ? 'قائمة اليوم' : "Today's Queue"}
             </h2>
             {pendingCount > 0 && (
-              <span className="flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500" />
+              <span className="flex items-center gap-1.5 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-rose-500 dot-pulse" />
                 {pendingCount} {locale === 'ar' ? 'بانتظار التأكيد' : 'pending'}
               </span>
             )}
           </div>
-          <Link
-            href="/provider/appointments"
-            locale={locale}
-            className="text-sm font-semibold text-[var(--text-2)] flex items-center gap-1 hover:text-[var(--text-1)] transition"
-          >
+          <Link href="/provider/appointments" locale={locale}
+            className="text-sm font-semibold text-[var(--text-2)] flex items-center gap-1 hover:text-[var(--text-1)] transition">
             {locale === 'ar' ? 'عرض الكل' : 'View all'}
             <ArrowRight className="h-4 w-4 rtl:rotate-180" />
           </Link>
@@ -281,10 +258,10 @@ export default function ProviderDashboardPage() {
               return (
                 <article
                   key={appointment._id}
-                  className={`relative flex items-center gap-4 overflow-hidden rounded-[1.75rem] border p-4 transition ${
+                  className={`relative flex items-center gap-4 overflow-hidden rounded-2xl border p-4 transition card-lift ${
                     isNow
                       ? 'border-[var(--text-1)]/20 bg-[var(--text-1)] text-white shadow-float'
-                      : 'border-[var(--border)] bg-[var(--surface-1)] shadow-sm hover:shadow-card'
+                      : 'border-[var(--border)] bg-white shadow-sm'
                   }`}
                 >
                   {/* Time block */}
@@ -357,14 +334,14 @@ export default function ProviderDashboardPage() {
 
       {/* ── Activity Feed ────────────────────────────────────────── */}
       {recentFeed.length > 0 && (
-        <div>
+        <div className="animate-fade-in-up stagger-5">
           <div className="mb-3 flex items-center gap-2">
             <Activity className="h-4 w-4 text-[var(--text-3)]" />
             <h2 className="text-base font-bold text-[var(--text-1)]">
               {locale === 'ar' ? 'آخر النشاطات' : 'Recent Activity'}
             </h2>
           </div>
-          <div className="rounded-[2rem] border border-[var(--border)] bg-[var(--surface-1)] shadow-card overflow-hidden">
+          <div className="rounded-2xl border border-[var(--border)] bg-white shadow-sm overflow-hidden">
             {recentFeed.map((appt, i) => {
               const dateObj = new Date(appt.slot_datetime);
               const label = new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(dateObj);
@@ -412,7 +389,7 @@ export default function ProviderDashboardPage() {
 
       {/* ── Data Portability Badge (Doctor only) ─────────────── */}
       {user?.provider_type === 'doctor' && (
-        <div className="mt-8 flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] px-5 py-4">
+        <div className="animate-fade-in-up stagger-6 mt-4 flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-white px-5 py-4 shadow-sm">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand/10">
             <ShieldCheck className="h-4 w-4 text-brand" />
           </div>
@@ -428,6 +405,7 @@ export default function ProviderDashboardPage() {
           </div>
         </div>
       )}
+      </div>
     </SiteShell>
   );
 }

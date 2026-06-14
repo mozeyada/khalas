@@ -98,12 +98,17 @@ export function RegisterForm() {
 
     try {
       const role = await verifyOtpCode(normalizedPhone, formState.otpCode);
-      let targetPath = 'dashboard';
-      if (role === 'admin') targetPath = 'admin';
-      else if (role === 'salesman') targetPath = 'salesman';
-      else if (role === 'provider') targetPath = 'provider/appointments';
-      
-      router.push(`/${locale}/${targetPath}`);
+      const redirect = searchParams?.get('redirect');
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        let targetPath = 'dashboard';
+        if (role === 'admin') targetPath = 'admin';
+        else if (role === 'salesman') targetPath = 'salesman';
+        else if (role === 'provider') targetPath = 'provider/appointments';
+        
+        router.push(`/${locale}/${targetPath}`);
+      }
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
     } finally {
@@ -306,7 +311,7 @@ export function RegisterForm() {
             <div className="mt-6 text-center space-y-3">
               <div>
                 <a
-                  href={`/${locale}/auth/login`}
+                  href={`/${locale}/auth/login${searchParams?.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`}
                   className="text-sm text-zinc-500 hover:text-ink font-semibold transition-colors"
                 >
                   {t('loginLink')}
@@ -315,14 +320,14 @@ export function RegisterForm() {
               <div className="pt-2 border-t border-zinc-200">
                 {isProviderFlow ? (
                   <a
-                    href={`/${locale}/auth/register`}
+                    href={`/${locale}/auth/register${searchParams?.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`}
                     className="text-sm text-ink hover:underline font-semibold transition-colors"
                   >
                     {t('patientLink')}
                   </a>
                 ) : (
                   <a
-                    href={`/${locale}/auth/register?role=provider`}
+                    href={`/${locale}/auth/register?role=provider${searchParams?.get('redirect') ? `&redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`}
                     className="text-sm text-zinc-500 hover:text-ink font-semibold transition-colors"
                   >
                     {t('providerLink')}

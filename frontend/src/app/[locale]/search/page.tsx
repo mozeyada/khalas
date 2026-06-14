@@ -30,26 +30,9 @@ type SearchPageProps = {
   };
 };
 
+import {getSpecialtyName} from '@/lib/constants';
+
 const DEFAULT_BADGE = {bg: 'bg-brand-light', text: 'text-brand', dot: 'bg-brand'};
-
-const SPECIALTIES = [
-  { en: 'Cardiology', ar: 'أمراض القلب' },
-  { en: 'Dentistry', ar: 'طب الأسنان' },
-  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
-  { en: 'Orthopedics', ar: 'جراحة العظام' },
-  { en: 'Pediatrics', ar: 'طب الأطفال' },
-  { en: 'Internal Medicine', ar: 'الباطنة' },
-  { en: 'Ophthalmology', ar: 'طب العيون' },
-  { en: 'Neurology', ar: 'المخ والأعصاب' },
-  { en: 'Psychiatry', ar: 'الطب النفسي' },
-  { en: 'General Surgery', ar: 'الجراحة العامة' }
-];
-
-function getSpecialtyName(cat: string, locale: string) {
-  const spec = SPECIALTIES.find(s => s.en.toLowerCase() === cat.toLowerCase());
-  if (spec) return locale === 'ar' ? spec.ar : spec.en;
-  return cat;
-}
 
 async function getSearchResults(searchParams: SearchPageProps['searchParams']): Promise<VenueResult[]> {
   const params = new URLSearchParams();

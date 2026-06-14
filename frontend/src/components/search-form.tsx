@@ -4,43 +4,7 @@ import {FormEvent, useState, useTransition} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 import {Search, MapPin, Stethoscope} from 'lucide-react';
-
-const GOVERNORATES = [
-  { en: 'Cairo', ar: 'القاهرة' },
-  { en: 'Giza', ar: 'الجيزة' },
-  { en: 'Alexandria', ar: 'الإسكندرية' },
-  { en: 'Dakahlia', ar: 'الدقهلية' },
-  { en: 'Beheira', ar: 'البحيرة' },
-  { en: 'Fayoum', ar: 'الفيوم' },
-  { en: 'Gharbia', ar: 'الغربية' },
-  { en: 'Ismailia', ar: 'الإسماعيلية' },
-  { en: 'Menofia', ar: 'المنوفية' },
-  { en: 'Minya', ar: 'المنيا' },
-  { en: 'Qalyubia', ar: 'القليوبية' },
-  { en: 'Suez', ar: 'السويس' },
-  { en: 'Aswan', ar: 'أسوان' },
-  { en: 'Assiut', ar: 'أسيوط' },
-  { en: 'Beni Suef', ar: 'بني سويف' },
-  { en: 'Port Said', ar: 'بورسعيد' },
-  { en: 'Damietta', ar: 'دمياط' },
-  { en: 'Sharkia', ar: 'الشرقية' },
-  { en: 'Luxor', ar: 'الأقصر' },
-  { en: 'Qena', ar: 'قنا' },
-  { en: 'Sohag', ar: 'سوهاج' }
-];
-
-const SPECIALTIES = [
-  { en: 'Cardiology', ar: 'أمراض القلب' },
-  { en: 'Dentistry', ar: 'طب الأسنان' },
-  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
-  { en: 'Orthopedics', ar: 'جراحة العظام' },
-  { en: 'Pediatrics', ar: 'طب الأطفال' },
-  { en: 'Internal Medicine', ar: 'الباطنة' },
-  { en: 'Ophthalmology', ar: 'طب العيون' },
-  { en: 'Neurology', ar: 'المخ والأعصاب' },
-  { en: 'Psychiatry', ar: 'الطب النفسي' },
-  { en: 'General Surgery', ar: 'الجراحة العامة' }
-];
+import {GOVERNORATES, SPECIALTIES} from '@/lib/constants';
 
 type SearchFormProps = {
   initialQuery?: string;
@@ -62,16 +26,30 @@ export function SearchForm({
   const [governorate, setGovernorate] = useState(initialGovernorate);
   const [category, setCategory] = useState(initialCategory);
 
-  function handleSearch(e: FormEvent) {
-    e.preventDefault();
+  function triggerSearch(newQuery: string, newGov: string, newCat: string) {
     const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (governorate) params.set('governorate', governorate);
-    if (category) params.set('category', category);
+    if (newQuery) params.set('q', newQuery);
+    if (newGov) params.set('governorate', newGov);
+    if (newCat) params.set('category', newCat);
 
     startTransition(() => {
       router.push(`/${locale}/search?${params.toString()}`);
     });
+  }
+
+  function handleSearch(e: FormEvent) {
+    e.preventDefault();
+    triggerSearch(query, governorate, category);
+  }
+
+  function handleGovChange(val: string) {
+    setGovernorate(val);
+    triggerSearch(query, val, category);
+  }
+
+  function handleCatChange(val: string) {
+    setCategory(val);
+    triggerSearch(query, governorate, val);
   }
 
   return (
@@ -106,7 +84,7 @@ export function SearchForm({
             <select
               id="search-governorate"
               value={governorate}
-              onChange={(e) => setGovernorate(e.target.value)}
+              onChange={(e) => handleGovChange(e.target.value)}
               className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
             >
               <option value="">{locale === 'ar' ? 'كل المحافظات' : 'All Governorates'}</option>
@@ -128,7 +106,7 @@ export function SearchForm({
             <select
               id="search-specialty"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => handleCatChange(e.target.value)}
               className="w-full appearance-none rounded-2xl bg-zinc-50 py-4 pl-10 pr-8 text-sm font-bold text-zinc-700 outline-none transition-all focus:bg-white focus:ring-2 focus:ring-brand/20 cursor-pointer rtl:pl-8 rtl:pr-10"
             >
               <option value="">{locale === 'ar' ? 'كل التخصصات' : 'All Specialties'}</option>

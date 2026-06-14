@@ -2,7 +2,7 @@
 
 import {FormEvent, useState} from 'react';
 import {useLocale, useTranslations} from 'next-intl';
-import {useRouter} from 'next/navigation';
+import {useRouter, useSearchParams} from 'next/navigation';
 import {Mail, Lock, KeyRound, ArrowRight} from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
@@ -31,6 +31,8 @@ export function LoginForm() {
   const t = useTranslations('LoginPage');
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams?.get('redirect');
   const {requestOtp, verifyOtpCode, loginWithPassword} = useSession();
 
   const [identifier, setIdentifier] = useState('');
@@ -54,12 +56,16 @@ export function LoginForm() {
     try {
       const normalizedIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
       const role = await loginWithPassword(normalizedIdentifier, password);
-      let targetPath = 'dashboard';
-      if (role === 'admin') targetPath = 'admin';
-      else if (role === 'salesman') targetPath = 'salesman';
-      else if (role === 'provider') targetPath = 'provider/appointments';
-      
-      router.push(`/${locale}/${targetPath}`);
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        let targetPath = 'dashboard';
+        if (role === 'admin') targetPath = 'admin';
+        else if (role === 'salesman') targetPath = 'salesman';
+        else if (role === 'provider') targetPath = 'provider/appointments';
+        
+        router.push(`/${locale}/${targetPath}`);
+      }
     } catch (caught: any) {
       setError(caught.message || t('genericError'));
     } finally {
@@ -96,12 +102,16 @@ export function LoginForm() {
     try {
       const normalizedIdentifier = identifier.includes('@') ? identifier : normalizePhone(identifier);
       const role = await verifyOtpCode(normalizedIdentifier, otpCode);
-      let targetPath = 'dashboard';
-      if (role === 'admin') targetPath = 'admin';
-      else if (role === 'salesman') targetPath = 'salesman';
-      else if (role === 'provider') targetPath = 'provider/appointments';
-      
-      router.push(`/${locale}/${targetPath}`);
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        let targetPath = 'dashboard';
+        if (role === 'admin') targetPath = 'admin';
+        else if (role === 'salesman') targetPath = 'salesman';
+        else if (role === 'provider') targetPath = 'provider/appointments';
+        
+        router.push(`/${locale}/${targetPath}`);
+      }
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : t('genericError'));
     } finally {
@@ -197,7 +207,7 @@ export function LoginForm() {
 
             <p className="pt-3 text-center text-sm text-zinc-500 font-medium">
               {locale === 'ar' ? 'ليس لديك حساب؟' : "Don't have an account?"}{' '}
-              <a href={`/${locale}/auth/register`} className="font-semibold text-ink hover:underline">
+              <a href={`/${locale}/auth/register${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="font-semibold text-ink hover:underline">
                 {locale === 'ar' ? 'سجل الآن' : 'Register'}
               </a>
             </p>

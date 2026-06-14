@@ -152,3 +152,95 @@ html {
   background: rgba(9, 9, 11, 0.15);
   color: var(--text-1);
 }
+
+/* ─── Premium Gradients per Role ─────────────────────────── */
+:root {
+  --grad-admin:    linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --grad-salesman: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  --grad-provider: linear-gradient(135deg, #065f46 0%, #0d9488 100%);
+  --grad-patient:  linear-gradient(135deg, #0369a1 0%, #0e7490 100%);
+  --grad-doctor:   linear-gradient(135deg, #1e40af 0%, #0d9488 100%);
+}
+
+/* ─── Animations ──────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+@keyframes count-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.animate-fade-in-up   { animation: fade-in-up 0.4s var(--ease-spring) both; }
+.animate-fade-in      { animation: fade-in 0.3s ease both; }
+.animate-slide-left   { animation: slide-in-left 0.35s var(--ease-spring) both; }
+.animate-scale-in     { animation: scale-in 0.25s var(--ease-spring) both; }
+
+/* Stagger delays for lists */
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* ─── Skeleton Shimmer ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  border-radius: 8px;
+}
+
+/* ─── Glassmorphism ───────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.glass-dark {
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ─── Premium Card hover lift ─────────────────────────────── */
+.card-lift {
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+.card-lift:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+/* ─── Stat Number pulse on load ───────────────────────────── */
+.stat-num {
+  animation: count-up 0.5s var(--ease-spring) both;
+}
+
+/* ─── Dot pulse indicator ─────────────────────────────────── */
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.7; }
+}
+.dot-pulse { animation: dot-pulse 1.5s ease-in-out infinite; }
+
