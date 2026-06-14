@@ -15,6 +15,9 @@ from app.repositories.availability import AvailabilityRepository
 from app.repositories.services import ServiceRepository
 from app.repositories.staff import StaffRepository
 from app.repositories.venues import VenueRepository
+from app.repositories.appointments import AppointmentRepository
+from app.repositories.users import UserRepository
+from app.repositories.dossier import DossierRepository
 from app.schemas.availability import AvailabilityEntry, AvailabilityUpdateRequest
 from app.schemas.common import ApiResponse
 from app.schemas.service import ServiceCreateRequest, ServiceResponse, ServiceUpdateRequest
@@ -344,3 +347,75 @@ async def update_staff_availability(
         for row in saved_rows
     ]
     return ApiResponse(data=data)
+
+
+class PatientRecord(APIModel):
+    """A patient entry in the doctor's registry."""
+    patient_id: str
+    patient_name: str | None = None
+    patient_phone_masked: str | None = None
+    last_appointment_at: str | None = None
+    total_appointments: int
+    has_upcoming: bool
+
+
+from app.schemas.common import APIModel as _APIModel  # noqa: F811, E402
+
+
+class _PatientRecord(_APIModel):
+    """Patient registry row."""
+    patient_id: str
+    patient_name: str | None = None
+    patient_phone_masked: str | None = None
+    last_appointment_at: str | None = None
+    total_appointments: int
+    has_upcoming: bool
+
+
+@router.get("/patients", response_model=ApiResponse[list[_PatientRecord]], status_code=status.HTTP_200_OK)
+async def list_provider_patients(
+    current_user: Annotated[dict, Depends(require_role("provider"))],
+) -> ApiResponse[list[_PatientRecord]]:
+    """Return a de-duplicated patient registry for all venues owned by this provider."""
+    venues = await VenueRepository().list_by_owner(str(current_user["_id"]))
+    venue_ids = [str(v["_id"]) for v in venues]
+
+    all_appointments = await AppointmentRepository().list_for_provider_venues(venue_ids)
+
+    # Group by patient_id
+    from collections import defaultdict
+    from datetime import datetime, timezone
+    patient_map: dict[str, list[dict]] = defaultdict(list)
+    for appt in all_appointments:
+        pid = appt.get("patient_id")
+        if pid:
+            patient_map[pid].append(appt)
+
+    now = datetime.now(timezone.utc)
+    records: list[_PatientRecord] = []
+    for patient_id, appts in patient_map.items():
+        sorted_appts = sorted(appts, key=lambda a: a["slot_datetime"], reverse=True)
+        latest = sorted_appts[0]
+        has_upcoming = any(
+            a["slot_datetime"] >= now and a["status"] in ("pending", "confirmed")
+            for a in appts
+        )
+        # Mask phone: show first 4 + last 2 digits, hide the rest
+        raw_phone = latest.get("patient_phone") or ""
+        if len(raw_phone) >= 8:
+            masked_phone = raw_phone[:4] + "*" * (len(raw_phone) - 6) + raw_phone[-2:]
+        else:
+            masked_phone = raw_phone or None
+
+        records.append(_PatientRecord(
+            patient_id=patient_id,
+            patient_name=latest.get("patient_name"),
+            patient_phone_masked=masked_phone,
+            last_appointment_at=latest["slot_datetime"].isoformat() if isinstance(latest["slot_datetime"], datetime) else str(latest["slot_datetime"]),
+            total_appointments=len(appts),
+            has_upcoming=has_upcoming,
+        ))
+
+    # Sort by last appointment desc
+    records.sort(key=lambda r: r.last_appointment_at or "", reverse=True)
+    return ApiResponse(data=records)

@@ -5,7 +5,7 @@ import {useLocale, useTranslations} from 'next-intl';
 import {useRouter} from 'next/navigation';
 import {
   Calendar, Clock, CreditCard, CalendarX, ArrowRight,
-  Building2, Search, Star, MapPin, ChevronRight
+  Building2, Search, Star, MapPin, ChevronRight, Paperclip, Stethoscope
 } from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
@@ -172,6 +172,21 @@ export function PatientDashboard() {
               {nextAppt.status}
             </span>
           </div>
+
+          {/* Dossier upload CTA */}
+          {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
+            <button
+              onClick={() => router.push(`/${locale}/dashboard/dossier/${nextAppt._id}`)}
+              className={`mt-2 flex w-full items-center justify-center gap-2 rounded-sm py-2.5 text-xs font-semibold transition active:scale-95 ${
+                isSoon(nextAppt.slot_datetime)
+                  ? 'bg-white/10 text-white hover:bg-white/20'
+                  : 'border border-brand/20 text-brand hover:bg-brand/5'
+              }`}
+            >
+              <Paperclip className="h-3.5 w-3.5" />
+              {locale === 'ar' ? 'أرسل ملفاتك للطبيب قبل الموعد' : 'Send your files to the doctor'}
+            </button>
+          )}
         </div>
       ) : (
         /* ── No Upcoming ── */

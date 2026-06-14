@@ -236,3 +236,64 @@ export async function verifyOtp(_phone: string, _otpCode: string): Promise<AuthT
 export async function refreshSession(_refreshToken: string): Promise<AuthTokensData> {
   throw new Error('Use session.refresh() instead – tokens are managed by the BFF.');
 }
+
+// ── Dossier (patient pre-visit uploads) ─────────────────────────────────────
+
+export type DossierFile = {
+  filename: string;
+  file_type: string;
+  file_data_base64: string;
+  label?: string;
+  uploaded_at: string;
+};
+
+export type Dossier = {
+  _id: string;
+  appointment_id: string;
+  patient_id: string;
+  chief_complaint_ar?: string;
+  chief_complaint_en?: string;
+  files: DossierFile[];
+  created_at: string;
+  updated_at: string;
+};
+
+export async function getDossier(appointmentId: string): Promise<Dossier | null> {
+  try {
+    return await bffFetch<Dossier>(`/api/v1/dossier/${appointmentId}`);
+  } catch {
+    return null;
+  }
+}
+
+export async function upsertDossier(
+  appointmentId: string,
+  input: {chief_complaint_ar?: string; chief_complaint_en?: string; files?: DossierFile[]}
+): Promise<Dossier> {
+  return bffFetch<Dossier>(`/api/v1/dossier/${appointmentId}`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteDossierFile(appointmentId: string, fileIndex: number): Promise<Dossier> {
+  return bffFetch<Dossier>(`/api/v1/dossier/${appointmentId}/files/${fileIndex}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── Provider Patient Registry ────────────────────────────────────────────────
+
+export type PatientRecord = {
+  patient_id: string;
+  patient_name?: string;
+  patient_phone_masked?: string;
+  last_appointment_at?: string;
+  total_appointments: number;
+  has_upcoming: boolean;
+};
+
+export async function getProviderPatients(): Promise<PatientRecord[]> {
+  return bffFetch<PatientRecord[]>('/api/v1/provider/patients');
+}
+

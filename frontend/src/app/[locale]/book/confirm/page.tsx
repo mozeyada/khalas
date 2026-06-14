@@ -1,4 +1,5 @@
 import {getTranslations} from 'next-intl/server';
+import {Link} from '@/i18n/navigation';
 
 import {SiteShell} from '@/components/site-shell';
 import {AppointmentQRCode} from '@/components/appointment-qr-code';
@@ -19,6 +20,7 @@ type ConfirmationPageProps = {
 
 export default async function ConfirmationPage({params, searchParams}: ConfirmationPageProps) {
   const t = await getTranslations({locale: params.locale, namespace: 'ConfirmationPage'});
+  const isAr = params.locale === 'ar';
 
   return (
     <SiteShell title={t('pageTitle')} subtitle={t('pageSubtitle')}>
@@ -55,6 +57,36 @@ export default async function ConfirmationPage({params, searchParams}: Confirmat
             <AppointmentQRCode appointmentId={searchParams.appointmentId} />
           </div>
         ) : null}
+
+        {/* ── Dossier CTA ───────────────────────────────────────────── */}
+        {searchParams.appointmentId && (
+          <div className="mt-6 overflow-hidden rounded-2xl border border-brand/20 bg-brand/5">
+            <div className="px-5 py-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-xl">
+                  📎
+                </div>
+                <div>
+                  <p className="font-bold text-ink text-sm">
+                    {isAr ? 'جهّز ملفك للطبيب قبل الموعد' : 'Prepare your file for the doctor'}
+                  </p>
+                  <p className="mt-0.5 text-xs text-zinc-500 leading-relaxed">
+                    {isAr
+                      ? 'ارفع تحاليلك، أشعتك، وأي تقارير سابقة حتى يراجعها الطبيب قبل ما تيجي، ووفّر وقتك ووقته.'
+                      : 'Upload your labs, scans, and previous reports so your doctor can review them before your visit — saving time for both of you.'}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/dashboard/dossier/${searchParams.appointmentId}` as any}
+                locale={params.locale}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-white transition hover:bg-brand-hover active:scale-[0.98]"
+              >
+                {isAr ? 'ارفع ملفاتك الآن' : 'Upload your files now'}
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
     </SiteShell>
   );

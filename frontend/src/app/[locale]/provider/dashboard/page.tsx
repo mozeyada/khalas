@@ -7,7 +7,7 @@ import {Link} from '@/i18n/navigation';
 import {
   Calendar, Clock, CheckCircle2, XCircle, FileText, ArrowRight,
   TrendingUp, Users, PlusCircle, Settings, QrCode, Activity,
-  CreditCard, Repeat, ChevronRight
+  CreditCard, Repeat, ChevronRight, Stethoscope, ShieldCheck, Paperclip
 } from 'lucide-react';
 
 import {useSession} from '@/components/session-provider';
@@ -150,13 +150,25 @@ export default function ProviderDashboardPage() {
           <PlusCircle className="h-6 w-6" />
           <span className="text-xs font-semibold">{locale === 'ar' ? 'إضافة موعد' : 'Add Walk-in'}</span>
         </button>
-        <button
-          onClick={() => setIsQrModalOpen(true)}
-          className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] active:scale-95"
-        >
-          <QrCode className="h-6 w-6 text-[var(--text-2)]" />
-          <span className="text-xs font-semibold">{locale === 'ar' ? 'رمز QR' : 'Print QR'}</span>
-        </button>
+        {/* Doctor-specific: My Patients registry */}
+        {user?.provider_type === 'doctor' ? (
+          <Link
+            href="/provider/patients"
+            locale={locale}
+            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-brand/10 border border-brand/20 py-3 text-brand transition hover:bg-brand/20"
+          >
+            <Users className="h-6 w-6" />
+            <span className="text-xs font-semibold">{locale === 'ar' ? 'مرضاي' : 'My Patients'}</span>
+          </Link>
+        ) : (
+          <button
+            onClick={() => setIsQrModalOpen(true)}
+            className="flex flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--surface-1)] border border-[var(--border)] py-3 text-[var(--text-2)] transition hover:bg-[var(--surface-0)] active:scale-95"
+          >
+            <QrCode className="h-6 w-6 text-[var(--text-2)]" />
+            <span className="text-xs font-semibold">{locale === 'ar' ? 'رمز QR' : 'Print QR'}</span>
+          </button>
+        )}
         <Link
           href="/provider/appointments"
           locale={locale}
@@ -397,6 +409,25 @@ export default function ProviderDashboardPage() {
         isOpen={isQrModalOpen}
         onClose={() => setIsQrModalOpen(false)}
       />
+
+      {/* ── Data Portability Badge (Doctor only) ─────────────── */}
+      {user?.provider_type === 'doctor' && (
+        <div className="mt-8 flex items-start gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-1)] px-5 py-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand/10">
+            <ShieldCheck className="h-4 w-4 text-brand" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-[var(--text-1)]">
+              {locale === 'ar' ? '🔒 بياناتك ملكك' : '🔒 Your Data is Yours'}
+            </p>
+            <p className="mt-0.5 text-xs leading-relaxed text-[var(--text-3)]">
+              {locale === 'ar'
+                ? 'بياناتك وملفات مرضاك ملكك الخاص. يمكنك في أي وقت طلب تصدير كامل لبياناتك عبر التواصل مع فريق خلاص. نحن لا نحجز بياناتك لحسابنا.'
+                : 'Your patient history and records belong to you. You can request a full data export at any time by contacting the Khalas team. We will never hold your data hostage.'}
+            </p>
+          </div>
+        </div>
+      )}
     </SiteShell>
   );
 }
