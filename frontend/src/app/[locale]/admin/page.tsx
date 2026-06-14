@@ -66,6 +66,11 @@ export default function AdminPage() {
   const [welcomePassword, setWelcomePassword] = useState('');
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
 
+  // Custom Message Modal State
+  const [customMsgModalUser, setCustomMsgModalUser] = useState<User | null>(null);
+  const [customMsgText, setCustomMsgText] = useState('');
+  const [isSendingCustomMsg, setIsSendingCustomMsg] = useState(false);
+
   useEffect(() => {
     if (!isReady) return;
     if (!isAuthenticated || user?.role !== 'admin') {
@@ -168,6 +173,29 @@ export default function AdminPage() {
       setError(e instanceof Error ? e.message : t('genericError'));
     } finally {
       setIsSendingWelcome(false);
+    }
+  }
+
+  async function handleSendCustomMsg() {
+    if (!customMsgModalUser || !customMsgText.trim()) return;
+    setIsSendingCustomMsg(true);
+    try {
+      const res = await fetch(`/api/proxy/admin/users/${customMsgModalUser._id}/send-custom-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: customMsgText }),
+      });
+      if (!res.ok) {
+        const body = (await res.json()) as {error?: string};
+        throw new Error(body.error ?? 'Failed to send custom message.');
+      }
+      alert(locale === 'ar' ? 'تم إرسال الرسالة بنجاح' : 'Message sent successfully');
+      setCustomMsgModalUser(null);
+      setCustomMsgText('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('genericError'));
+    } finally {
+      setIsSendingCustomMsg(false);
     }
   }
 
@@ -399,6 +427,15 @@ export default function AdminPage() {
                         {locale === 'ar' ? 'رسالة ترحيب' : 'Send Welcome'}
                       </button>
                     )}
+                    {u.is_active && user?.email?.startsWith('m.zeyada91') && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomMsgModalUser(u)}
+                        className="rounded-full bg-slate-100 text-slate-700 hover:bg-slate-800 hover:text-white px-5 py-2.5 text-sm font-semibold transition"
+                      >
+                        {locale === 'ar' ? 'رسالة مخصصة' : 'Custom Msg'}
+                      </button>
+                    )}
                     {u.is_active ? (
                       <button
                         type="button"
@@ -476,6 +513,53 @@ export default function AdminPage() {
                 className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
               >
                 {isSendingWelcome ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send Message')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Message Modal */}
+      {customMsgModalUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md animate-in fade-in zoom-in-95 rounded-3xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-1 text-lg font-bold text-[var(--text-1)]">
+              {locale === 'ar' ? `إرسال رسالة مخصصة لـ ${customMsgModalUser.name_ar}` : `Send Custom Message to ${customMsgModalUser.name_en}`}
+            </h3>
+            <p className="mb-6 text-sm text-[var(--text-3)]">
+              {locale === 'ar' 
+                ? 'سيتم إرسال الرسالة عبر الواتساب للمستخدم مباشرة.' 
+                : 'Message will be sent via WhatsApp to the user directly.'}
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-[var(--text-2)]">
+                  {locale === 'ar' ? 'الرسالة' : 'Message'}
+                </label>
+                <textarea
+                  value={customMsgText}
+                  onChange={(e) => setCustomMsgText(e.target.value)}
+                  placeholder={locale === 'ar' ? 'اكتب رسالتك هنا...' : 'Type your message here...'}
+                  rows={4}
+                  className="w-full rounded-xl border border-black/10 bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-teal focus:ring-1 focus:ring-teal resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setCustomMsgModalUser(null)}
+                className="flex-1 rounded-full border border-black/10 py-3 text-sm font-semibold text-[var(--text-2)] transition hover:bg-black/5"
+              >
+                {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleSendCustomMsg}
+                disabled={isSendingCustomMsg || !customMsgText.trim()}
+                className="flex-1 rounded-full bg-[var(--text-1)] py-3 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {isSendingCustomMsg ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...') : (locale === 'ar' ? 'إرسال الرسالة' : 'Send Message')}
               </button>
             </div>
           </div>

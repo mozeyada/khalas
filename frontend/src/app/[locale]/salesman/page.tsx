@@ -13,6 +13,44 @@ import {
   Presentation, MoreVertical, Send, ShieldCheck, Check, User
 } from 'lucide-react';
 
+// ─── constants ────────────────────────────────────────────────────────────────
+const SPECIALTIES = [
+  { en: 'Cardiology', ar: 'أمراض القلب' },
+  { en: 'Dentistry', ar: 'طب الأسنان' },
+  { en: 'Dermatology', ar: 'الأمراض الجلدية' },
+  { en: 'Orthopedics', ar: 'جراحة العظام' },
+  { en: 'Pediatrics', ar: 'طب الأطفال' },
+  { en: 'Internal Medicine', ar: 'الباطنة' },
+  { en: 'Ophthalmology', ar: 'طب العيون' },
+  { en: 'Neurology', ar: 'المخ والأعصاب' },
+  { en: 'Psychiatry', ar: 'الطب النفسي' },
+  { en: 'General Surgery', ar: 'الجراحة العامة' }
+];
+
+const GOVERNORATES = [
+  { en: 'Cairo', ar: 'القاهرة' },
+  { en: 'Giza', ar: 'الجيزة' },
+  { en: 'Alexandria', ar: 'الإسكندرية' },
+  { en: 'Dakahlia', ar: 'الدقهلية' },
+  { en: 'Beheira', ar: 'البحيرة' },
+  { en: 'Fayoum', ar: 'الفيوم' },
+  { en: 'Gharbia', ar: 'الغربية' },
+  { en: 'Ismailia', ar: 'الإسماعيلية' },
+  { en: 'Menofia', ar: 'المنوفية' },
+  { en: 'Minya', ar: 'المنيا' },
+  { en: 'Qalyubia', ar: 'القليوبية' },
+  { en: 'Suez', ar: 'السويس' },
+  { en: 'Aswan', ar: 'أسوان' },
+  { en: 'Assiut', ar: 'أسيوط' },
+  { en: 'Beni Suef', ar: 'بني سويف' },
+  { en: 'Port Said', ar: 'بورسعيد' },
+  { en: 'Damietta', ar: 'دمياط' },
+  { en: 'Sharkia', ar: 'الشرقية' },
+  { en: 'Luxor', ar: 'الأقصر' },
+  { en: 'Qena', ar: 'قنا' },
+  { en: 'Sohag', ar: 'سوهاج' }
+];
+
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
 function normalizePhone(phone: string): string {
@@ -375,7 +413,7 @@ export default function SalesmanPage() {
                         className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 appearance-none"
                       >
                         <option value="" disabled>{locale === 'ar' ? 'اختر التخصص' : 'Select Specialty'}</option>
-                        {['Cardiology','Dentistry','Dermatology','Orthopedics','Pediatrics','Internal Medicine','Ophthalmology','Neurology','Psychiatry','General Surgery'].map(s => <option key={s} value={s}>{s}</option>)}
+                        {SPECIALTIES.map(s => <option key={s.en} value={s.en}>{locale === 'ar' ? s.ar : s.en}</option>)}
                       </select>
                     </div>
 
@@ -390,7 +428,7 @@ export default function SalesmanPage() {
                         className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-0)] px-4 py-3 text-sm text-[var(--text-1)] outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 appearance-none"
                       >
                         <option value="" disabled>{locale === 'ar' ? 'اختر المحافظة' : 'Select Governorate'}</option>
-                        {['Cairo','Giza','Alexandria','Dakahlia','Beheira','Fayoum','Gharbia','Ismailia','Menofia','Minya','Qalyubia','Suez','Aswan','Assiut','Beni Suef','Port Said','Damietta','Sharkia','Luxor','Qena','Sohag'].map(g => <option key={g} value={g}>{g}</option>)}
+                        {GOVERNORATES.map(g => <option key={g.en} value={g.en}>{locale === 'ar' ? g.ar : g.en}</option>)}
                       </select>
                     </div>
                   </div>

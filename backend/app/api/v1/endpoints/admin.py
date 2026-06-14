@@ -47,6 +47,11 @@ class SendWelcomeRequest(BaseModel):
     password: str | None = None
 
 
+class SendCustomMessageRequest(BaseModel):
+    """Payload for sending custom message."""
+    message: str
+
+
 # ── Venue moderation ──────────────────────────────────────────────────────────
 
 @router.get("/venues", response_model=ApiResponse[list[VenueResponse]], status_code=status.HTTP_200_OK)
@@ -167,6 +172,27 @@ async def admin_send_welcome(
     asyncio.create_task(send_salesman_welcome_msg(user, payload.language, payload.password))
 
     return ApiResponse(data={"message": "Welcome message sent."})
+
+
+@router.post("/users/{user_id}/send-custom-message", response_model=ApiResponse[dict], status_code=status.HTTP_200_OK)
+async def admin_send_custom_message(
+    user_id: str,
+    payload: SendCustomMessageRequest,
+    current_user: Annotated[dict, Depends(require_role("admin"))],
+) -> ApiResponse[dict]:
+    """Send a custom message to any user. Restricted to global admin."""
+    if "m.zeyada91" not in current_user.get("email", ""):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only global admin can send custom messages.")
+        
+    user = await UserRepository().find_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    
+    from app.services.notifications import send_custom_user_msg
+    import asyncio
+    asyncio.create_task(send_custom_user_msg(user, payload.message))
+
+    return ApiResponse(data={"message": "Custom message sent."})
 
 
 @router.post("/users/{user_id}/impersonate", response_model=ApiResponse[AuthTokensData], status_code=status.HTTP_200_OK)

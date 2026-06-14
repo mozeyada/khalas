@@ -308,39 +308,55 @@ async def _send_whatsapp(
                 f"رابط الدخول: https://khalas.app/ar/auth/login\n"
                 f"رقم الهاتف: {parameters[1]}\n")
         if parameters[2]:
-            text += f"كلمة المرور المؤقتة: {parameters[2]}\n"
+            text += f"كلمة المرور المؤقتة: {parameters[2]}\n\n"
         else:
-            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n"
-        text += "\nنحن متحمسون لانضمامك إلينا! لا تتردد في التواصل إذا كان لديك أي استفسار."
+            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n\n"
+        text += (f"كيفية الاستخدام:\n"
+                 f"١. سجل الدخول من الرابط أعلاه.\n"
+                 f"٢. من لوحة التحكم، يمكنك إضافة عيادات تجريبية للعملاء عبر زر 'بدء تجربة جديدة'.\n"
+                 f"٣. يمكنك إرسال رسائل ترحيب للعيادات أو الدخول بحساب العيادة لتجربته.\n"
+                 f"٤. استخدم خيار 'تجربة حجز كمريض' لاختبار رحلة حجز الموعد بنفسك.")
     elif template_name == "khalas_salesman_welcome_en":
         text = (f"Hi {parameters[0]},\nWelcome to the Khalas Sales Team! 🎉\n\n"
                 f"Login Link: https://khalas.app/en/auth/login\n"
                 f"Phone Number: {parameters[1]}\n")
         if parameters[2]:
-            text += f"Temporary Password: {parameters[2]}\n"
+            text += f"Temporary Password: {parameters[2]}\n\n"
         else:
-            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n"
-        text += "\nWe're thrilled to have you! Feel free to reach out if you have any questions."
+            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n\n"
+        text += (f"How to use:\n"
+                 f"1. Log in using the link above.\n"
+                 f"2. Use 'Start New Demo' to instantly onboard clinics.\n"
+                 f"3. Send them a welcome message or 'Login as Clinic' to test their portal.\n"
+                 f"4. Click 'Test as Patient' to see exactly what the patient sees when booking.")
     elif template_name == "khalas_clinic_welcome_ar":
         text = (f"مرحباً {parameters[0]}،\nأهلاً بك كشريك في منصة خلاص! 🎉\n"
                 f"تم إعداد عيادتك '{parameters[3]}' بنجاح.\n\n"
                 f"رابط الدخول: https://khalas.app/ar/auth/login\n"
                 f"رقم الهاتف: {parameters[1]}\n")
         if parameters[2]:
-            text += f"كلمة المرور المؤقتة: {parameters[2]}\n"
+            text += f"كلمة المرور المؤقتة: {parameters[2]}\n\n"
         else:
-            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n"
-        text += "\nشكراً لاختيارك منصة خلاص."
+            text += f"يمكنك الدخول باستخدام كود التحقق OTP أو تعيين كلمة مرور جديدة من خلال 'نسيت كلمة المرور'.\n\n"
+        text += (f"كيفية الاستخدام:\n"
+                 f"١. سجل الدخول لمعاينة وإدارة مواعيد عيادتك.\n"
+                 f"٢. شارك رابط عيادتك الخاص لاستقبال الحجوزات من المرضى بسهولة.\n"
+                 f"٣. يمكنك تأكيد أو إلغاء المواعيد، بالإضافة إلى تسجيل حجوزات المرضى المباشرة (Walk-in) من العيادة.\n"
+                 f"\nشكراً لاختيارك منصة خلاص.")
     elif template_name == "khalas_clinic_welcome_en":
         text = (f"Hi {parameters[0]},\nWelcome as a partner on the Khalas Platform! 🎉\n"
                 f"Your clinic '{parameters[3]}' has been set up successfully.\n\n"
                 f"Login Link: https://khalas.app/en/auth/login\n"
                 f"Phone Number: {parameters[1]}\n")
         if parameters[2]:
-            text += f"Temporary Password: {parameters[2]}\n"
+            text += f"Temporary Password: {parameters[2]}\n\n"
         else:
-            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n"
-        text += "\nThank you for choosing Khalas."
+            text += f"You can log in using an OTP verification code, or set a new password via 'Forgot Password'.\n\n"
+        text += (f"How to use:\n"
+                 f"1. Log in to manage your appointments dashboard.\n"
+                 f"2. Share your unique clinic link to receive bookings automatically.\n"
+                 f"3. Easily confirm/cancel appointments and add Walk-in patients directly.\n"
+                 f"\nThank you for choosing Khalas.")
     else:
         text = "رسالة من خلاص: " + " ".join(parameters)
 
@@ -598,3 +614,16 @@ async def send_clinic_welcome_msg(venue: dict, owner: dict, language: str, passw
     )
     if not sent:
         _log_notify("CONSOLE", phone, f"Welcome message sent to clinic owner {name} for {venue_name} in {language}")
+
+async def send_custom_user_msg(user: dict, message: str) -> None:
+    """Send a custom message from the admin to any user."""
+    phone = user.get("phone", "")
+    if not phone:
+        return
+    sent = await _send_whatsapp(
+        phone=phone,
+        template_name="custom",
+        parameters=[message],
+    )
+    if not sent:
+        _log_notify("CONSOLE", phone, f"Custom message sent to {phone}: {message}")
