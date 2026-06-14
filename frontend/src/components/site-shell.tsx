@@ -57,7 +57,7 @@ function getRoleLabel(role: string | undefined, locale: string): string {
     provider: {en: 'Clinic', ar: 'عيادة'},
     salesman: {en: 'Sales', ar: 'مبيعات'},
     admin: {en: 'Admin', ar: 'مدير'},
-    patient: {en: 'Patient', ar: 'مريض'},
+    patient: {en: 'Patient Account', ar: 'حساب مريض'},
   };
   const e = map[role ?? ''];
   return e ? (locale === 'ar' ? e.ar : e.en) : '';
@@ -147,7 +147,7 @@ export function SiteShell({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-[var(--text-1)]">
-                  {locale === 'ar' ? user.name_ar : user.name_en}
+                  {locale === 'ar' ? user.name_ar.replace(/^المريض\s+/i, '') : user.name_en.replace(/^Patient\s+/i, '')}
                 </p>
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-3)]">
                   {getRoleLabel(user.role, locale)}

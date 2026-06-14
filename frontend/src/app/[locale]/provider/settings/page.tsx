@@ -483,6 +483,25 @@ export default function ProviderSettingsPage() {
           ))}
         </div>
       )}
+
+      {/* Data Export Notice */}
+      <div className="mt-8 rounded-3xl border border-blue-200 bg-blue-50/50 p-6 shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+            <ExternalLink className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-blue-900 mb-1">
+              {locale === 'ar' ? 'ملكية وتصدير البيانات' : 'Data Ownership & Export'}
+            </h3>
+            <p className="text-xs text-blue-800 leading-relaxed">
+              {locale === 'ar' 
+                ? 'نحن نضمن حقك الكامل في الاحتفاظ ببياناتك. بصفتك طبيباً على المنصة، يحق لك دائماً طلب تصدير كامل لبيانات عيادتك (بما في ذلك ملفات المُراجعين والمواعيد) في أي وقت، حتى إذا قررت إيقاف اشتراكك أو مغادرة المنصة. لضمان أمان البيانات وخصوصية المرضى، تقتصر صلاحية تصدير البيانات على الإدارة المركزية (Global Admin). لطلب نسخة من بياناتك، يرجى التواصل مع الإدارة.' 
+                : 'We guarantee your full right to your data. As a doctor on the platform, you can always request a full export of your clinic data (including patient records and appointments) at any time, even if you decide to cancel your subscription or leave. To ensure data security and patient privacy, data export is restricted to the Global Admin. Please contact the administration to request a copy of your data.'}
+            </p>
+          </div>
+        </div>
+      </div>
     </SiteShell>
   );
 }

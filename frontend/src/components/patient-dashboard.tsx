@@ -24,6 +24,16 @@ function isSoon(dt: string) {
   return diff > 0 && diff < 24 * 60 * 60 * 1000; // within 24h
 }
 
+function getStatusLabel(status: string, locale: string) {
+  if (locale === 'ar') {
+    if (status === 'pending') return 'قيد الانتظار';
+    if (status === 'confirmed') return 'مؤكد';
+    if (status === 'completed') return 'مكتمل';
+    if (status === 'cancelled') return 'ملغي';
+  }
+  return status;
+}
+
 // ── component ─────────────────────────────────────────────────────────────────
 
 export function PatientDashboard() {
@@ -98,16 +108,16 @@ export function PatientDashboard() {
   return (
     <div data-theme="patient" className="space-y-6">
       {/* ── Hero Banner ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl px-6 py-8 text-white" style={{background: 'var(--grad-patient)'}}>
+      <div className="relative overflow-hidden rounded-3xl px-6 pt-8 pb-12 text-white" style={{background: 'var(--grad-patient)'}}>
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/5" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-32 w-32 rounded-full bg-purple-500/20" />
-        <div className="relative">
+        <div className="pointer-events-none absolute -bottom-10 left-1/4 h-32 w-32 rounded-full bg-purple-500/20" />
+        <div className="relative z-10">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest">
             <Calendar className="h-3 w-3" />
             {new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date())}
           </div>
           <h1 className="text-2xl font-black tracking-tight">
-            {greeting}{user?.name_ar || user?.name_en ? `, ${locale === 'ar' ? user.name_ar : user.name_en}` : ''}
+            {greeting}{user?.name_ar || user?.name_en ? `، ${locale === 'ar' ? user.name_ar.replace(/^المريض\s+/i, '') : user.name_en.replace(/^Patient\s+/i, '')}` : ''}
           </h1>
           <p className="mt-1 max-w-lg text-sm text-white/70">
             {locale === 'ar'
@@ -143,7 +153,7 @@ export function PatientDashboard() {
             {locale === 'ar' ? 'موعدك القادم' : 'Next Appointment'}
           </p>
 
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-4">
             <div className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl ${isSoon(nextAppt.slot_datetime) ? 'bg-white/10' : 'bg-[var(--surface-1)] text-[var(--text-1)]'}`}>
               <span className="text-2xl font-black leading-none">
                 {new Date(nextAppt.slot_datetime).getDate()}
@@ -159,31 +169,31 @@ export function PatientDashboard() {
               <p className={`text-sm font-semibold mt-0.5 ${isSoon(nextAppt.slot_datetime) ? 'text-white/70' : 'text-[var(--text-2)]'}`}>
                 {(nextAppt as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
               </p>
-              <p className={`text-xs font-bold mt-1 ${isSoon(nextAppt.slot_datetime) ? 'text-white/50' : 'text-[var(--text-3)]'}`}>
-                {formatPrice(nextAppt.price_at_booking, locale)}
-              </p>
+              <div className={`text-xs font-bold mt-1 inline-flex items-center ${isSoon(nextAppt.slot_datetime) ? 'text-white/50' : 'text-[var(--text-3)]'}`} dir="ltr">
+                <span className="mr-1">{formatPrice(nextAppt.price_at_booking, locale)}</span>
+              </div>
             </div>
           </div>
 
-          <div className="mt-6 flex gap-2">
+          <div className="mt-6 flex flex-col sm:flex-row gap-2">
             {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
               <button
                 onClick={() => void handleCancel(nextAppt._id)}
-                className={`flex-1 rounded-xl py-3 text-sm font-bold transition active:scale-95 ${
+                className={`flex-1 rounded-full border bg-transparent py-3 text-sm font-bold transition active:scale-95 ${
                   isSoon(nextAppt.slot_datetime)
-                    ? 'bg-white/10 text-white hover:bg-white/20'
-                    : 'border border-rose-200 text-rose-600 hover:bg-rose-50'
+                    ? 'border-white/30 text-white hover:bg-white/10'
+                    : 'border-rose-200 text-rose-600 hover:bg-rose-50'
                 }`}
               >
                 {t('cancel')}
               </button>
             )}
-            <span className={`inline-flex flex-1 items-center justify-center rounded-xl py-3 text-xs font-black uppercase tracking-widest ${
+            <span className={`inline-flex flex-1 items-center justify-center rounded-full py-3 text-xs font-black uppercase tracking-widest ${
               nextAppt.status === 'confirmed' 
-                ? (isSoon(nextAppt.slot_datetime) ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-100')
-                : (isSoon(nextAppt.slot_datetime) ? 'bg-white/10 text-white/70' : 'bg-amber-50 text-amber-700 border border-amber-100')
+                ? (isSoon(nextAppt.slot_datetime) ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800')
+                : (isSoon(nextAppt.slot_datetime) ? 'bg-white/10 text-white/70' : 'bg-amber-100 text-amber-800')
             }`}>
-              {nextAppt.status}
+              {getStatusLabel(nextAppt.status, locale)}
             </span>
           </div>
 
@@ -191,10 +201,10 @@ export function PatientDashboard() {
           {(nextAppt.status === 'pending' || nextAppt.status === 'confirmed') && (
             <button
               onClick={() => router.push(`/${locale}/dashboard/dossier/${nextAppt._id}`)}
-              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition active:scale-95 ${
+              className={`mt-3 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-bold transition active:scale-95 ${
                 isSoon(nextAppt.slot_datetime)
                   ? 'bg-white text-[var(--text-1)] hover:bg-white/90 shadow-sm'
-                  : 'bg-[var(--text-1)] text-white hover:bg-[var(--text-1)]/90 shadow-sm'
+                  : 'bg-brand text-white hover:bg-brand-hover shadow-sm'
               }`}
             >
               <Paperclip className="h-4 w-4" />
@@ -264,7 +274,7 @@ export function PatientDashboard() {
               return (
                 <article
                   key={appointment._id}
-                  className="flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--text-3)] card-lift"
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition-colors hover:border-[var(--text-3)] card-lift"
                 >
                   <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--surface-0)] text-center">
                     <span className="text-base font-black leading-none text-[var(--text-1)]">{dateObj.getDate()}</span>
@@ -276,14 +286,18 @@ export function PatientDashboard() {
                     <p className="truncate text-sm font-bold text-[var(--text-1)]">
                       {(appointment as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
                     </p>
-                    <p className="text-xs font-semibold text-[var(--text-3)] mt-0.5">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
+                    <div className="text-xs font-semibold text-[var(--text-3)] mt-0.5 flex items-center gap-1">
+                      <span>{timeStr}</span>
+                      <span>·</span>
+                      <span dir="ltr" className="whitespace-nowrap inline-flex">{formatPrice(appointment.price_at_booking, locale)}</span>
+                    </div>
                   </div>
-                  <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
-                    appointment.status === 'completed' ? 'bg-emerald-50 text-emerald-700'
-                    : appointment.status === 'cancelled' ? 'bg-rose-50 text-rose-700'
-                    : 'bg-[var(--surface-1)] text-[var(--text-2)]'
+                  <span className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-center ${
+                    appointment.status === 'completed' ? 'bg-emerald-100 text-emerald-800'
+                    : appointment.status === 'cancelled' ? 'bg-rose-100 text-rose-800'
+                    : 'bg-slate-100 text-slate-800'
                   }`}>
-                    {appointment.status}
+                    {getStatusLabel(appointment.status, locale)}
                   </span>
                 </article>
               );
@@ -313,7 +327,7 @@ export function PatientDashboard() {
               return (
                 <article
                   key={appointment._id}
-                  className="group flex items-center gap-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition hover:shadow-md hover:border-[var(--text-3)] card-lift"
+                  className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border border-[var(--border)] bg-white p-4 shadow-sm transition hover:shadow-md hover:border-[var(--text-3)] card-lift"
                 >
                   <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--surface-0)] text-center">
                     <span className="text-base font-black leading-none text-[var(--text-1)]">{dateObj.getDate()}</span>
@@ -325,21 +339,27 @@ export function PatientDashboard() {
                     <p className="truncate text-sm font-bold text-[var(--text-1)]">
                       {(appointment as any).venue_name || (locale === 'ar' ? 'عيادة' : 'Clinic')}
                     </p>
-                    <p className="text-xs font-semibold text-[var(--text-3)] mt-0.5">{timeStr} · {formatPrice(appointment.price_at_booking, locale)}</p>
+                    <div className="text-xs font-semibold text-[var(--text-3)] mt-0.5 flex items-center gap-1">
+                      <span>{timeStr}</span>
+                      <span>·</span>
+                      <span dir="ltr" className="whitespace-nowrap inline-flex">{formatPrice(appointment.price_at_booking, locale)}</span>
+                    </div>
                   </div>
-                  <span className={`shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest ${
-                    appointment.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                  }`}>
-                    {appointment.status}
-                  </span>
-                  {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-                    <button
-                      onClick={() => void handleCancel(appointment._id)}
-                      className="shrink-0 rounded-xl border border-rose-200 px-3 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-50 active:scale-95"
-                    >
-                      {t('cancel')}
-                    </button>
-                  )}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <span className={`shrink-0 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-center ${
+                      appointment.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {getStatusLabel(appointment.status, locale)}
+                    </span>
+                    {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                      <button
+                        onClick={() => void handleCancel(appointment._id)}
+                        className="shrink-0 rounded-full border border-rose-200 px-4 py-1.5 text-xs font-bold text-rose-600 bg-transparent transition hover:bg-rose-50 active:scale-95 text-center"
+                      >
+                        {t('cancel')}
+                      </button>
+                    )}
+                  </div>
                 </article>
               );
             })}
