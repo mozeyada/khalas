@@ -159,7 +159,7 @@ export function SiteShell({
       )}
 
       {/* Nav links */}
-      <nav className="flex-1 space-y-0.5 px-2 overflow-y-auto">
+      <nav className="flex-1 space-y-0.5 px-2 overflow-y-auto pb-4">
         {navItems.map(item => {
           const active = isActive(item);
           const Icon = item.icon;
@@ -189,11 +189,11 @@ export function SiteShell({
       </nav>
 
       {/* Bottom actions */}
-      <div className="space-y-1 px-2 pb-4 pt-2 border-t border-zinc-200 mt-2">
+      <div className="space-y-1 px-4 pb-6 pt-4 border-t border-slate-100 mt-auto bg-slate-50/50">
         {/* Language toggle */}
-        <div className={`mb-2 flex rounded-md border border-zinc-200 p-0.5 ${collapsed ? 'flex-col gap-0.5' : ''}`}>
-          <Link href={pathname} locale="ar" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-brand'}`}>ع</Link>
-          <Link href={pathname} locale="en" className={`flex-1 rounded-sm py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-brand'}`}>En</Link>
+        <div className={`mb-2 flex rounded-lg bg-slate-100 p-1 ${collapsed ? 'flex-col gap-1' : ''}`}>
+          <Link href={pathname} locale="ar" className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold transition-all ${locale === 'ar' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>ع</Link>
+          <Link href={pathname} locale="en" className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold transition-all ${locale === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>En</Link>
         </div>
 
         {isReady && isAuthenticated ? (
@@ -272,11 +272,13 @@ export function SiteShell({
         <main className="flex-1 min-w-0">
           {(title || subtitle) && (
             <div className="sticky top-0 z-10 border-b border-slate-100 bg-white/95 px-6 lg:px-12 py-4 backdrop-blur-md">
-              {title && <h1 className="text-xl font-black text-slate-800 tracking-tight">{title}</h1>}
-              {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+              <div className="max-w-6xl mx-auto w-full">
+                {title && <h1 className="text-xl font-black text-slate-800 tracking-tight">{title}</h1>}
+                {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+              </div>
             </div>
           )}
-          <div className="px-6 lg:px-12 py-6 max-w-7xl mx-auto">
+          <div className="px-6 lg:px-12 py-6 max-w-6xl mx-auto w-full">
             {children}
           </div>
         </main>
