@@ -27,14 +27,14 @@
   --gold-light:   rgba(0, 0, 0, 0.10);
 
   /* Borders */
-  --border:       #E4E4E7;       /* Clean zinc-gray */
-  --border-strong: #D1D1D6;      /* For interactive states */
+  --border:       #e2e8f0;       /* slate-200 */
+  --border-strong: #cbd5e1;      /* slate-300 */
   --border-accent: rgba(255, 255, 255, 0.20); /* For dark mode / black cards */
 
-  /* Text */
-  --text-1: #0A0A0A;   /* Near black */
-  --text-2: #3F3F46;   /* Secondary gray */
-  --text-3: #71717A;   /* Muted zinc */
+  /* Text - Mobile First Deep Slate */
+  --text-1: #1e293b;   /* slate-800 - Deep slate */
+  --text-2: #475569;   /* slate-600 - Secondary */
+  --text-3: #64748b;   /* slate-500 - Muted */
 
   /* Status */
   --success: #16A34A;

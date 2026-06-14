@@ -12,7 +12,7 @@ import {Link, usePathname} from '@/i18n/navigation';
 import {useSession} from '@/components/session-provider';
 
 /* ─── Constants ─────────────────────────────────────────────── */
-const MOBILE_HEADER_H = 56;
+const MOBILE_HEADER_H = 72;
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type NavItem = {href: string; icon: typeof Home; labelKey: string; matchPaths?: string[]};
@@ -286,28 +286,43 @@ export function SiteShell({
       <div className="md:hidden relative z-10">
         {/* Mobile top header */}
         <header
-          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white border-b border-zinc-200 px-4"
+          className="fixed inset-x-0 top-0 z-50 flex items-center justify-between bg-white/95 backdrop-blur-md border-b border-slate-100 px-5 py-3"
           style={{
             height: MOBILE_HEADER_H,
             top: impersonatingName ? 36 : 0,
           }}
         >
-          <button
-            onClick={() => setMobileSidebarOpen(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-50 transition"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileSidebarOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition active:scale-95"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
 
-          <Link href="/" locale={locale} className="flex items-center gap-2 font-black text-ink tracking-tight">
-            <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-brand text-white text-xs font-black">خ</div>
-            <span>Khalas</span>
-          </Link>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white text-sm font-bold shadow-sm">
+                {isReady && isAuthenticated && user ? getUserInitials() : 'خ'}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  {locale === 'ar' ? 'مرحباً بك' : 'Welcome back'}
+                </span>
+                <span className="text-sm font-black text-slate-800 tracking-tight leading-none">
+                  {isReady && isAuthenticated && user 
+                    ? (locale === 'ar' ? user.name_ar.replace(/^المريض\s+/i, '').split(' ')[0] : user.name_en.replace(/^Patient\s+/i, '').split(' ')[0])
+                    : 'Khalas'}
+                </span>
+              </div>
+            </div>
+          </div>
 
-          {/* Language */}
-          <div className="flex items-center rounded-full border border-[var(--border)] p-0.5 text-[11px] font-semibold">
-            <Link href={pathname} locale="ar" className={`rounded-full px-2 py-0.5 transition-all ${locale === 'ar' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-3)]'}`}>ع</Link>
-            <Link href={pathname} locale="en" className={`rounded-full px-2 py-0.5 transition-all ${locale === 'en' ? 'bg-[var(--text-1)] text-white' : 'text-[var(--text-3)]'}`}>En</Link>
+          <div className="flex items-center gap-3">
+            {/* Language toggle */}
+            <div className="flex items-center rounded-full bg-slate-100 p-1">
+              <Link href={pathname} locale="ar" className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${locale === 'ar' ? 'bg-white text-brand shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>ع</Link>
+              <Link href={pathname} locale="en" className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${locale === 'en' ? 'bg-white text-brand shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>En</Link>
+            </div>
           </div>
         </header>
 
@@ -362,8 +377,8 @@ export function SiteShell({
         </main>
 
         {/* Mobile bottom tab bar */}
-        <nav className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-zinc-200 pb-[env(safe-area-inset-bottom,0px)]">
-          <div className="flex items-end justify-around">
+        <nav className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-100 pb-[env(safe-area-inset-bottom,16px)]">
+          <div className="flex items-end justify-around px-2">
             {navItems.map(item => {
               const active = isActive(item);
               const Icon = item.icon;
@@ -372,11 +387,13 @@ export function SiteShell({
                   key={item.href}
                   href={item.href}
                   locale={locale}
-                  className={`flex flex-col flex-1 items-center gap-1 pt-3 pb-2 text-[10px] font-semibold transition-colors ${
-                    active ? 'text-ink border-t-2 border-ink -mt-[2px]' : 'text-zinc-400 border-t-2 border-transparent -mt-[2px]'
+                  className={`flex flex-col flex-1 items-center justify-center gap-1 min-h-[56px] pt-2 pb-1 text-[10px] font-bold transition-all ${
+                    active ? 'text-brand' : 'text-slate-400 hover:text-slate-600'
                   }`}
                 >
-                  <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 1.8} />
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${active ? 'bg-brand/10' : 'bg-transparent'}`}>
+                    <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />
+                  </div>
                   <span>{t(item.labelKey)}</span>
                 </Link>
               );
